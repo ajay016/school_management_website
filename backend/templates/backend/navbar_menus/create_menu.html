@@ -1,0 +1,212 @@
+{% extends 'backend/base.html' %}
+{% load static %}
+
+{% block title %}Create Menu | Admin{% endblock %}
+
+{% block custom_css %}
+<style>
+    /* Modern Notification Message Div */
+    #statusMessage {
+        display: none;
+        padding: 1rem 1.25rem;
+        border-radius: 0.75rem;
+        font-weight: 500;
+        margin-bottom: 1.5rem;
+        font-size: 0.95rem;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.3s ease;
+    }
+
+    .msg-success {
+        background-color: rgba(16, 185, 129, 0.1);
+        color: #059669; /* Dark emerald text */
+        border: 1px solid rgba(16, 185, 129, 0.2);
+    }
+
+    .msg-error {
+        background-color: rgba(239, 68, 68, 0.1);
+        color: #dc2626; /* Dark red text */
+        border: 1px solid rgba(239, 68, 68, 0.2);
+    }
+
+    /* Modern Button */
+    .btn-modern {
+        background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+        color: white;
+        border: none;
+        padding: 0.75rem 2rem;
+        border-radius: 2rem;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+        box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+        transition: all 0.3s ease;
+    }
+
+    .btn-modern:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+        color: white;
+    }
+
+    /* Small form inputs tweaks */
+    .form-control, .form-select {
+        border-radius: 0.5rem;
+        border: 1px solid rgba(15, 23, 42, 0.1);
+        padding: 0.6rem 1rem;
+    }
+    .form-control:focus, .form-select:focus {
+        border-color: var(--accent);
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+    .error-text {
+        color: #dc2626;
+        font-size: 0.85rem;
+        margin-top: 0.25rem;
+        display: none;
+    }
+</style>
+{% endblock custom_css %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="mb-0">Add New Menu</h2>
+    <a href="{% url 'list_menus' %}" class="btn btn-outline-secondary rounded-pill px-4">Back to List</a>
+</div>
+
+<div class="card bg-white border-0 p-4" style="border-radius: 1.2rem; box-shadow: var(--panel-glow);">
+    <form id="menuForm">
+        {% csrf_token %}
+        <div class="row g-4">
+            
+            <div class="col-lg-6">
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Menu Name (Required)</label>
+                    <input type="text" name="name" class="form-control" placeholder="e.g. About Us" required>
+                    <small class="text-muted">The name displayed on the navigation bar.</small>
+                    <div class="error-text" id="err_name"></div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Sort Order (Required)</label>
+                    <input type="number" name="order" class="form-control" value="0" min="0" required>
+                    <small class="text-muted">Lower numbers appear first (e.g., 0, 1, 2).</small>
+                    <div class="error-text" id="err_order"></div>
+                </div>
+            </div>
+
+            <div class="col-lg-6">
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Direct Page Link (Optional)</label>
+                    <select name="page" class="form-select">
+                        <option value="">-- No Direct Link (Has Submenus) --</option>
+                        {% for choice_val, choice_label in page_choices %}
+                            <option value="{{ choice_val }}">{{ choice_label }}</option>
+                        {% endfor %}
+                    </select>
+                    <small class="text-muted">Only select a layout if this menu acts as a standalone page without submenus.</small>
+                    <div class="error-text" id="err_page"></div>
+                </div>
+
+                <div class="mb-4 form-check form-switch mt-4" style="padding-left: 2.5rem;">
+                    <input class="form-check-input" type="checkbox" role="switch" name="is_active" id="isActiveSwitch" value="true" checked style="width: 3rem; height: 1.5rem; margin-left: -2.5rem;">
+                    <label class="form-check-label fw-semibold mt-1 ms-2" for="isActiveSwitch">Set as Active</label>
+                </div>
+
+                <div id="statusMessage">
+                    <iconify-icon id="statusIcon" icon="" style="font-size: 1.5rem;"></iconify-icon>
+                    <span id="statusText"></span>
+                </div>
+
+                <button type="submit" class="btn-modern" id="submitBtn">
+                    Save Menu
+                </button>
+            </div>
+            
+        </div>
+    </form>
+</div>
+{% endblock content %}
+
+{% block custom_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    
+    // --- Form Submission via Fetch API ---
+    const form = document.getElementById('menuForm');
+    const submitBtn = document.getElementById('submitBtn');
+    const statusMsg = document.getElementById('statusMessage');
+    const statusText = document.getElementById('statusText');
+    const statusIcon = document.getElementById('statusIcon');
+
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        // Reset previous states
+        submitBtn.innerHTML = 'Saving...';
+        submitBtn.disabled = true;
+        statusMsg.style.display = 'none';
+        document.querySelectorAll('.error-text').forEach(el => {
+            el.style.display = 'none';
+            el.innerText = '';
+        });
+
+        const formData = new FormData(form);
+        // Handle checkbox since FormData only sends it if checked
+        if (!document.getElementById('isActiveSwitch').checked) {
+            formData.append('is_active', 'false');
+        }
+
+        fetch("{% url 'create_menu' %}", {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json().then(data => ({ status: response.status, body: data })))
+        .then(res => {
+            if (res.status === 200 && res.body.success) {
+                // Success State
+                statusMsg.className = 'msg-success d-flex';
+                statusIcon.setAttribute('icon', 'solar:check-circle-bold-duotone');
+                statusText.innerText = res.body.message;
+                statusMsg.style.display = 'flex';
+                
+                // Clear form
+                form.reset();
+                
+            } else {
+                // Validation Error State
+                statusMsg.className = 'msg-error d-flex';
+                statusIcon.setAttribute('icon', 'solar:danger-triangle-bold-duotone');
+                statusText.innerText = res.body.message || 'An error occurred.';
+                statusMsg.style.display = 'flex';
+
+                // Display specific field errors
+                if (res.body.errors) {
+                    for (const [field, errors] of Object.entries(res.body.errors)) {
+                        const errorDiv = document.getElementById(`err_${field}`);
+                        if (errorDiv) {
+                            errorDiv.innerText = errors[0]; // Show first error
+                            errorDiv.style.display = 'block';
+                        }
+                    }
+                }
+            }
+        })
+        .catch(error => {
+            // Server/Network Error State
+            statusMsg.className = 'msg-error d-flex';
+            statusIcon.setAttribute('icon', 'solar:danger-triangle-bold-duotone');
+            statusText.innerText = 'Network error or server failure. Please try again.';
+            statusMsg.style.display = 'flex';
+        })
+        .finally(() => {
+            submitBtn.innerHTML = 'Save Menu';
+            submitBtn.disabled = false;
+        });
+    });
+});
+</script>
+{% endblock custom_js %}

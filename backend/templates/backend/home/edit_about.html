@@ -1,0 +1,238 @@
+{% extends 'backend/base.html' %}
+{% load static %}
+
+{% block title %}Edit About Section | Admin{% endblock %}
+
+{% block custom_css %}
+<style>
+    .btn-modern {
+        background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: white;
+        border: none; padding: 0.6rem 1.5rem; border-radius: 2rem;
+        font-weight: 600; letter-spacing: 0.5px; box-shadow: 0 4px 15px rgba(59,130,246,0.3);
+        transition: all 0.3s ease; display: inline-flex; align-items: center; gap: 0.5rem;
+    }
+    .btn-modern:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(59,130,246,0.4); color: white; }
+    .form-container { background: #fff; padding: 2.5rem; border-radius: 1rem; box-shadow: 0 4px 20px rgba(0,0,0,0.03); border: 1px solid #e2e8f0; }
+    .section-divider { border-top: 2px solid #e2e8f0; margin: 2rem 0; padding-top: 1.5rem; }
+    .section-divider h5 { font-weight: 700; color: #3b82f6; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; }
+    .field-error { color: #dc2626; font-size: 0.82rem; margin-top: 4px; display: none; }
+
+    /* Image upload zone */
+    .img-upload-zone {
+        border: 2px dashed #cbd5e1; border-radius: 0.75rem; padding: 0.75rem;
+        text-align: center; cursor: pointer; transition: all 0.3s ease;
+        background: #f8fafc; position: relative; min-height: 130px;
+        display: flex; flex-direction: column; align-items: center; justify-content: center;
+        overflow: hidden;
+    }
+    .img-upload-zone:hover { border-color: #3b82f6; background: rgba(59,130,246,0.03); }
+    .img-upload-zone input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; z-index: 10; }
+    .img-upload-zone img { max-height: 110px; max-width: 100%; object-fit: contain; border-radius: 0.4rem; }
+    .img-upload-hint { font-size: 0.8rem; color: #94a3b8; margin-top: 0.4rem; }
+
+    /* Status message — positioned near the save button */
+    #statusMessage { display: none; padding: 0.75rem 1.25rem; border-radius: 0.75rem; font-weight: 500; font-size: 0.9rem; align-items: center; gap: 0.5rem; }
+    .msg-success { background-color: rgba(16,185,129,0.1); color: #059669; border: 1px solid rgba(16,185,129,0.2); }
+    .msg-error   { background-color: rgba(239,68,68,0.1); color: #dc2626; border: 1px solid rgba(239,68,68,0.2); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="mb-0">About Us Section</h2>
+        <p class="text-muted mb-0 mt-1" style="font-size:0.9rem;">Controls the "A Legacy of Learning" section on the home page</p>
+    </div>
+</div>
+
+<div class="form-container">
+    <form id="aboutForm" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        <!-- Section Label & Heading -->
+        <div class="row g-4 mb-4">
+            <div class="col-md-4">
+                <label class="form-label fw-semibold">Section Label</label>
+                <input type="text" name="section_label" class="form-control" value="{{ about.section_label }}" placeholder="e.g. Who We Are">
+                <small class="text-muted">Small text above the heading</small>
+            </div>
+            <div class="col-md-8">
+                <label class="form-label fw-semibold">Heading <span class="text-danger">*</span></label>
+                <input type="text" name="heading" id="heading" class="form-control" value="{{ about.heading }}" required>
+                <div class="field-error" id="err_heading"></div>
+            </div>
+        </div>
+
+        <!-- Lead & Body text -->
+        <div class="mb-4">
+            <label class="form-label fw-semibold">Lead Paragraph <span class="text-danger">*</span></label>
+            <textarea name="lead_text" id="lead_text" class="form-control" rows="3" placeholder="Bold intro paragraph…">{{ about.lead_text }}</textarea>
+            <div class="field-error" id="err_lead_text"></div>
+        </div>
+        <div class="mb-4">
+            <label class="form-label fw-semibold">Body Paragraph <span class="text-danger">*</span></label>
+            <textarea name="body_text" id="body_text" class="form-control" rows="3" placeholder="Supporting paragraph…">{{ about.body_text }}</textarea>
+            <div class="field-error" id="err_body_text"></div>
+        </div>
+
+        <!-- Images & Years badge -->
+        <div class="section-divider">
+            <h5><iconify-icon icon="solar:gallery-bold-duotone" class="me-1"></iconify-icon> Images</h5>
+        </div>
+        <div class="row g-4 mb-4">
+            <div class="col-md-4">
+                <label class="form-label fw-semibold">Main Image</label>
+                <div class="img-upload-zone" id="mainImgZone">
+                    <input type="file" name="main_image" id="mainImgInput" accept="image/*">
+                    {% if about.main_image %}
+                        <img src="{{ about.main_image.url }}" id="mainImgPreview" alt="Main image">
+                        <div class="img-upload-hint">Click to replace (500×400px)</div>
+                    {% else %}
+                        <iconify-icon icon="solar:gallery-add-bold-duotone" id="mainImgPlaceholder" style="font-size:2rem;color:#94a3b8;"></iconify-icon>
+                        <img src="" id="mainImgPreview" alt="" style="display:none;">
+                        <div class="img-upload-hint">Click to upload (500×400px)</div>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label fw-semibold">Accent Image</label>
+                <div class="img-upload-zone" id="accentImgZone">
+                    <input type="file" name="accent_image" id="accentImgInput" accept="image/*">
+                    {% if about.accent_image %}
+                        <img src="{{ about.accent_image.url }}" id="accentImgPreview" alt="Accent image">
+                        <div class="img-upload-hint">Click to replace (250×200px)</div>
+                    {% else %}
+                        <iconify-icon icon="solar:gallery-add-bold-duotone" id="accentImgPlaceholder" style="font-size:2rem;color:#94a3b8;"></iconify-icon>
+                        <img src="" id="accentImgPreview" alt="" style="display:none;">
+                        <div class="img-upload-hint">Click to upload (250×200px)</div>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label fw-semibold">Years of Excellence</label>
+                <input type="number" name="years_of_excellence" class="form-control" value="{{ about.years_of_excellence }}" min="0">
+                <small class="text-muted">Shown in the year badge overlay</small>
+            </div>
+        </div>
+
+        {% comment %}
+        <!-- HIGHLIGHT ROWS — commented out for now, uncomment when needed -->
+        <div class="section-divider">
+            <h5>Three Highlight Items</h5>
+        </div>
+        {% for num, icon_val, title_val, text_val in highlight_rows %}
+        <div class="highlight-row mb-3 p-3 bg-light rounded-3 border">
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <label class="form-label fw-semibold">Icon {{ num }}</label>
+                    <input type="text" name="highlight_{{ num }}_icon" class="form-control form-control-sm" value="{{ icon_val }}" placeholder="fas fa-medal">
+                    <small class="text-muted">Font Awesome class</small>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-semibold">Title {{ num }}</label>
+                    <input type="text" name="highlight_{{ num }}_title" class="form-control form-control-sm" value="{{ title_val }}">
+                </div>
+                <div class="col-md-5">
+                    <label class="form-label fw-semibold">Text {{ num }}</label>
+                    <input type="text" name="highlight_{{ num }}_text" class="form-control form-control-sm" value="{{ text_val }}">
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+        {% endcomment %}
+
+        <!-- CTA Button (optional) -->
+        <div class="section-divider">
+            <h5><iconify-icon icon="solar:cursor-bold-duotone" class="me-1"></iconify-icon> Call-to-Action Button (optional)</h5>
+        </div>
+        <div class="row g-4 mb-4">
+            <div class="col-md-4">
+                <label class="form-label fw-semibold">Button Label</label>
+                <input type="text" name="button_label" class="form-control" value="{{ about.button_label|default:'' }}" placeholder="Read More About Us">
+            </div>
+            <div class="col-md-8">
+                <label class="form-label fw-semibold">Button Link</label>
+                <input type="text" name="button_link" class="form-control" value="{{ about.button_link|default:'' }}" placeholder="/page/about-us/our-school/">
+            </div>
+        </div>
+
+        <!-- Save row: message left, button right -->
+        <div class="d-flex justify-content-between align-items-center mt-4 pt-3 border-top">
+            <div id="statusMessage">
+                <iconify-icon id="statusIcon" icon=""></iconify-icon>
+                <span id="statusText"></span>
+            </div>
+            <button type="submit" class="btn-modern ms-auto" id="submitBtn">
+                <iconify-icon icon="solar:disk-bold-duotone" style="font-size:1.2rem;"></iconify-icon> Save Changes
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block custom_js %}
+<script>
+/* Live image preview on file select */
+function wirePreview(inputId, previewId, placeholderId) {
+    const input   = document.getElementById(inputId);
+    const preview = document.getElementById(previewId);
+    const ph      = document.getElementById(placeholderId);
+    if (!input) return;
+    input.addEventListener('change', function() {
+        const file = this.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = e => {
+            preview.src = e.target.result;
+            preview.style.display = 'block';
+            if (ph) ph.style.display = 'none';
+        };
+        reader.readAsDataURL(file);
+    });
+}
+wirePreview('mainImgInput',   'mainImgPreview',   'mainImgPlaceholder');
+wirePreview('accentImgInput', 'accentImgPreview', 'accentImgPlaceholder');
+
+document.getElementById('aboutForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    clearErrors();
+    const btn = document.getElementById('submitBtn');
+    const orig = btn.innerHTML;
+    btn.innerHTML = '<iconify-icon icon="line-md:loading-twotone-loop"></iconify-icon> Saving…';
+    btn.disabled = true;
+
+    fetch("{% url 'edit_home_about' %}", {
+        method: 'POST',
+        body: new FormData(this),
+        headers: {'X-Requested-With': 'XMLHttpRequest'}
+    })
+    .then(r => r.json())
+    .then(data => {
+        showStatus(data.message, data.success ? 'success' : 'error');
+        if (!data.success && data.errors) {
+            Object.entries(data.errors).forEach(([field, msgs]) => {
+                const el = document.getElementById('err_' + field);
+                if (el) { el.textContent = msgs[0]; el.style.display = 'block'; }
+            });
+        }
+    })
+    .catch(() => showStatus('A server error occurred.', 'error'))
+    .finally(() => { btn.innerHTML = orig; btn.disabled = false; });
+});
+
+function clearErrors() {
+    document.querySelectorAll('.field-error').forEach(el => { el.style.display = 'none'; el.textContent = ''; });
+}
+
+function showStatus(msg, type) {
+    const el   = document.getElementById('statusMessage');
+    const icon = document.getElementById('statusIcon');
+    const text = document.getElementById('statusText');
+    el.className = type === 'success' ? 'msg-success d-flex' : 'msg-error d-flex';
+    icon.setAttribute('icon', type === 'success' ? 'solar:check-circle-bold-duotone' : 'solar:danger-triangle-bold-duotone');
+    text.innerText = msg;
+    el.style.display = 'flex';
+    setTimeout(() => { el.style.display = 'none'; }, 5000);
+}
+</script>
+{% endblock %}

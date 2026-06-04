@@ -1,0 +1,144 @@
+{% extends 'backend/base.html' %}
+{% load static %}
+{% block title %}Edit Achievement | Admin{% endblock %}
+
+{% block custom_css %}
+<style>
+    .btn-modern { background:linear-gradient(135deg,#3b82f6,#2563eb); color:#fff; border:none; padding:.6rem 1.5rem; border-radius:2rem; font-weight:600; box-shadow:0 4px 15px rgba(59,130,246,.3); transition:all .3s; display:inline-flex; align-items:center; gap:.5rem; }
+    .btn-modern:hover { transform:translateY(-2px); color:#fff; }
+    .form-container { background:#fff; padding:2.5rem; border-radius:1rem; box-shadow:0 4px 20px rgba(0,0,0,.03); border:1px solid #e2e8f0; }
+    .field-error { color:#dc2626; font-size:.82rem; margin-top:4px; display:none; }
+    .msg-success { background:rgba(16,185,129,.1); color:#059669; border:1px solid rgba(16,185,129,.2); }
+    .msg-error   { background:rgba(239,68,68,.1);  color:#dc2626; border:1px solid rgba(239,68,68,.2); }
+    .preview-card { background:linear-gradient(135deg,#1e3a5f,#2563eb); color:#fff; border-radius:1rem; padding:1.75rem; text-align:center; }
+    .preview-count { font-size:2.5rem; font-weight:800; line-height:1; }
+    .preview-label { font-size:.9rem; opacity:.75; margin-top:.4rem; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="mb-0">Edit Achievement</h2>
+        <p class="text-muted mb-0 mt-1" style="font-size:.9rem;">{{ achievement.label }}</p>
+    </div>
+    <a href="{% url 'list_home_achievements' %}" class="btn btn-light rounded-pill px-4 border">
+        <iconify-icon icon="solar:list-bold-duotone" class="me-1"></iconify-icon> Back to List
+    </a>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-8">
+        <div class="form-container">
+            <form id="achForm">
+                {% csrf_token %}
+
+                <div class="row g-4 mb-4">
+                    <div class="col-md-5">
+                        <label class="form-label fw-semibold">Count <span class="text-danger">*</span></label>
+                        <input type="number" name="count" id="countInput" class="form-control" value="{{ achievement.count }}" min="0">
+                        <div class="field-error" id="err_count"></div>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label fw-semibold">Suffix</label>
+                        <input type="text" name="suffix" id="suffixInput" class="form-control" value="{{ achievement.suffix }}">
+                        <small class="text-muted">After the number</small>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-semibold">Display Order</label>
+                        <input type="number" name="order" class="form-control" value="{{ achievement.order }}" min="0">
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label fw-semibold">Label <span class="text-danger">*</span></label>
+                    <input type="text" name="label" id="labelInput" class="form-control" value="{{ achievement.label }}">
+                    <div class="field-error" id="err_label"></div>
+                </div>
+
+                <div class="mb-4 p-3 bg-light rounded-3 border">
+                    <div class="form-check form-switch d-flex align-items-center gap-3">
+                        <input class="form-check-input mt-0" type="checkbox" id="isActive" {% if achievement.is_active %}checked{% endif %}>
+                        <label class="form-check-label fw-semibold mb-0" for="isActive">Active (visible on home page)</label>
+                    </div>
+                    <input type="hidden" name="is_active" id="isActiveHidden" value="{{ achievement.is_active|yesno:'true,false' }}">
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center mt-4 pt-3 border-top">
+                    <div id="statusMessage" style="display:none;" class="d-flex align-items-center gap-2 py-2 px-3 rounded-3">
+                        <iconify-icon id="statusIcon" icon=""></iconify-icon>
+                        <span id="statusText"></span>
+                    </div>
+                    <button type="submit" class="btn-modern ms-auto" id="submitBtn">
+                        <iconify-icon icon="solar:disk-bold-duotone" style="font-size:1.2rem;"></iconify-icon> Save Changes
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="preview-card">
+            <div class="preview-count" id="previewCount">{{ achievement.count }}<span id="previewSuffix">{{ achievement.suffix }}</span></div>
+            <div class="preview-label" id="previewLabel">{{ achievement.label }}</div>
+        </div>
+        <p class="text-muted text-center mt-2" style="font-size:.8rem;">Live preview</p>
+    </div>
+</div>
+{% endblock %}
+
+{% block custom_js %}
+<script>
+document.getElementById('countInput').addEventListener('input', function() {
+    document.getElementById('previewCount').firstChild.textContent = this.value || '0';
+});
+document.getElementById('suffixInput').addEventListener('input', function() {
+    document.getElementById('previewSuffix').textContent = this.value;
+});
+document.getElementById('labelInput').addEventListener('input', function() {
+    document.getElementById('previewLabel').textContent = this.value || '';
+});
+document.getElementById('isActive').addEventListener('change', function() {
+    document.getElementById('isActiveHidden').value = this.checked ? 'true' : 'false';
+});
+
+document.getElementById('achForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    clearErrors();
+    const btn  = document.getElementById('submitBtn');
+    const orig = btn.innerHTML;
+    btn.innerHTML = '<iconify-icon icon="line-md:loading-twotone-loop"></iconify-icon> Saving…';
+    btn.disabled  = true;
+
+    fetch("{% url 'edit_home_achievement' achievement.id %}", {
+        method: 'POST',
+        body: new FormData(this),
+        headers: {'X-Requested-With': 'XMLHttpRequest'}
+    })
+    .then(r => r.json())
+    .then(data => {
+        showStatus(data.message, data.success ? 'success' : 'error');
+        if (!data.success && data.errors) {
+            Object.entries(data.errors).forEach(([f, msgs]) => {
+                const el = document.getElementById('err_' + f);
+                if (el) { el.textContent = msgs[0]; el.style.display = 'block'; }
+            });
+        }
+    })
+    .catch(() => showStatus('A server error occurred.', 'error'))
+    .finally(() => { btn.innerHTML = orig; btn.disabled = false; });
+});
+
+function clearErrors() {
+    document.querySelectorAll('.field-error').forEach(el => { el.style.display = 'none'; el.textContent = ''; });
+}
+function showStatus(msg, type) {
+    const el = document.getElementById('statusMessage');
+    document.getElementById('statusIcon').setAttribute('icon', type === 'success' ? 'solar:check-circle-bold-duotone' : 'solar:danger-triangle-bold-duotone');
+    document.getElementById('statusText').innerText = msg;
+    el.className = `d-flex align-items-center gap-2 py-2 px-3 rounded-3 ${type === 'success' ? 'msg-success' : 'msg-error'}`;
+    el.style.display = 'flex';
+    setTimeout(() => { el.style.display = 'none'; }, 5000);
+}
+</script>
+{% endblock %}

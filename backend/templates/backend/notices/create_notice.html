@@ -1,0 +1,208 @@
+{% extends 'backend/base.html' %}
+{% load static %}
+
+{% block title %}Create Notice | Admin{% endblock %}
+
+{% block custom_css %}
+<link href="https://cdn.quilljs.com/1.3.7/quill.snow.css" rel="stylesheet">
+
+<style>
+    .btn-modern {
+        background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: white;
+        border: none; padding: 0.6rem 1.5rem; border-radius: 2rem;
+        font-weight: 600; letter-spacing: 0.5px; box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+        transition: all 0.3s ease; display: inline-flex; align-items: center; gap: 0.5rem;
+    }
+    .btn-modern:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4); color: white; }
+    
+    .form-container {
+        background: #ffffff; padding: 2.5rem; border-radius: 1rem;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.03); border: 1px solid #e2e8f0;
+    }
+
+    #statusMessage {
+        display: none; padding: 1rem 1.25rem; border-radius: 0.75rem;
+        font-weight: 500; margin-bottom: 1.5rem; font-size: 0.95rem;
+        align-items: center; gap: 0.5rem;
+    }
+    .msg-success { background-color: rgba(16, 185, 129, 0.1); color: #059669; border: 1px solid rgba(16, 185, 129, 0.2); }
+    .msg-error { background-color: rgba(239, 68, 68, 0.1); color: #dc2626; border: 1px solid rgba(239, 68, 68, 0.2); }
+
+    .ql-toolbar.ql-snow { border-radius: 0.5rem 0.5rem 0 0; background-color: #f8fafc; font-family: inherit; }
+    .ql-container.ql-snow { border-radius: 0 0 0.5rem 0.5rem; min-height: 400px; font-size: 1rem; font-family: inherit; }
+    .ql-editor { min-height: 400px; }
+    .ql-editor:focus { box-shadow: 0 0 0 0.25rem rgba(59, 130, 246, 0.25); border-radius: 0 0 0.5rem 0.5rem; outline: none; }
+    
+    /* Custom Toggle Switch styling */
+    .form-switch .form-check-input { height: 1.5rem; width: 3rem; cursor: pointer; }
+    .form-switch .form-check-input:checked { background-color: #3b82f6; border-color: #3b82f6; }
+</style>
+{% endblock custom_css %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="mb-0">Create New Notice</h2>
+    <a href="#" class="btn btn-light rounded-pill px-4 border">
+        <iconify-icon icon="solar:hamburger-menu-bold-duotone" class="me-1"></iconify-icon> Back to List
+    </a>
+</div>
+
+<div class="form-container">
+    <form id="noticeForm" enctype="multipart/form-data">
+        {% csrf_token %}
+        
+        <div class="mb-4">
+            <label class="form-label fw-semibold">Notice Title <span class="text-danger">*</span></label>
+            <input type="text" name="title" class="form-control" placeholder="Enter notice title" required>
+        </div>
+
+        <div class="row g-4 mb-4">
+            <div class="col-md-6">
+                <label class="form-label fw-semibold">Publish Date <span class="text-danger">*</span></label>
+                <input type="date" name="publish_date" class="form-control" required>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label fw-semibold">Expiry Date</label>
+                <input type="date" name="expiry_date" class="form-control">
+                <small class="text-muted">Optional. When should this notice expire?</small>
+            </div>
+        </div>
+
+        <div class="mb-4">
+            <label class="form-label fw-semibold">Content</label>
+            <input type="hidden" name="content" id="hiddenContent">
+            <div id="quillEditor"></div>
+        </div>
+
+        <div class="mb-4">
+            <label class="form-label fw-semibold">Attachment / File</label>
+            <input type="file" name="attachment" class="form-control">
+            <small class="text-muted">Optional file download (PDF, Doc, Image).</small>
+        </div>
+
+        <div class="row g-4 mb-4 p-3 bg-light rounded-3 border">
+            <div class="col-md-6">
+                <div class="form-check form-switch d-flex align-items-center gap-3">
+                    <input class="form-check-input mt-0" type="checkbox" name="is_published" id="isPublished" checked>
+                    <label class="form-check-label fw-semibold mb-0" for="isPublished">Publish Immediately</label>
+                </div>
+                <small class="text-muted ms-5">If unchecked, it will be saved as a draft.</small>
+            </div>
+            <div class="col-md-6">
+                <div class="form-check form-switch d-flex align-items-center gap-3">
+                    <input class="form-check-input mt-0" type="checkbox" name="is_pinned" id="isPinned">
+                    <label class="form-check-label fw-semibold mb-0" for="isPinned">Pin to Top</label>
+                </div>
+                <small class="text-muted ms-5">Keep this notice at the top of the list.</small>
+            </div>
+        </div>
+
+        <div id="statusMessage">
+            <iconify-icon id="statusIcon" icon="" style="font-size: 1.5rem;"></iconify-icon>
+            <span id="statusText"></span>
+        </div>
+
+        <div class="text-end mt-4 pt-3 border-top">
+            <button type="submit" class="btn-modern" id="submitBtn">
+                <iconify-icon icon="solar:disk-bold-duotone" style="font-size: 1.2rem;"></iconify-icon> Save Notice
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock content %}
+
+{% block custom_js %}
+<script src="https://cdn.quilljs.com/1.3.7/quill.min.js"></script>
+
+<script>
+    // Initialize Full-Fledged Quill Editor
+    var toolbarOptions = [
+        ['bold', 'italic', 'underline', 'strike'],        
+        ['blockquote', 'code-block'],
+        [{ 'header': 1 }, { 'header': 2 }],               
+        [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+        [{ 'script': 'sub'}, { 'script': 'super' }],      
+        [{ 'indent': '-1'}, { 'indent': '+1' }],          
+        [{ 'direction': 'rtl' }],                         
+        [{ 'size': ['small', false, 'large', 'huge'] }],  
+        [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
+        [{ 'color': [] }, { 'background': [] }],          
+        [{ 'font': [] }],
+        [{ 'align': [] }],
+        ['link', 'image', 'video'],
+        ['clean']                                         
+    ];
+
+    var quill = new Quill('#quillEditor', {
+        modules: {
+            toolbar: toolbarOptions
+        },
+        theme: 'snow',
+        placeholder: 'Write the notice content here...'
+    });
+
+    document.getElementById('noticeForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        // Sync Quill content
+        const hiddenContent = document.getElementById('hiddenContent');
+        const editorHTML = quill.root.innerHTML;
+        // Don't send empty quill tags if the user didn't write anything
+        hiddenContent.value = (editorHTML === '<p><br></p>') ? '' : editorHTML;
+
+        const form = e.target;
+        const formData = new FormData(form);
+        const btn = document.getElementById('submitBtn');
+        const originalText = btn.innerHTML;
+        
+        btn.innerHTML = '<iconify-icon icon="line-md:loading-twotone-loop" class="me-1"></iconify-icon> Saving...';
+        btn.disabled = true;
+
+        fetch("{% url 'create_notice' %}", {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                showStatus(data.message, 'success');
+                form.reset();
+                quill.root.innerHTML = '';
+            } else {
+                let errMsg = data.message + " ";
+                if(data.errors) {
+                    for(const [field, errors] of Object.entries(data.errors)) {
+                        errMsg += errors.join(" ");
+                    }
+                }
+                showStatus(errMsg, 'error');
+            }
+        })
+        .catch(err => {
+            showStatus('A server error occurred. Please try again.', 'error');
+        })
+        .finally(() => {
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+        });
+    });
+
+    function showStatus(msg, type) {
+        const el = document.getElementById('statusMessage');
+        const icon = document.getElementById('statusIcon');
+        const text = document.getElementById('statusText');
+        
+        el.className = type === 'success' ? 'msg-success d-flex' : 'msg-error d-flex';
+        icon.setAttribute('icon', type === 'success' ? 'solar:check-circle-bold-duotone' : 'solar:danger-triangle-bold-duotone');
+        text.innerText = msg; 
+        
+        el.style.display = 'flex';
+        window.scrollTo({top: 0, behavior: 'smooth'});
+        
+        setTimeout(() => { el.style.display = 'none'; }, 5000);
+    }
+</script>
+{% endblock custom_js %}

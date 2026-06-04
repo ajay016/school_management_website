@@ -1,0 +1,485 @@
+{% extends "school/base.html" %}
+{% load static %}
+
+{% block custom_css %}
+<link rel="stylesheet" href="{% static 'school/assets/css/notice.css' %}">
+{% endblock %}
+
+{% block content %}
+
+{# ── PAGE HERO / BREADCRUMB BANNER ── #}
+<section class="page-hero">
+    <div class="container">
+        <div class="page-hero-inner">
+            <span class="page-hero-label">
+                <i class="fa-solid fa-bullhorn me-1"></i> Information
+            </span>
+            <h1 class="page-hero-title">Notice <em>Board</em></h1>
+            <nav class="page-breadcrumb" aria-label="breadcrumb">
+                <a href="/">Home</a>
+                <span class="bc-sep"><i class="fa-solid fa-chevron-right"></i></span>
+                <span class="bc-current">Notices</span>
+            </nav>
+        </div>
+    </div>
+</section>
+
+{# ── NOTICE SECTION ── #}
+<section class="notice-section">
+    <div class="container">
+
+        <div class="notice-layout">
+
+            {# ══════════════════════════════════════════════════════════ #}
+            {# MAIN COLUMN                                               #}
+            {# ══════════════════════════════════════════════════════════ #}
+            <div class="notice-main-col">
+
+                {# ── FILTER & SEARCH BAR ── #}
+                <div class="notice-filter-bar">
+                    <div class="notice-search-wrap">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                        <input
+                            type="search"
+                            class="notice-search-input"
+                            id="noticeSearchInput"
+                            placeholder="Search notices…"
+                            aria-label="Search notices"
+                        >
+                    </div>
+                    <div class="notice-filter-pills" id="noticeFilterPills">
+                        <button class="notice-filter-pill active" data-audience="all">
+                            <i class="fa-solid fa-users"></i> All
+                        </button>
+                        <button class="notice-filter-pill" data-audience="students">
+                            <i class="fa-solid fa-user-graduate"></i> Students
+                        </button>
+                        <button class="notice-filter-pill" data-audience="faculty">
+                            <i class="fa-solid fa-chalkboard-user"></i> Faculty
+                        </button>
+                        <button class="notice-filter-pill" data-audience="parents">
+                            <i class="fa-solid fa-people-roof"></i> Parents
+                        </button>
+                    </div>
+                </div>
+
+                {# ── PINNED NOTICES (only shown if any exist) ── #}
+                {% if pinned_notices %}
+                <div class="pinned-notices-section" id="pinnedSection">
+                    <div class="pinned-section-label">
+                        <i class="fa-solid fa-thumbtack"></i> Pinned Notices
+                    </div>
+
+                    {% for notice in pinned_notices %}
+                    <div class="pinned-notice-item"
+                         data-audience="{{ notice.target_audience }}"
+                         data-title="{{ notice.title }}"
+                         data-date="{{ notice.publish_date|date:'d M Y' }}"
+                         data-content="{{ notice.content|default:''|striptags }}"
+                         data-attachment="{% if notice.attachment %}{{ notice.attachment.url }}{% endif %}"
+                         data-expiry="{{ notice.expiry_date|date:'d F Y'|default:'' }}">
+                        <div class="pinned-pin-icon">
+                            <i class="fa-solid fa-thumbtack"></i>
+                        </div>
+                        <div>
+                            <div class="pinned-notice-title">{{ notice.title }}</div>
+                            <div class="pinned-notice-meta">
+                                <span><i class="fa-regular fa-calendar"></i> {{ notice.publish_date|date:"d M Y" }}</span>
+                                <span>
+                                    {% if notice.target_audience == 'students' %}
+                                        <i class="fa-solid fa-user-graduate"></i> Students
+                                    {% elif notice.target_audience == 'faculty' %}
+                                        <i class="fa-solid fa-chalkboard-user"></i> Faculty &amp; Staff
+                                    {% elif notice.target_audience == 'parents' %}
+                                        <i class="fa-solid fa-people-roof"></i> Parents
+                                    {% else %}
+                                        <i class="fa-solid fa-users"></i> Everyone
+                                    {% endif %}
+                                </span>
+                                {% if notice.attachment %}
+                                <span><i class="fa-solid fa-paperclip"></i> Attachment</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+
+                </div>{# /pinned-notices-section #}
+                {% endif %}
+
+                {# ── NOTICE LIST ── #}
+                <div class="notice-list-label">
+                    <h6>
+                        <i class="fa-solid fa-list-ul"></i> All Notices
+                    </h6>
+                    <span class="notice-result-count" id="noticeCount">Showing {{ all_notices|length }} notice{{ all_notices|length|pluralize }}</span>
+                </div>
+
+                <div class="notice-list" id="noticeList">
+
+                    {% for notice in regular_notices %}
+                    <div class="notice-row nr-visible"
+                         data-audience="{{ notice.target_audience }}"
+                         data-title="{{ notice.title }}"
+                         data-day="{{ notice.publish_date|date:'d' }}"
+                         data-month="{{ notice.publish_date|date:'M' }}"
+                         data-year="{{ notice.publish_date|date:'Y' }}"
+                         data-date="{{ notice.publish_date|date:'d F Y' }}"
+                         data-content="{{ notice.content|default:''|striptags }}"
+                         data-attachment="{% if notice.attachment %}{{ notice.attachment.url }}{% endif %}"
+                         data-expiry="{{ notice.expiry_date|date:'d F Y'|default:'' }}">
+
+                        <div class="notice-row-strip"></div>
+
+                        <div class="notice-row-date">
+                            <span class="nr-day">{{ notice.publish_date|date:"d" }}</span>
+                            <span class="nr-month">{{ notice.publish_date|date:"M" }}</span>
+                            <span class="nr-year">{{ notice.publish_date|date:"Y" }}</span>
+                        </div>
+
+                        <div class="notice-row-content">
+                            <div class="notice-row-badges">
+                                {% if notice.target_audience == 'students' %}
+                                <span class="notice-audience-badge badge--students">
+                                    <i class="fa-solid fa-user-graduate"></i> Students
+                                </span>
+                                {% elif notice.target_audience == 'faculty' %}
+                                <span class="notice-audience-badge badge--faculty">
+                                    <i class="fa-solid fa-chalkboard-user"></i> Faculty &amp; Staff
+                                </span>
+                                {% elif notice.target_audience == 'parents' %}
+                                <span class="notice-audience-badge badge--parents">
+                                    <i class="fa-solid fa-people-roof"></i> Parents
+                                </span>
+                                {% else %}
+                                <span class="notice-audience-badge badge--all">
+                                    <i class="fa-solid fa-users"></i> Everyone
+                                </span>
+                                {% endif %}
+
+                                {% if notice.publish_date >= seven_days_ago %}
+                                <span class="notice-new-badge">
+                                    <i class="fa-solid fa-bolt"></i> New
+                                </span>
+                                {% endif %}
+                            </div>
+                            <div class="notice-row-title">{{ notice.title }}</div>
+                            {% if notice.content %}
+                            <div class="notice-row-preview">{{ notice.content|striptags|truncatewords:20 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="notice-row-actions">
+                            {% if notice.attachment %}
+                            <a href="{{ notice.attachment.url }}" class="notice-attach-btn"
+                               title="Download attachment" aria-label="Download attachment" target="_blank"
+                               onclick="event.stopPropagation()">
+                                <i class="fa-solid fa-paperclip"></i>
+                            </a>
+                            {% endif %}
+                            <i class="fa-solid fa-chevron-right notice-row-arrow"></i>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="notice-empty" style="display:block;">
+                        <i class="fa-regular fa-bell-slash"></i>
+                        <h4>No Notices Yet</h4>
+                        <p>There are no published notices at the moment. Check back soon.</p>
+                    </div>
+                    {% endfor %}
+
+                </div>{# /notice-list #}
+
+                {# ── EMPTY STATE (shown by JS when search/filter returns nothing) ── #}
+                <div class="notice-empty d-none" id="noticeEmpty">
+                    <i class="fa-regular fa-bell-slash"></i>
+                    <h4>No Notices Found</h4>
+                    <p>There are no notices matching your current filter or search.</p>
+                </div>
+
+                {# No pagination needed — all results shown; JS handles filtering #}
+
+            </div>{# /notice-main-col #}
+
+            {# ══════════════════════════════════════════════════════════ #}
+            {# SIDEBAR                                                   #}
+            {# ══════════════════════════════════════════════════════════ #}
+            <aside class="notice-sidebar" aria-label="Notice sidebar">
+
+                {# ── RECENT NOTICES WIDGET ── #}
+                <div class="notice-sidebar-card">
+                    <div class="notice-sidebar-header">
+                        <i class="fa-solid fa-clock-rotate-left"></i>
+                        <h6>Recent Notices</h6>
+                    </div>
+                    <div class="notice-sidebar-body">
+                        <div class="notice-sidebar-list">
+                            {% for notice in all_notices|slice:":5" %}
+                            <div class="notice-sidebar-item">
+                                <div class="sidebar-item-date">
+                                    <span class="sid-day">{{ notice.publish_date|date:"d" }}</span>
+                                    <span class="sid-month">{{ notice.publish_date|date:"M" }}</span>
+                                </div>
+                                <div class="sidebar-item-title">{{ notice.title }}</div>
+                            </div>
+                            {% empty %}
+                            <p class="text-muted" style="font-size:.85rem; padding:.5rem 0;">No notices yet.</p>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+
+                {# ── FILTER BY AUDIENCE WIDGET ── #}
+                <div class="notice-sidebar-card">
+                    <div class="notice-sidebar-header">
+                        <i class="fa-solid fa-filter"></i>
+                        <h6>Filter by Audience</h6>
+                    </div>
+                    <div class="notice-sidebar-body">
+                        <div class="audience-filter-list">
+
+                            <button class="audience-filter-btn active" data-audience="all">
+                                <i class="fa-solid fa-users"></i>
+                                Everyone
+                                <span class="af-count">{{ audience_counts.all }}</span>
+                            </button>
+                            <button class="audience-filter-btn" data-audience="students">
+                                <i class="fa-solid fa-user-graduate"></i>
+                                Students
+                                <span class="af-count">{{ audience_counts.students }}</span>
+                            </button>
+                            <button class="audience-filter-btn" data-audience="faculty">
+                                <i class="fa-solid fa-chalkboard-user"></i>
+                                Faculty &amp; Staff
+                                <span class="af-count">{{ audience_counts.faculty }}</span>
+                            </button>
+                            <button class="audience-filter-btn" data-audience="parents">
+                                <i class="fa-solid fa-people-roof"></i>
+                                Parents
+                                <span class="af-count">{{ audience_counts.parents }}</span>
+                            </button>
+
+                        </div>
+                    </div>
+                </div>
+
+            </aside>{# /notice-sidebar #}
+
+        </div>{# /notice-layout #}
+    </div>{# /container #}
+</section>
+
+{# ================================================================ #}
+{# NOTICE DETAIL MODAL                                              #}
+{# ================================================================ #}
+<div class="notice-modal-overlay" id="noticeModalOverlay" role="dialog" aria-modal="true" aria-labelledby="noticeModalTitle">
+
+    <div class="notice-modal" id="noticeModal">
+
+        {# ── Modal Header ── #}
+        <div class="notice-modal-header">
+
+            <button class="notice-modal-close" id="noticeModalClose" aria-label="Close notice">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+
+            <div class="notice-modal-header-badges" id="noticeModalBadges"></div>
+            <h2 class="notice-modal-title" id="noticeModalTitle"></h2>
+        </div>
+
+        {# ── Meta bar ── #}
+        <div class="notice-modal-meta-bar">
+            <div class="nm-meta-item">
+                <i class="fa-regular fa-calendar"></i>
+                <span>Published: <strong id="nmDate"></strong></span>
+            </div>
+            <div class="nm-meta-item" id="nmExpiryWrap" style="display:none;">
+                <i class="fa-solid fa-clock-rotate-left"></i>
+                <span>Expires: <strong id="nmExpiry"></strong></span>
+            </div>
+        </div>
+
+        {# ── Body ── #}
+        <div class="notice-modal-body">
+            <div class="notice-modal-content" id="noticeModalContent"></div>
+
+            {# Attachment download button — shown by JS if attachment exists #}
+            <a href="#" class="notice-modal-attachment d-none" id="noticeModalAttachment"
+               target="_blank" rel="noopener">
+                <i class="fa-solid fa-file-arrow-down"></i>
+                Download Attachment
+            </a>
+        </div>
+
+    </div>{# /notice-modal #}
+</div>{# /notice-modal-overlay #}
+
+{% endblock %}
+
+
+{% block custom_js %}
+<script>
+(function () {
+    'use strict';
+
+    /* ══════════════════════════════════════════════════
+       HELPERS
+    ══════════════════════════════════════════════════ */
+
+    const audienceMeta = {
+        all:      { cls: 'badge--all',      icon: 'fa-users',            label: 'Everyone' },
+        students: { cls: 'badge--students', icon: 'fa-user-graduate',    label: 'Students' },
+        faculty:  { cls: 'badge--faculty',  icon: 'fa-chalkboard-user',  label: 'Faculty & Staff' },
+        parents:  { cls: 'badge--parents',  icon: 'fa-people-roof',      label: 'Parents' },
+    };
+
+    function badgeHTML(audience) {
+        const m = audienceMeta[audience] || audienceMeta.all;
+        return `<span class="notice-audience-badge ${m.cls}">
+                    <i class="fa-solid ${m.icon}"></i> ${m.label}
+                </span>`;
+    }
+
+    /* ══════════════════════════════════════════════════
+       MODAL
+    ══════════════════════════════════════════════════ */
+
+    const overlay       = document.getElementById('noticeModalOverlay');
+    const closeBtn      = document.getElementById('noticeModalClose');
+    const modalTitle    = document.getElementById('noticeModalTitle');
+    const modalBadges   = document.getElementById('noticeModalBadges');
+    const nmDate        = document.getElementById('nmDate');
+    const nmExpiryWrap  = document.getElementById('nmExpiryWrap');
+    const nmExpiry      = document.getElementById('nmExpiry');
+    const modalContent  = document.getElementById('noticeModalContent');
+    const modalAttach   = document.getElementById('noticeModalAttachment');
+
+    function openModal(data) {
+        modalTitle.textContent   = data.title   || '';
+        modalBadges.innerHTML    = badgeHTML(data.audience || 'all');
+        nmDate.textContent       = data.date    || '—';
+
+        if (data.expiry) {
+            nmExpiryWrap.style.display = '';
+            nmExpiry.textContent = data.expiry;
+        } else {
+            nmExpiryWrap.style.display = 'none';
+        }
+
+        modalContent.innerHTML = (data.content || 'No content available.')
+            .split('\n')
+            .map(p => p.trim() ? `<p>${p}</p>` : '')
+            .join('');
+
+        if (data.attachment) {
+            modalAttach.href = data.attachment;
+            modalAttach.classList.remove('d-none');
+        } else {
+            modalAttach.classList.add('d-none');
+        }
+
+        overlay.classList.add('open');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeModal() {
+        overlay.classList.remove('open');
+        document.body.style.overflow = '';
+    }
+
+    closeBtn.addEventListener('click', closeModal);
+    overlay.addEventListener('click', e => { if (e.target === overlay) closeModal(); });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+    /* ── Attach click to notice rows ── */
+    function bindRows() {
+        document.querySelectorAll('.notice-row, .pinned-notice-item').forEach(row => {
+            row.addEventListener('click', function () {
+                openModal({
+                    title:      this.dataset.title,
+                    audience:   this.dataset.audience,
+                    date:       this.dataset.date,
+                    expiry:     this.dataset.expiry || '',
+                    content:    this.dataset.content,
+                    attachment: this.dataset.attachment,
+                });
+            });
+        });
+    }
+    bindRows();
+
+    /* ══════════════════════════════════════════════════
+       FILTER (audience pills + sidebar buttons)
+    ══════════════════════════════════════════════════ */
+
+    let currentAudience = 'all';
+    let currentSearch   = '';
+
+    function applyFilter() {
+        const rows = document.querySelectorAll('.notice-row');
+        let visible = 0;
+
+        rows.forEach(row => {
+            const aud   = row.dataset.audience || 'all';
+            const title = (row.dataset.title || '').toLowerCase();
+            const prev  = (row.dataset.content || '').toLowerCase();
+
+            const audOk    = currentAudience === 'all' || aud === currentAudience;
+            const searchOk = !currentSearch || title.includes(currentSearch) || prev.includes(currentSearch);
+
+            const show = audOk && searchOk;
+            row.style.display = show ? '' : 'none';
+            if (show) visible++;
+        });
+
+        document.getElementById('noticeCount').textContent =
+            'Showing ' + visible + ' notice' + (visible !== 1 ? 's' : '');
+        document.getElementById('noticeEmpty').classList.toggle('d-none', visible > 0);
+    }
+
+    /* Top bar pills */
+    document.getElementById('noticeFilterPills').addEventListener('click', function (e) {
+        const btn = e.target.closest('.notice-filter-pill');
+        if (!btn) return;
+        document.querySelectorAll('.notice-filter-pill').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.audience-filter-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentAudience = btn.dataset.audience;
+        const sidebarMatch = document.querySelector(`.audience-filter-btn[data-audience="${currentAudience}"]`);
+        if (sidebarMatch) sidebarMatch.classList.add('active');
+        applyFilter();
+    });
+
+    /* Sidebar audience buttons */
+    document.querySelectorAll('.audience-filter-btn').forEach(btn => {
+        btn.addEventListener('click', function () {
+            document.querySelectorAll('.audience-filter-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.notice-filter-pill').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            currentAudience = this.dataset.audience;
+            const pillMatch = document.querySelector(`.notice-filter-pill[data-audience="${currentAudience}"]`);
+            if (pillMatch) pillMatch.classList.add('active');
+            applyFilter();
+        });
+    });
+
+    /* Search */
+    document.getElementById('noticeSearchInput').addEventListener('input', function () {
+        currentSearch = this.value.trim().toLowerCase();
+        applyFilter();
+    });
+
+    /* ══════════════════════════════════════════════════
+       ANIMATE ROWS IN ON LOAD
+    ══════════════════════════════════════════════════ */
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(e => {
+            if (e.isIntersecting) e.target.classList.add('nr-visible');
+        });
+    }, { threshold: 0.1 });
+
+    document.querySelectorAll('.notice-row').forEach(r => observer.observe(r));
+
+})();
+</script>
+{% endblock %}

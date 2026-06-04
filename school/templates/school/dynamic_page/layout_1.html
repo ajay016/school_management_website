@@ -1,0 +1,75 @@
+{% extends "school/base.html" %}
+{% load static %}
+
+{% block title %}{{ submenu.name }} — Peace International School{% endblock %}
+
+{% block content %}
+
+{# ── PAGE HERO ── #}
+<section class="page-hero">
+    <div class="container">
+        <div class="page-hero-inner">
+            <span class="page-hero-label">
+                <i class="fa-solid fa-file-lines me-1"></i> {{ submenu.menu.name }}
+            </span>
+            <h1 class="page-hero-title">{{ submenu.name }}</h1>
+            <nav class="page-breadcrumb" aria-label="breadcrumb">
+                <a href="/">Home</a>
+                <span class="bc-sep"><i class="fa-solid fa-chevron-right"></i></span>
+                <span>{{ submenu.menu.name }}</span>
+                <span class="bc-sep"><i class="fa-solid fa-chevron-right"></i></span>
+                <span class="bc-current">{{ submenu.name }}</span>
+            </nav>
+        </div>
+    </div>
+</section>
+
+<section class="py-5">
+    <div class="container">
+        {% for section in sections %}
+        <div class="mb-5 {% if not forloop.last %}pb-5 border-bottom{% endif %}"
+             data-aos="fade-up" style="overflow:hidden;">
+
+            {# Float the image so text wraps around it #}
+            {% if section.image %}
+                {% if section.image_align == 'right' %}
+                <div class="float-end ms-4 mb-3" style="width:40%; max-width:420px;">
+                {% else %}
+                <div class="float-start me-4 mb-3" style="width:40%; max-width:420px;">
+                {% endif %}
+                    <img src="{{ section.image.url }}"
+                         alt="{{ section.heading|default:submenu.name }}"
+                         class="img-fluid w-100 rounded-4 shadow-sm"
+                         style="display:block; object-fit:cover;">
+                    {% if section.person_name %}
+                    <div class="mt-2 ps-1">
+                        <strong class="d-block" style="font-size:.95rem;">{{ section.person_name }}</strong>
+                        {% if section.designation %}
+                        <span class="text-muted" style="font-size:.85rem;">{{ section.designation }}</span>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                </div>
+            {% endif %}
+
+            {# Heading + body — flows naturally around the floated image #}
+            {% if section.heading %}
+            <h2 class="fw-bold mb-3" style="color:var(--clr-secondary-dark);">{{ section.heading }}</h2>
+            {% endif %}
+            <div class="lh-lg" style="font-size:1.05rem; color:#374151;">
+                {{ section.body|safe }}
+            </div>
+
+            {# Clear float so the next section starts fresh #}
+            <div style="clear:both;"></div>
+        </div>
+        {% empty %}
+        <div class="text-center py-5 text-muted">
+            <i class="fas fa-file-circle-exclamation fa-3x mb-3"></i>
+            <p>No content has been added to this page yet.</p>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+
+{% endblock %}

@@ -1,0 +1,117 @@
+{% extends "school/base.html" %}
+{% load static %}
+
+{% block custom_css %}
+<link rel="stylesheet" href="{% static 'school/assets/css/page_details.css' %}">
+{% endblock %}
+
+{% block content %}
+
+{# ── PAGE HERO / BREADCRUMB BANNER ── #}
+<section class="page-hero">
+    <div class="container">
+        <div class="page-hero-inner">
+            <span class="page-hero-label">
+                <i class="fa-solid fa-flask me-1"></i> Facilities
+            </span>
+            <h1 class="page-hero-title">Science <em>Labs</em></h1>
+            <nav class="page-breadcrumb" aria-label="breadcrumb">
+                <a href="/">Home</a>
+                <span class="bc-sep"><i class="fa-solid fa-chevron-right"></i></span>
+                <a href="#">Facilities</a>
+                <span class="bc-sep"><i class="fa-solid fa-chevron-right"></i></span>
+                <span class="bc-current">Science Labs</span>
+            </nav>
+        </div>
+    </div>
+</section>
+
+{# ── DETAIL SECTION ── #}
+<section class="detail-section">
+    <div class="container">
+        <div class="detail-grid detail-grid--full">
+
+            {# ── IMAGE COLUMN ── #}
+            <div class="detail-image-col">
+                <div class="detail-image-wrap">
+                    <img
+                        src="https://images.unsplash.com/photo-1532094349884-543bc11b234d?w=800&q=80"
+                        alt="Science Labs at Peace International School"
+                        loading="lazy"
+                    >
+                </div>
+                <p class="detail-image-caption">
+                    <i class="fa-solid fa-camera me-1"></i>
+                    Students conducting practical experiments in our modern science laboratories
+                </p>
+            </div>
+
+            {# ── CONTENT COLUMN ── #}
+            <div class="detail-content-col">
+
+                <div class="detail-meta-row">
+                    <span class="detail-meta-tag">
+                        <i class="fa-solid fa-microscope"></i> Laboratories
+                    </span>
+                    <span class="detail-meta-tag tag--navy">
+                        <i class="fa-regular fa-calendar"></i> Updated Jan 2025
+                    </span>
+                </div>
+
+                <h1 class="detail-content-title">Modern Science <em>Laboratories</em></h1>
+                <p class="detail-content-subtitle">
+                    Inspiring scientific discovery through hands-on practical learning experiences.
+                </p>
+                <div class="detail-divider"></div>
+
+                <div class="detail-body">
+                    <p>Peace International School provides well-equipped science laboratories designed to encourage curiosity, innovation, and practical understanding among students. Our labs create a safe and engaging environment where students can apply theoretical knowledge through real-world experiments.</p>
+
+                    <p>We have dedicated laboratories for Physics, Chemistry, and Biology, each equipped with modern instruments, scientific models, and essential safety facilities. Students are guided by experienced teachers and lab assistants who ensure practical sessions are both educational and secure.</p>
+
+                    <p>Our science labs are designed to support the academic curriculum while also fostering critical thinking, observation, and analytical skills. Practical activities help students better understand scientific concepts and develop confidence in experimental work.</p>
+
+                    <p>Regular laboratory sessions are integrated into classroom learning to make science more interactive and enjoyable. Students participate in experiments, research activities, demonstrations, and science projects that encourage creativity and teamwork.</p>
+
+                    <p>We also organize science fairs, exhibitions, and innovation-based competitions to motivate students to explore scientific ideas beyond textbooks and develop a lifelong interest in science and technology.</p>
+                </div>
+
+                <div class="detail-info-list">
+                    <div class="detail-info-row">
+                        <div class="detail-info-key"><i class="fa-solid fa-flask"></i> Lab Types</div>
+                        <div class="detail-info-val">Physics, Chemistry & Biology Labs</div>
+                    </div>
+                    <div class="detail-info-row">
+                        <div class="detail-info-key"><i class="fa-solid fa-shield-heart"></i> Safety</div>
+                        <div class="detail-info-val">Modern safety equipment and supervised sessions</div>
+                    </div>
+                    <div class="detail-info-row">
+                        <div class="detail-info-key"><i class="fa-solid fa-users"></i> Access</div>
+                        <div class="detail-info-val">Available for Secondary & Higher Secondary students</div>
+                    </div>
+                    <div class="detail-info-row">
+                        <div class="detail-info-key"><i class="fa-solid fa-lightbulb"></i> Activities</div>
+                        <div class="detail-info-val">Experiments, research projects & science fairs</div>
+                    </div>
+                    <div class="detail-info-row">
+                        <div class="detail-info-key"><i class="fa-solid fa-clock"></i> Sessions</div>
+                        <div class="detail-info-val">Scheduled practical classes throughout the week</div>
+                    </div>
+                </div>
+
+                <div class="detail-cta-row">
+                    <a href="/admissions/" class="btn btn-primary">
+                        <i class="fa-solid fa-paper-plane me-2"></i> Apply Now
+                    </a>
+                    <a href="/contact/" class="btn btn-outline-secondary">
+                        <i class="fa-solid fa-phone me-2"></i> Contact Us
+                    </a>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+</section>
+
+{% endblock %}

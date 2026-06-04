@@ -1,0 +1,34 @@
+<nav class="floating-navbar">
+    <div class="navbar-left d-flex align-items-center gap-2">
+        <button id="mobile-menu-btn" class="btn d-lg-none d-flex align-items-center p-1" style="color: var(--text-main); border: none; background: transparent;">
+            <iconify-icon icon="solar:hamburger-menu-linear" style="font-size: 1.75rem;"></iconify-icon>
+        </button>
+        <span class="text-muted d-none d-md-block">Admin Portal</span>
+    </div>
+
+    <div class="navbar-right d-flex align-items-center gap-3">
+        
+        {% if request.user.is_authenticated %}
+            <div class="hover-dropdown">
+                <div class="d-flex align-items-center gap-2" style="cursor: pointer;">
+                    <span class="fw-medium" style="color: var(--text-main);">{{ request.user.username }}</span>
+                    <iconify-icon icon="solar:user-circle-bold-duotone" style="font-size: 2rem; color: var(--accent);"></iconify-icon>
+                </div>
+                
+                <div class="hover-dropdown-menu">
+                    <a href="#">
+                        <iconify-icon icon="solar:user-id-bold-duotone"></iconify-icon> Profile
+                    </a>
+                    <a href="#" class="text-danger">
+                        <iconify-icon icon="solar:logout-2-bold-duotone"></iconify-icon> Logout
+                    </a>
+                </div>
+            </div>
+        {% else %}
+            <a href="#" class="btn btn-primary btn-sm px-4 rounded-pill" style="background-color: var(--accent); border: none;">
+                Login
+            </a>
+        {% endif %}
+        
+    </div>
+</nav>

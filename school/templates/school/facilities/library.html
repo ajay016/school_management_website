@@ -1,0 +1,117 @@
+{% extends "school/base.html" %}
+{% load static %}
+
+{% block custom_css %}
+<link rel="stylesheet" href="{% static 'school/assets/css/page_details.css' %}">
+{% endblock %}
+
+{% block content %}
+
+{# ── PAGE HERO / BREADCRUMB BANNER ── #}
+<section class="page-hero">
+    <div class="container">
+        <div class="page-hero-inner">
+            <span class="page-hero-label">
+                <i class="fa-solid fa-book me-1"></i> Facilities
+            </span>
+            <h1 class="page-hero-title">School <em>Library</em></h1>
+            <nav class="page-breadcrumb" aria-label="breadcrumb">
+                <a href="/">Home</a>
+                <span class="bc-sep"><i class="fa-solid fa-chevron-right"></i></span>
+                <a href="#">Facilities</a>
+                <span class="bc-sep"><i class="fa-solid fa-chevron-right"></i></span>
+                <span class="bc-current">Library</span>
+            </nav>
+        </div>
+    </div>
+</section>
+
+{# ── DETAIL SECTION ── #}
+<section class="detail-section">
+    <div class="container">
+        <div class="detail-grid detail-grid--full">
+
+            {# ── IMAGE COLUMN ── #}
+            <div class="detail-image-col">
+                <div class="detail-image-wrap">
+                    <img
+                        src="https://images.unsplash.com/photo-1521587760476-6c12a4b040da?w=800&q=80"
+                        alt="Library at Peace International School"
+                        loading="lazy"
+                    >
+                </div>
+                <p class="detail-image-caption">
+                    <i class="fa-solid fa-camera me-1"></i>
+                    Students exploring books and digital learning resources in the school library
+                </p>
+            </div>
+
+            {# ── CONTENT COLUMN ── #}
+            <div class="detail-content-col">
+
+                <div class="detail-meta-row">
+                    <span class="detail-meta-tag">
+                        <i class="fa-solid fa-book-open-reader"></i> Learning Resources
+                    </span>
+                    <span class="detail-meta-tag tag--navy">
+                        <i class="fa-regular fa-calendar"></i> Updated Jan 2025
+                    </span>
+                </div>
+
+                <h1 class="detail-content-title">A Resourceful School <em>Library</em></h1>
+                <p class="detail-content-subtitle">
+                    Encouraging reading habits, research skills, and lifelong learning.
+                </p>
+                <div class="detail-divider"></div>
+
+                <div class="detail-body">
+                    <p>The library at Peace International School serves as a vibrant learning hub where students can explore knowledge, develop reading habits, and enhance their academic growth. Our library provides a calm and welcoming environment that encourages independent learning and intellectual curiosity.</p>
+
+                    <p>We maintain a diverse collection of books including academic textbooks, reference materials, storybooks, novels, encyclopedias, magazines, and newspapers. The library is regularly updated with new titles to support both the curriculum and students’ personal interests.</p>
+
+                    <p>Students are encouraged to use the library for research, project work, and self-study. Comfortable reading spaces and guided library sessions help students improve comprehension, vocabulary, and critical thinking skills.</p>
+
+                    <p>Our library also supports digital learning by providing access to educational resources, journals, and multimedia content. Teachers often integrate library-based activities into classroom assignments to promote active learning and research skills.</p>
+
+                    <p>Through reading programmes, book fairs, storytelling sessions, and literary activities, the library plays an important role in fostering creativity, imagination, and a lifelong love for reading among students.</p>
+                </div>
+
+                <div class="detail-info-list">
+                    <div class="detail-info-row">
+                        <div class="detail-info-key"><i class="fa-solid fa-book"></i> Collection</div>
+                        <div class="detail-info-val">Academic books, fiction, references & magazines</div>
+                    </div>
+                    <div class="detail-info-row">
+                        <div class="detail-info-key"><i class="fa-solid fa-laptop"></i> Resources</div>
+                        <div class="detail-info-val">Digital learning and multimedia resources</div>
+                    </div>
+                    <div class="detail-info-row">
+                        <div class="detail-info-key"><i class="fa-solid fa-users"></i> Access</div>
+                        <div class="detail-info-val">Available for all students and teachers</div>
+                    </div>
+                    <div class="detail-info-row">
+                        <div class="detail-info-key"><i class="fa-solid fa-clock"></i> Library Hours</div>
+                        <div class="detail-info-val">Open during school hours on all working days</div>
+                    </div>
+                    <div class="detail-info-row">
+                        <div class="detail-info-key"><i class="fa-solid fa-feather-pointed"></i> Activities</div>
+                        <div class="detail-info-val">Reading programmes, storytelling & book fairs</div>
+                    </div>
+                </div>
+
+                <div class="detail-cta-row">
+                    <a href="/admissions/" class="btn btn-primary">
+                        <i class="fa-solid fa-paper-plane me-2"></i> Apply Now
+                    </a>
+                    <a href="/contact/" class="btn btn-outline-secondary">
+                        <i class="fa-solid fa-phone me-2"></i> Contact Us
+                    </a>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+</section>
+
+{% endblock %}

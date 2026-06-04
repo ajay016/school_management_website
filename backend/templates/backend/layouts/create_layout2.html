@@ -1,0 +1,442 @@
+{% extends 'backend/base.html' %}
+{% load static %}
+
+{% block title %}Create Layout 2 Gallery | Admin{% endblock %}
+
+{% block custom_css %}
+<style>
+    /* Status Message Container */
+    #statusMessage {
+        display: none;
+        padding: 1rem 1.25rem;
+        border-radius: 0.75rem;
+        font-weight: 500;
+        margin-bottom: 1.5rem;
+        font-size: 0.95rem;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.3s ease;
+    }
+
+    .msg-success {
+        background-color: rgba(16, 185, 129, 0.1);
+        color: #059669;
+        border: 1px solid rgba(16, 185, 129, 0.2);
+    }
+
+    .msg-error {
+        background-color: rgba(239, 68, 68, 0.1);
+        color: #dc2626;
+        border: 1px solid rgba(239, 68, 68, 0.2);
+    }
+
+    /* Modern Button */
+    .btn-modern {
+        background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+        color: white;
+        border: none;
+        padding: 0.75rem 2rem;
+        border-radius: 2rem;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+        box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .btn-modern:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+        color: white;
+    }
+
+    /* Form Inputs */
+    .form-control, 
+    .form-select {
+        border-radius: 0.5rem;
+        border: 1px solid rgba(15, 23, 42, 0.1);
+        padding: 0.6rem 1rem;
+    }
+
+    .form-control:focus, 
+    .form-select:focus {
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+
+    .error-text {
+        color: #dc2626;
+        font-size: 0.85rem;
+        margin-top: 0.25rem;
+        display: none;
+    }
+
+    /* Image Preview Container (Adapted for Multiple Images) */
+    .image-preview-box {
+        width: 100%;
+        min-height: 250px;
+        border: 2px dashed rgba(15, 23, 42, 0.15);
+        border-radius: 0.75rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        background: #f8fafc;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        padding: 1.5rem;
+    }
+
+    .image-preview-box:hover {
+        border-color: #3b82f6;
+        background: rgba(59, 130, 246, 0.05);
+    }
+
+    .preview-placeholder {
+        text-align: center;
+        color: #64748b;
+    }
+
+    .preview-placeholder iconify-icon {
+        font-size: 3rem;
+        margin-bottom: 0.5rem;
+        color: #94a3b8;
+    }
+
+    /* Grid for multiple thumbnails */
+    .preview-grid {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        width: 100%;
+        margin-top: 1rem;
+        justify-content: center;
+    }
+
+    .preview-item {
+        width: 120px;
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .preview-item img {
+        width: 120px;
+        height: 120px;
+        object-fit: cover;
+        border-radius: 0.5rem;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        border: 2px solid white;
+    }
+
+    .preview-item .caption-badge {
+        font-size: 0.7rem;
+        background: #1e293b;
+        color: white;
+        padding: 0.2rem 0.5rem;
+        border-radius: 0.25rem;
+        text-align: center;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+</style>
+{% endblock custom_css %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="mb-0">Create Layout 2: <span class="text-muted fw-normal">Photo Grid</span></h2>
+    <a href="#" class="btn btn-outline-secondary rounded-pill px-4">Back to Layouts</a>
+</div>
+
+<div class="card bg-white border-0 p-4 mb-5" style="border-radius: 1.2rem; box-shadow: 0 4px 20px rgba(0,0,0,0.03);">
+    <form id="layout2Form" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="row g-4">
+            
+            <div class="col-lg-4">
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Assign to Submenu *</label>
+                    <select name="submenu_id" class="form-select">
+                        <option value="">-- Select Submenu --</option>
+                        {% for sub in submenus %}
+                            <option value="{{ sub.id }}">{{ sub.menu.name }} &rsaquo; {{ sub.name }}</option>
+                        {% empty %}
+                            <option value="" disabled>No Layout 2 submenus found.</option>
+                        {% endfor %}
+                    </select>
+                    <div class="error-text" id="err_submenu_id"></div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Starting Order</label>
+                    <input type="number" name="order" class="form-control" value="0" help_text="Starting order for the batch of images">
+                    <div class="error-text" id="err_order"></div>
+                </div>
+                
+                <div class="alert alert-info mt-4" style="font-size: 0.9rem; border-radius: 0.5rem;">
+                    <iconify-icon icon="solar:info-circle-bold-duotone" class="me-1 align-text-bottom" style="font-size: 1.1rem;"></iconify-icon>
+                    <strong>Auto-Processing:</strong> Images over 1MB will be automatically compressed before upload. Captions are auto-generated from file names.
+                </div>
+            </div>
+
+            <div class="col-lg-8">
+                <div class="mb-3 h-100 d-flex flex-column">
+                    <label class="form-label fw-semibold">Gallery Images *</label>
+                    
+                    <input type="file" id="imageInput" class="d-none" accept="image/*" multiple>
+                    
+                    <div class="image-preview-box" id="imagePreviewBox">
+                        <div class="preview-placeholder" id="previewPlaceholder">
+                            <iconify-icon icon="solar:gallery-add-bold-duotone"></iconify-icon>
+                            <p class="mb-0 fw-medium">Click to Select Multiple Images</p>
+                            <small class="text-muted">(JPG, PNG, WEBP)</small>
+                        </div>
+                        
+                        <div class="preview-grid" id="previewGrid"></div>
+                    </div>
+                    <div class="error-text" id="err_images"></div>
+                </div>
+            </div>
+
+            <div class="col-12 mt-3">
+                <div id="statusMessage" class="mb-0">
+                    <iconify-icon id="statusIcon" icon="" style="font-size: 1.5rem;"></iconify-icon>
+                    <span id="statusText"></span>
+                </div>
+            </div>
+            
+            <div class="col-12 mt-4 pt-3 border-top d-flex justify-content-end">
+                <button type="submit" class="btn-modern" id="submitBtn">
+                    <iconify-icon icon="solar:cloud-upload-bold-duotone" style="font-size: 1.2rem;"></iconify-icon> Upload Photos
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock content %}
+
+{% block custom_js %}
+<script>
+    const CSRF = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    
+    // Array to hold our finalized, optionally-compressed files before sending
+    let processedFilesData = [];
+
+    document.addEventListener('DOMContentLoaded', function() {
+        
+        const imageInput = document.getElementById('imageInput');
+        const previewBox = document.getElementById('imagePreviewBox');
+        const placeholder = document.getElementById('previewPlaceholder');
+        const previewGrid = document.getElementById('previewGrid');
+
+        // Click box to trigger file input
+        previewBox.addEventListener('click', (e) => {
+            // Prevent triggering if they click a thumbnail directly
+            if(!e.target.closest('.preview-item')) {
+                imageInput.click();
+            }
+        });
+
+        // 1. File Selection and Client-Side Compression Logic
+        imageInput.addEventListener('change', async function() {
+            const files = Array.from(this.files);
+            if (files.length === 0) return;
+
+            placeholder.style.display = 'none';
+            
+            // Show loading state while processing large images
+            document.getElementById('submitBtn').disabled = true;
+
+            for (let file of files) {
+                // Generate Logical Caption: "annual_sports_2023.jpg" -> "Annual sports 2023"
+                let rawName = file.name.replace(/\.[^/.]+$/, ""); // strip extension
+                let cleanCaption = rawName.replace(/[-_]/g, " "); // replace dashes/underscores with spaces
+                cleanCaption = cleanCaption.charAt(0).toUpperCase() + cleanCaption.slice(1); // Capitalize first letter
+
+                let finalFile = file;
+
+                // Compress if larger than 1MB (1048576 bytes)
+                if (file.size > 1048576) {
+                    finalFile = await compressImage(file);
+                }
+
+                processedFilesData.push({
+                    file: finalFile,
+                    caption: cleanCaption
+                });
+
+                // Generate visual preview
+                createThumbnail(finalFile, cleanCaption);
+            }
+            
+            // Re-enable submit button
+            document.getElementById('submitBtn').disabled = false;
+        });
+
+        // Helper: Compress Image via Canvas
+        function compressImage(file) {
+            return new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = (e) => {
+                    const img = new Image();
+                    img.src = e.target.result;
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        const ctx = canvas.getContext('2d');
+                        
+                        // Scale down if necessary, targeting max 1200px width/height to match your backend
+                        let width = img.width;
+                        let height = img.height;
+                        const MAX_DIM = 1200;
+
+                        if (width > MAX_DIM || height > MAX_DIM) {
+                            if (width > height) {
+                                height = Math.round((height * MAX_DIM) / width);
+                                width = MAX_DIM;
+                            } else {
+                                width = Math.round((width * MAX_DIM) / height);
+                                height = MAX_DIM;
+                            }
+                        }
+
+                        canvas.width = width;
+                        canvas.height = height;
+                        ctx.drawImage(img, 0, 0, width, height);
+
+                        // Convert back to file (JPEG at 80% quality)
+                        canvas.toBlob((blob) => {
+                            const newFile = new File([blob], file.name, {
+                                type: 'image/jpeg',
+                                lastModified: Date.now()
+                            });
+                            resolve(newFile);
+                        }, 'image/jpeg', 0.8);
+                    };
+                };
+            });
+        }
+
+        // Helper: Render Thumbnail in Grid
+        function createThumbnail(file, caption) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const div = document.createElement('div');
+                div.className = 'preview-item';
+                div.innerHTML = `
+                    <img src="${e.target.result}" alt="Preview">
+                    <div class="caption-badge" title="${caption}">${caption}</div>
+                `;
+                previewGrid.appendChild(div);
+            }
+            reader.readAsDataURL(file);
+        }
+
+        // 2. Form Submission Handling
+        const form = document.getElementById('layout2Form');
+        
+        form.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const CSRF = document.querySelector('[name=csrfmiddlewaretoken]').value;
+            const btn = document.getElementById('submitBtn');
+            const originalBtnText = btn.innerHTML;
+            
+            if (processedFilesData.length === 0) {
+                showStatus('Please select at least one image to upload.', 'error');
+                return;
+            }
+
+            btn.innerHTML = '<iconify-icon icon="line-md:loading-twotone-loop" style="font-size: 1.2rem;"></iconify-icon> Uploading...'; 
+            btn.disabled = true;
+
+            // Construct FormData manually to include our compressed files and custom captions
+            const formData = new FormData();
+            formData.append('submenu_id', form.submenu_id.value);
+            formData.append('order', form.order.value);
+            
+            // Append each file and its corresponding caption
+            // (Your backend view will use request.FILES.getlist('images') and request.POST.getlist('captions'))
+            processedFilesData.forEach(item => {
+                formData.append('images', item.file);
+                formData.append('captions', item.caption);
+            });
+
+            try {
+                // NOTE: Update 'create_page_photo' to your actual Django URL name for Layout 2
+                const response = await fetch("{% url 'create_page_photo' %}", {
+                    method: 'POST', 
+                    body: formData, 
+                    headers: { 'X-Requested-With': 'XMLHttpRequest', 'X-CSRFToken': CSRF }
+                });
+
+                const data = await response.json();
+
+                // Clear old errors
+                document.querySelectorAll('.error-text').forEach(el => { 
+                    el.style.display = 'none'; 
+                    el.innerText = ''; 
+                });
+
+                if (response.ok && data.success) {
+                    // SUCCESS
+                    showStatus(data.message || 'Photos uploaded successfully!', 'success');
+                    form.reset();
+                    processedFilesData = []; // Clear array
+                    previewGrid.innerHTML = ''; // Clear thumbnails
+                    placeholder.style.display = 'block'; // Show placeholder
+                } else {
+                    // VALIDATION OR SERVER ERROR
+                    showStatus(data.message || 'Please fix the errors below.', 'error');
+                    
+                    if (data.errors) {
+                        for (const [field, errs] of Object.entries(data.errors)) {
+                            const errEl = document.getElementById(`err_${field}`);
+                            if(errEl) { 
+                                errEl.innerText = errs[0]; 
+                                errEl.style.display = 'block'; 
+                            }
+                        }
+                    }
+                }
+            } catch (err) {
+                console.error("Submission Error:", err);
+                showStatus('A network or server error occurred.', 'error');
+            } finally {
+                btn.innerHTML = originalBtnText; 
+                btn.disabled = false; 
+            }
+        });
+    });
+
+    // 3. Status Message Helper (Identical to Layout 1)
+    function showStatus(msg, type) {
+        const el = document.getElementById('statusMessage');
+        const icon = document.getElementById('statusIcon');
+        const text = document.getElementById('statusText');
+        
+        el.classList.remove('msg-success', 'msg-error', 'd-flex');
+        
+        if (type === 'success') {
+            el.classList.add('msg-success', 'd-flex');
+            icon.setAttribute('icon', 'solar:check-circle-bold-duotone');
+        } else {
+            el.classList.add('msg-error', 'd-flex');
+            icon.setAttribute('icon', 'solar:danger-triangle-bold-duotone');
+        }
+        
+        text.innerText = msg; 
+        el.style.display = 'flex';
+        window.scrollTo({top: 0, behavior: 'smooth'});
+
+        if (type === 'success') {
+            setTimeout(() => { el.style.display = 'none'; }, 5000);
+        }
+    }
+</script>
+{% endblock custom_js %}

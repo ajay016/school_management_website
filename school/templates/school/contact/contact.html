@@ -1,0 +1,216 @@
+{% extends "school/base.html" %}
+{% load static %}
+
+{% block custom_css %}
+<link rel="stylesheet" href="{% static 'school/assets/css/contact.css' %}">
+{% endblock %}
+
+{% block content %}
+
+{# ── PAGE HERO / BREADCRUMB BANNER ── #}
+<section class="page-hero">
+    <div class="container">
+        <div class="page-hero-inner">
+            <span class="page-hero-label">
+                <i class="fa-solid fa-envelope me-1"></i> Get in Touch
+            </span>
+            <h1 class="page-hero-title">Contact <em>Us</em></h1>
+            <nav class="page-breadcrumb" aria-label="breadcrumb">
+                <a href="/">Home</a>
+                <span class="bc-sep"><i class="fa-solid fa-chevron-right"></i></span>
+                <span class="bc-current">Contact</span>
+            </nav>
+        </div>
+    </div>
+</section>
+
+{# ── CONTACT SECTION ── #}
+<section class="contact-section">
+    <div class="container">
+
+        {# ── INTRO TEXT ── #}
+        <div class="contact-intro">
+            <p>We'd love to hear from you. Whether you have a question about admissions, want to arrange a tour, or simply need to reach a member of staff — our team is here to help.</p>
+        </div>
+
+        {# ── CONTACT INFO CARDS ROW ── #}
+        <div class="contact-cards-row">
+
+            {# ── EMAIL CARD ── #}
+            <div class="contact-info-card">
+                <div class="contact-card-icon-wrap">
+                    <i class="fa-solid fa-envelope"></i>
+                </div>
+                <h5 class="contact-card-title">Email Address</h5>
+                <div class="contact-card-values">
+                    {% if contact.email %}
+                    <div class="contact-card-value">
+                        <a href="mailto:{{ contact.email }}" class="contact-card-pill">
+                            <i class="fa-solid fa-at"></i>
+                            {{ contact.email }}
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            {# ── PHONE CARD ── #}
+            <div class="contact-info-card">
+                <div class="contact-card-icon-wrap">
+                    <i class="fa-solid fa-phone"></i>
+                </div>
+                <h5 class="contact-card-title">Phone Numbers</h5>
+                <div class="contact-card-values">
+                    {% if contact.phone_1 %}
+                    <div class="contact-card-value">
+                        <a href="tel:{{ contact.phone_1 }}" class="contact-card-pill">
+                            <i class="fa-solid fa-phone"></i>
+                            {{ contact.phone_1 }}
+                        </a>
+                    </div>
+                    {% endif %}
+                    {% if contact.phone_2 %}
+                    <div class="contact-card-value">
+                        <a href="tel:{{ contact.phone_2 }}" class="contact-card-pill">
+                            <i class="fa-solid fa-phone"></i>
+                            {{ contact.phone_2 }}
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            {# ── ADDRESS CARD ── #}
+            {% if contact.address %}
+            <div class="contact-info-card">
+                <div class="contact-card-icon-wrap">
+                    <i class="fa-solid fa-location-dot"></i>
+                </div>
+                <h5 class="contact-card-title">Our Address</h5>
+                <div class="contact-card-values">
+                    <div class="contact-card-value">
+                        <span class="contact-card-pill">
+                            <i class="fa-solid fa-map-pin"></i>
+                            {{ contact.address }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+        </div>{# /contact-cards-row #}
+
+        {# ── OFFICE HOURS STRIP ── #}
+        <div class="contact-hours-strip">
+
+            <div class="hours-icon-col">
+                <div class="hours-icon-bubble">
+                    <i class="fa-solid fa-clock"></i>
+                </div>
+                <div class="hours-label">
+                    Office Hours
+                    <span>Our doors are open</span>
+                </div>
+            </div>
+
+            <div class="hours-schedule">
+
+                <div class="hours-item">
+                    <span class="hours-day">Mon – Thu</span>
+                    <span class="hours-time">9:00 AM – 5:00 PM</span>
+                </div>
+
+                <div class="hours-closed">
+                    <span class="hours-closed-day">Friday</span>
+                    <span class="hours-closed-label"><i class="fa-solid fa-xmark me-1"></i>Closed</span>
+                </div>
+
+                <div class="hours-closed">
+                    <span class="hours-closed-day">Saturday</span>
+                    <span class="hours-closed-label"><i class="fa-solid fa-xmark me-1"></i>Closed</span>
+                </div>
+
+            </div>
+        </div>{# /contact-hours-strip #}
+
+
+
+            {# Section heading — reuses the detail-divider pattern #}
+            <div style="text-align:center; margin-bottom: 28px;">
+                <p style="font-family: var(--font-heading); font-size: var(--fs-sm); font-weight:700; color: var(--clr-secondary); text-transform:uppercase; letter-spacing:2px; margin-bottom:10px;">
+                    <i class="fa-solid fa-share-nodes me-2" style="color: var(--clr-primary);"></i>Follow Us
+                </p>
+                <div style="width:48px; height:4px; background: linear-gradient(90deg, var(--clr-primary), var(--clr-primary-dark)); border-radius:99px; margin:0 auto;"></div>
+            </div>
+
+            <div class="contact-social-grid">
+
+                {% if social.facebook %}
+                <a href="{{ social.facebook }}" target="_blank" rel="noopener"
+                   class="social-link-card social-link-card--facebook">
+                    <div class="social-card-icon"><i class="fa-brands fa-facebook-f"></i></div>
+                    <div class="social-card-info">
+                        <span class="social-card-name">Facebook</span>
+                        <span class="social-card-handle">{{ social.facebook }}</span>
+                    </div>
+                </a>
+                {% endif %}
+
+                {% if social.instagram %}
+                <a href="{{ social.instagram }}" target="_blank" rel="noopener"
+                   class="social-link-card social-link-card--instagram">
+                    <div class="social-card-icon"><i class="fa-brands fa-instagram"></i></div>
+                    <div class="social-card-info">
+                        <span class="social-card-name">Instagram</span>
+                        <span class="social-card-handle">{{ social.instagram }}</span>
+                    </div>
+                </a>
+                {% endif %}
+
+                {% if social.youtube %}
+                <a href="{{ social.youtube }}" target="_blank" rel="noopener"
+                   class="social-link-card social-link-card--youtube">
+                    <div class="social-card-icon"><i class="fa-brands fa-youtube"></i></div>
+                    <div class="social-card-info">
+                        <span class="social-card-name">YouTube</span>
+                        <span class="social-card-handle">{{ social.youtube }}</span>
+                    </div>
+                </a>
+                {% endif %}
+
+                {% if social.linkedin %}
+                <a href="{{ social.linkedin }}" target="_blank" rel="noopener"
+                   class="social-link-card social-link-card--linkedin">
+                    <div class="social-card-icon"><i class="fa-brands fa-linkedin-in"></i></div>
+                    <div class="social-card-info">
+                        <span class="social-card-name">LinkedIn</span>
+                        <span class="social-card-handle">{{ social.linkedin }}</span>
+                    </div>
+                </a>
+                {% endif %}
+
+                {% if social.twitter %}
+                <a href="{{ social.twitter }}" target="_blank" rel="noopener"
+                   class="social-link-card social-link-card--twitter">
+                    <div class="social-card-icon"><i class="fa-brands fa-x-twitter"></i></div>
+                    <div class="social-card-info">
+                        <span class="social-card-name">X (Twitter)</span>
+                        <span class="social-card-handle">{{ social.twitter }}</span>
+                    </div>
+                </a>
+                {% endif %}
+
+            </div>{# /contact-social-grid #}
+        </div>{# /contact-social-section #}
+
+        {# ── MAP EMBED ── #}
+        {% if contact.map_embed_url %}
+        <div class="contact-map-section">
+            {{ contact.map_embed_url|safe }}
+        </div>
+        {% endif %}
+
+    </div>
+</section>
+
+{% endblock %}

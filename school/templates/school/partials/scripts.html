@@ -1,0 +1,72 @@
+<!-- jQuery -->
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+<!-- Bootstrap 5 JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- AOS Animation JS -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.js"></script>
+
+<!-- Swiper JS -->
+<script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+
+<!-- CountUp.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/CountUp.js/2.8.0/countUp.umd.js"></script>
+
+<!-- Base Initialisation Script -->
+<script>
+    // Init AOS
+    AOS.init({
+        duration: 800,
+        easing: 'ease-out-cubic',
+        once: true,
+        offset: 60,
+    });
+
+    // Navbar scroll behaviour
+    const navbar = document.getElementById('mainNavbar');
+    window.addEventListener('scroll', () => {
+        if (window.scrollY > 80) {
+            navbar.classList.add('navbar-scrolled');
+        } else {
+            navbar.classList.remove('navbar-scrolled');
+        }
+    });
+
+    // Mobile hamburger animation
+    const navToggle = document.getElementById('navToggle');
+    const mobileMenu = document.getElementById('mobileMenu');
+    const mobileOverlay = document.getElementById('mobileOverlay');
+
+    if (navToggle) {
+        navToggle.addEventListener('click', () => {
+            navToggle.classList.toggle('active');
+            mobileMenu.classList.toggle('open');
+            mobileOverlay.classList.toggle('active');
+            document.body.classList.toggle('menu-open');
+        });
+    }
+
+    if (mobileOverlay) {
+        mobileOverlay.addEventListener('click', () => {
+            navToggle.classList.remove('active');
+            mobileMenu.classList.remove('open');
+            mobileOverlay.classList.remove('active');
+            document.body.classList.remove('menu-open');
+        });
+    }
+
+    // Mobile accordion dropdowns
+    document.querySelectorAll('.mobile-dropdown-toggle').forEach(btn => {
+        btn.addEventListener('click', function () {
+            const parent = this.closest('.mobile-menu-item');
+            const submenu = parent.querySelector('.mobile-submenu');
+            parent.classList.toggle('expanded');
+            if (submenu) {
+                submenu.style.maxHeight = parent.classList.contains('expanded')
+                    ? submenu.scrollHeight + 'px'
+                    : '0';
+            }
+        });
+    });
+</script>

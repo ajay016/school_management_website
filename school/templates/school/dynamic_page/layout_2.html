@@ -1,0 +1,91 @@
+{% extends "school/base.html" %}
+{% load static %}
+
+{% block title %}{{ submenu.name }} — Peace International School{% endblock %}
+
+{% block content %}
+
+<section class="page-hero">
+    <div class="container">
+        <div class="page-hero-inner">
+            <span class="page-hero-label">
+                <i class="fa-solid fa-images me-1"></i> {{ submenu.menu.name }}
+            </span>
+            <h1 class="page-hero-title">{{ submenu.name }}</h1>
+            <nav class="page-breadcrumb" aria-label="breadcrumb">
+                <a href="/">Home</a>
+                <span class="bc-sep"><i class="fa-solid fa-chevron-right"></i></span>
+                <span>{{ submenu.menu.name }}</span>
+                <span class="bc-sep"><i class="fa-solid fa-chevron-right"></i></span>
+                <span class="bc-current">{{ submenu.name }}</span>
+            </nav>
+        </div>
+    </div>
+</section>
+
+<section class="py-5">
+    <div class="container">
+        {% if photos %}
+        <div class="row g-3">
+            {% for photo in photos %}
+            <div class="col-sm-6 col-md-4 col-lg-3" data-aos="zoom-in" data-aos-delay="{{ forloop.counter0|add:'0' }}0">
+                <div class="rounded-3 overflow-hidden shadow-sm position-relative photo-thumb"
+                     style="cursor:pointer;"
+                     data-src="{{ photo.image.url }}"
+                     data-caption="{{ photo.caption|default:'' }}">
+                    <img src="{{ photo.image.url }}"
+                         alt="{{ photo.caption|default:submenu.name }}"
+                         class="img-fluid w-100"
+                         style="height:200px; object-fit:cover; transition:transform .3s;">
+                    {% if photo.caption %}
+                    <div class="photo-caption-overlay position-absolute bottom-0 start-0 end-0 p-2 text-white"
+                         style="background:linear-gradient(transparent,rgba(0,0,0,.6)); font-size:.85rem;">
+                        {{ photo.caption }}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="text-center py-5 text-muted">
+            <i class="fas fa-images fa-3x mb-3"></i>
+            <p>No photos have been added to this gallery yet.</p>
+        </div>
+        {% endif %}
+    </div>
+</section>
+
+{# Lightbox overlay #}
+<div id="lightboxOverlay" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.9); z-index:9999; align-items:center; justify-content:center; flex-direction:column;">
+    <button onclick="closeLightbox()" style="position:absolute; top:1rem; right:1.5rem; background:none; border:none; color:#fff; font-size:2rem; cursor:pointer;">&times;</button>
+    <img id="lightboxImg" src="" alt="" style="max-width:90vw; max-height:85vh; border-radius:.5rem; object-fit:contain;">
+    <p id="lightboxCaption" style="color:#ccc; margin-top:.75rem; font-size:.95rem;"></p>
+</div>
+
+{% endblock %}
+
+{% block custom_js %}
+<script>
+document.querySelectorAll('.photo-thumb').forEach(el => {
+    el.addEventListener('click', function() {
+        document.getElementById('lightboxImg').src = this.dataset.src;
+        document.getElementById('lightboxCaption').textContent = this.dataset.caption;
+        const overlay = document.getElementById('lightboxOverlay');
+        overlay.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+    });
+    el.querySelector('img').addEventListener('mouseenter', function() { this.style.transform = 'scale(1.05)'; });
+    el.querySelector('img').addEventListener('mouseleave', function() { this.style.transform = 'scale(1)'; });
+});
+
+function closeLightbox() {
+    document.getElementById('lightboxOverlay').style.display = 'none';
+    document.body.style.overflow = '';
+}
+document.getElementById('lightboxOverlay').addEventListener('click', function(e) {
+    if (e.target === this) closeLightbox();
+});
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLightbox(); });
+</script>
+{% endblock %}

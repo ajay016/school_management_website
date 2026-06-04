@@ -1,0 +1,48 @@
+{% extends "school/base.html" %}
+{% load static %}
+
+{% block title %}{{ facility.heading }} — Peace International School{% endblock %}
+
+{% block content %}
+
+<section class="page-hero">
+    <div class="container">
+        <div class="page-hero-inner">
+            <span class="page-hero-label">
+                <i class="fa-solid fa-building me-1"></i> Facilities
+            </span>
+            <h1 class="page-hero-title">{{ facility.heading }}</h1>
+            <nav class="page-breadcrumb" aria-label="breadcrumb">
+                <a href="/">Home</a>
+                <span class="bc-sep"><i class="fa-solid fa-chevron-right"></i></span>
+                <span>Facilities</span>
+                <span class="bc-sep"><i class="fa-solid fa-chevron-right"></i></span>
+                <span class="bc-current">{{ facility.heading }}</span>
+            </nav>
+        </div>
+    </div>
+</section>
+
+<section class="py-5">
+    <div class="container" style="overflow:hidden;">
+
+        {# Image floats left — text wraps around and continues below the image #}
+        {% if facility.image %}
+        <div class="float-start me-4 mb-3" style="width:42%; max-width:480px;">
+            <img src="{{ facility.image.url }}"
+                 alt="{{ facility.heading }}"
+                 class="img-fluid w-100 rounded-4 shadow-sm"
+                 style="display:block; object-fit:cover;">
+        </div>
+        {% endif %}
+
+        <h2 class="fw-bold mb-4" style="color:var(--clr-secondary-dark);">{{ facility.heading }}</h2>
+        <div class="lh-lg" style="font-size:1.05rem; color:#374151;">
+            {{ facility.description|safe }}
+        </div>
+
+        <div style="clear:both;"></div>
+    </div>
+</section>
+
+{% endblock %}

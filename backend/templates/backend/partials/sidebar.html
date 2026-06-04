@@ -1,0 +1,160 @@
+<aside class="floating-sidebar">
+    <div class="sidebar-brand">
+        <iconify-icon icon="solar:globus-bold-duotone" style="color: var(--accent);"></iconify-icon>
+        School Management
+    </div>
+
+    <div class="sidebar-menu-scroll">
+
+        <!-- Dashboard -->
+        <a href="{% url 'admin_dashboard' %}" class="sidebar-link">
+            <iconify-icon icon="solar:widget-bold-duotone" class="menu-icon"></iconify-icon>
+            Dashboard
+        </a>
+
+        <!-- Navbar Menus -->
+        <a href="#" class="sidebar-link submenu-trigger" aria-expanded="false">
+            <iconify-icon icon="solar:hamburger-menu-bold-duotone" class="menu-icon"></iconify-icon>
+            Navbar Menus
+            <iconify-icon icon="solar:alt-arrow-down-bold-duotone" class="arrow-icon"></iconify-icon>
+        </a>
+        <div class="sidebar-submenu-wrapper">
+            <div class="sidebar-submenu-inner">
+                <ul class="sidebar-submenu">
+                    <li><a href="{% url 'create_menu' %}">Create Menu</a></li>
+                    <li><a href="{% url 'list_menus' %}">Menu List</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Menu Content -->
+        <a href="#" class="sidebar-link submenu-trigger" aria-expanded="false">
+            <iconify-icon icon="solar:layers-minimalistic-bold-duotone" class="menu-icon"></iconify-icon>
+            Menu Content
+            <iconify-icon icon="solar:alt-arrow-down-bold-duotone" class="arrow-icon"></iconify-icon>
+        </a>
+        <div class="sidebar-submenu-wrapper">
+            <div class="sidebar-submenu-inner">
+                <ul class="sidebar-submenu">
+                    <li><a href="{% url 'list_layout1' %}">Layout 1</a></li>
+                    <li><a href="{% url 'list_page_photo' %}">Layout 2</a></li>
+                    <li><a href="{% url 'list_layout3_rich_text' %}">Layout 3</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Sliders -->
+        <a href="#" class="sidebar-link submenu-trigger" aria-expanded="false">
+            <iconify-icon icon="solar:gallery-wide-bold-duotone" class="menu-icon"></iconify-icon>
+            Sliders
+            <iconify-icon icon="solar:alt-arrow-down-bold-duotone" class="arrow-icon"></iconify-icon>
+        </a>
+        <div class="sidebar-submenu-wrapper">
+            <div class="sidebar-submenu-inner">
+                <ul class="sidebar-submenu">
+                    <li><a href="{% url 'create_home_slider' %}">Create Slider</a></li>
+                    <li><a href="{% url 'list_home_sliders' %}">Sliders List</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Notices -->
+        <a href="#" class="sidebar-link submenu-trigger" aria-expanded="false">
+            <iconify-icon icon="solar:bell-bold-duotone" class="menu-icon"></iconify-icon>
+            Notices
+            <iconify-icon icon="solar:alt-arrow-down-bold-duotone" class="arrow-icon"></iconify-icon>
+        </a>
+        <div class="sidebar-submenu-wrapper">
+            <div class="sidebar-submenu-inner">
+                <ul class="sidebar-submenu">
+                    <li><a href="{% url 'create_notice' %}">Create Notice</a></li>
+                    <li><a href="{% url 'notice_list' %}">Notice List</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Events -->
+        <a href="#" class="sidebar-link submenu-trigger" aria-expanded="false">
+            <iconify-icon icon="solar:calendar-date-bold-duotone" class="menu-icon"></iconify-icon>
+            Events
+            <iconify-icon icon="solar:alt-arrow-down-bold-duotone" class="arrow-icon"></iconify-icon>
+        </a>
+        <div class="sidebar-submenu-wrapper">
+            <div class="sidebar-submenu-inner">
+                <ul class="sidebar-submenu">
+                    <li><a href="{% url 'create_event' %}">Create Event</a></li>
+                    <li><a href="{% url 'event_list' %}">Event List</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Galleries -->
+        <a href="#" class="sidebar-link submenu-trigger" aria-expanded="false">
+            <iconify-icon icon="solar:gallery-bold-duotone" class="menu-icon"></iconify-icon>
+            Galleries
+            <iconify-icon icon="solar:alt-arrow-down-bold-duotone" class="arrow-icon"></iconify-icon>
+        </a>
+        <div class="sidebar-submenu-wrapper">
+            <div class="sidebar-submenu-inner">
+                <ul class="sidebar-submenu">
+                    <li><a href="{% url 'create_album' %}">Create Gallery</a></li>
+                    <li><a href="{% url 'album_list' %}">Gallery List</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Facilities -->
+        <a href="#" class="sidebar-link submenu-trigger" aria-expanded="false">
+            <iconify-icon icon="solar:buildings-bold-duotone" class="menu-icon"></iconify-icon>
+            Facilities
+            <iconify-icon icon="solar:alt-arrow-down-bold-duotone" class="arrow-icon"></iconify-icon>
+        </a>
+        <div class="sidebar-submenu-wrapper">
+            <div class="sidebar-submenu-inner">
+                <ul class="sidebar-submenu">
+                    <li><a href="{% url 'create_facility' %}">Add Facility</a></li>
+                    <li><a href="{% url 'list_facilities' %}">Facilities List</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Curriculum -->
+        <a href="#" class="sidebar-link submenu-trigger" aria-expanded="false">
+            <iconify-icon icon="solar:book-2-bold-duotone" class="menu-icon"></iconify-icon>
+            Curriculum
+            <iconify-icon icon="solar:alt-arrow-down-bold-duotone" class="arrow-icon"></iconify-icon>
+        </a>
+        <div class="sidebar-submenu-wrapper">
+            <div class="sidebar-submenu-inner">
+                <ul class="sidebar-submenu">
+                    <li><a href="{% url 'create_curriculum_stage' %}">Add Stage</a></li>
+                    <li><a href="{% url 'list_curriculum_stages' %}">Stages List</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Home Sections -->
+        <a href="#" class="sidebar-link submenu-trigger" aria-expanded="false">
+            <iconify-icon icon="solar:home-bold-duotone" class="menu-icon"></iconify-icon>
+            Home Sections
+            <iconify-icon icon="solar:alt-arrow-down-bold-duotone" class="arrow-icon"></iconify-icon>
+        </a>
+        <div class="sidebar-submenu-wrapper">
+            <div class="sidebar-submenu-inner">
+                <ul class="sidebar-submenu">
+                    <li><a href="{% url 'edit_hero_stats' %}">Hero Stats Bar</a></li>
+                    <li><a href="{% url 'edit_home_about' %}">About Us</a></li>
+                    <li><a href="{% url 'list_core_pillars' %}">Core Pillars</a></li>
+                    <li><a href="{% url 'list_home_achievements' %}">Achievements</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Contact & Logo -->
+        <a href="{% url 'edit_contact' %}" class="sidebar-link">
+            <iconify-icon icon="solar:phone-bold-duotone" class="menu-icon"></iconify-icon>
+            Contact &amp; Logo
+        </a>
+
+    </div>
+</aside>

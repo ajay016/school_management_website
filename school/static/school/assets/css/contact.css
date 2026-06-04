@@ -1,0 +1,519 @@
+/* ================================================================
+   GREENFIELD ACADEMY
+   page_contact.css  —  Contact Information Page (no form)
+   Maintained by IGL Web Ltd.
+
+   Model fields used:
+     Contact:     email, phone_1, phone_2, address, map_embed_url
+     SocialMedia: facebook, instagram, linkedin, twitter, youtube
+
+   TABLE OF CONTENTS
+   ──────────────────────────────────────────────────────────────
+   01. Contact Page Section Wrapper
+   02. Contact Cards Row
+   03. Individual Contact Info Card
+   04. Office Hours Strip
+   05. Social Media Block
+   06. Map Embed
+   07. Responsive Overrides
+   ================================================================ */
+
+
+/* ================================================================
+   01. PAGE HERO / BREADCRUMB BANNER
+   ── Reusable banner used at the top of interior pages ──
+   ================================================================ */
+.page-hero {
+    background: linear-gradient(
+        115deg,
+        var(--clr-secondary-dark) 0%,
+        var(--clr-secondary) 60%,
+        rgba(245,166,35,0.18) 100%
+    );
+    padding: 56px 0 48px;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Decorative background circles */
+.page-hero::before {
+    content: '';
+    position: absolute;
+    top: -80px;
+    right: -80px;
+    width: 360px;
+    height: 360px;
+    border-radius: 50%;
+    background: rgba(245,166,35,0.07);
+    pointer-events: none;
+}
+.page-hero::after {
+    content: '';
+    position: absolute;
+    bottom: -60px;
+    left: 10%;
+    width: 220px;
+    height: 220px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.04);
+    pointer-events: none;
+}
+
+.page-hero-inner {
+    position: relative;
+    z-index: 1;
+}
+
+.page-hero-label {
+    display: inline-block;
+    background: rgba(245,166,35,0.18);
+    color: var(--clr-primary);
+    font-family: var(--font-body);
+    font-size: var(--fs-xs);
+    font-weight: 700;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    padding: 5px 16px;
+    border-radius: var(--radius-full);
+    border: 1px solid rgba(245,166,35,0.3);
+    margin-bottom: 14px;
+}
+
+.page-hero-title {
+    font-family: var(--font-display);
+    font-size: clamp(var(--fs-2xl), 4vw, var(--fs-4xl));
+    font-weight: 800;
+    color: var(--clr-white);
+    line-height: 1.2;
+    margin-bottom: 18px;
+}
+.page-hero-title em {
+    color: var(--clr-primary);
+    font-style: italic;
+}
+
+/* Breadcrumb */
+.page-breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+.page-breadcrumb a {
+    font-size: var(--fs-sm);
+    color: rgba(255,255,255,0.65);
+    font-weight: 500;
+    transition: var(--trans-fast);
+}
+.page-breadcrumb a:hover { color: var(--clr-primary); }
+.page-breadcrumb .bc-sep {
+    color: rgba(255,255,255,0.35);
+    font-size: var(--fs-xs);
+}
+.page-breadcrumb .bc-current {
+    font-size: var(--fs-sm);
+    color: var(--clr-primary);
+    font-weight: 600;
+}
+
+
+/* ================================================================
+   01. CONTACT PAGE — SECTION WRAPPER
+   ================================================================ */
+.contact-section {
+    padding: var(--space-2xl) 0 var(--space-3xl);
+    background: var(--clr-white);
+}
+
+/* Intro sub-header text block */
+.contact-intro {
+    text-align: center;
+    max-width: 620px;
+    margin: 0 auto 56px;
+}
+.contact-intro p {
+    font-size: var(--fs-md);
+    color: var(--clr-text-muted);
+    line-height: 1.75;
+}
+
+
+/* ================================================================
+   02. CONTACT CARDS ROW
+   ================================================================ */
+.contact-cards-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+    margin-bottom: 56px;
+}
+
+
+/* ================================================================
+   03. INDIVIDUAL CONTACT INFO CARD
+   ================================================================ */
+.contact-info-card {
+    background: var(--clr-white);
+    border: 1px solid var(--clr-border);
+    border-radius: var(--radius-lg);
+    padding: 36px 28px;
+    text-align: center;
+    box-shadow: var(--shadow-sm);
+    position: relative;
+    overflow: hidden;
+    transition: var(--trans-slow);
+}
+.contact-info-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--clr-primary), var(--clr-primary-dark));
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.4s ease;
+}
+.contact-info-card:hover {
+    box-shadow: var(--shadow-lg);
+    transform: translateY(-8px);
+    border-color: var(--clr-primary-light);
+}
+.contact-info-card:hover::before { transform: scaleX(1); }
+
+/* Large icon bubble */
+.contact-card-icon-wrap {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    background: var(--clr-primary-light);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 20px;
+    font-size: var(--fs-2xl);
+    color: var(--clr-primary-dark);
+    box-shadow: 0 4px 20px rgba(245,166,35,0.18);
+    transition: var(--trans-base);
+}
+.contact-info-card:hover .contact-card-icon-wrap {
+    background: var(--clr-primary);
+    color: var(--clr-white);
+    box-shadow: var(--shadow-gold);
+    transform: scale(1.1) rotate(-6deg);
+}
+
+.contact-card-title {
+    font-family: var(--font-heading);
+    font-size: var(--fs-base);
+    font-weight: 700;
+    color: var(--clr-secondary);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-bottom: 14px;
+}
+
+.contact-card-values {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+.contact-card-value {
+    font-size: var(--fs-sm);
+    font-weight: 500;
+    color: var(--clr-text-body);
+    line-height: 1.55;
+    transition: var(--trans-fast);
+}
+.contact-card-value a {
+    color: var(--clr-text-body);
+    font-weight: 600;
+    transition: var(--trans-fast);
+}
+.contact-card-value a:hover { color: var(--clr-primary-dark); }
+
+/* Pill-style badge on each value */
+.contact-card-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    background: var(--clr-off-white);
+    border: 1px solid var(--clr-border);
+    border-radius: var(--radius-full);
+    padding: 7px 16px;
+    font-size: var(--fs-sm);
+    font-weight: 600;
+    color: var(--clr-text-dark);
+    transition: var(--trans-base);
+}
+.contact-card-pill i {
+    color: var(--clr-primary);
+    font-size: 0.78rem;
+}
+.contact-card-pill:hover,
+a.contact-card-pill:hover {
+    background: var(--clr-primary-xlight);
+    border-color: var(--clr-primary-light);
+    color: var(--clr-primary-dark);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-xs);
+}
+
+
+/* ================================================================
+   04. OFFICE HOURS STRIP
+   ================================================================ */
+.contact-hours-strip {
+    background: linear-gradient(110deg, var(--clr-secondary) 0%, var(--clr-secondary-mid) 100%);
+    border-radius: var(--radius-xl);
+    padding: 36px 48px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 32px;
+    flex-wrap: wrap;
+    margin-bottom: 56px;
+    box-shadow: var(--shadow-navy);
+    position: relative;
+    overflow: hidden;
+}
+.contact-hours-strip::before {
+    content: '';
+    position: absolute;
+    top: -60px;
+    right: -60px;
+    width: 240px;
+    height: 240px;
+    border-radius: 50%;
+    background: rgba(245,166,35,0.08);
+    pointer-events: none;
+}
+
+.hours-icon-col {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    flex-shrink: 0;
+}
+.hours-icon-bubble {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: rgba(245,166,35,0.15);
+    border: 2px solid rgba(245,166,35,0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: var(--fs-xl);
+    color: var(--clr-primary);
+}
+.hours-label {
+    font-family: var(--font-display);
+    font-size: var(--fs-xl);
+    font-weight: 700;
+    color: var(--clr-white);
+}
+.hours-label span {
+    display: block;
+    font-family: var(--font-body);
+    font-size: var(--fs-sm);
+    font-weight: 400;
+    color: rgba(255,255,255,0.65);
+    margin-top: 2px;
+}
+
+.hours-schedule {
+    display: flex;
+    gap: 32px;
+    flex-wrap: wrap;
+}
+.hours-item {
+    text-align: center;
+}
+.hours-day {
+    display: block;
+    font-size: var(--fs-xs);
+    font-weight: 700;
+    color: var(--clr-primary);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-bottom: 4px;
+}
+.hours-time {
+    display: block;
+    font-size: var(--fs-md);
+    font-weight: 600;
+    color: var(--clr-white);
+}
+
+.hours-closed {
+    text-align: center;
+}
+.hours-closed-day {
+    display: block;
+    font-size: var(--fs-xs);
+    font-weight: 700;
+    color: rgba(255,255,255,0.5);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-bottom: 4px;
+}
+.hours-closed-label {
+    display: inline-block;
+    background: rgba(232,79,79,0.18);
+    color: #F08080;
+    font-size: var(--fs-sm);
+    font-weight: 700;
+    padding: 4px 14px;
+    border-radius: var(--radius-full);
+    border: 1px solid rgba(232,79,79,0.3);
+}
+
+
+/* ================================================================
+   05. SOCIAL MEDIA BLOCK
+   ================================================================ */
+.contact-social-section {
+    margin-bottom: 56px;
+}
+
+.contact-social-grid {
+    display: flex;
+    align-items: stretch;
+    gap: 18px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.social-link-card {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 18px 28px;
+    border-radius: var(--radius-lg);
+    border: 1.5px solid var(--clr-border);
+    background: var(--clr-white);
+    box-shadow: var(--shadow-sm);
+    min-width: 180px;
+    cursor: pointer;
+    transition: var(--trans-slow);
+    text-decoration: none;
+    color: inherit;
+}
+.social-link-card:hover {
+    transform: translateY(-6px);
+    box-shadow: var(--shadow-lg);
+}
+
+.social-card-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: var(--fs-xl);
+    flex-shrink: 0;
+    transition: var(--trans-base);
+}
+
+.social-card-info {
+    display: flex;
+    flex-direction: column;
+}
+.social-card-name {
+    font-family: var(--font-heading);
+    font-size: var(--fs-sm);
+    font-weight: 700;
+    color: var(--clr-text-dark);
+    line-height: 1;
+    margin-bottom: 3px;
+}
+.social-card-handle {
+    font-size: var(--fs-xs);
+    color: var(--clr-text-muted);
+    font-weight: 500;
+}
+
+/* Platform-specific colours */
+.social-link-card--facebook .social-card-icon { background: #E7F0FD; color: #1877F2; }
+.social-link-card--facebook:hover { border-color: #1877F2; box-shadow: 0 12px 40px rgba(24,119,242,0.18); }
+.social-link-card--facebook:hover .social-card-icon { background: #1877F2; color: #fff; }
+
+.social-link-card--instagram .social-card-icon { background: #FDE9F4; color: #E1306C; }
+.social-link-card--instagram:hover { border-color: #E1306C; box-shadow: 0 12px 40px rgba(225,48,108,0.18); }
+.social-link-card--instagram:hover .social-card-icon { background: linear-gradient(135deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888); color: #fff; }
+
+.social-link-card--linkedin .social-card-icon { background: #E8F4FD; color: #0A66C2; }
+.social-link-card--linkedin:hover { border-color: #0A66C2; box-shadow: 0 12px 40px rgba(10,102,194,0.18); }
+.social-link-card--linkedin:hover .social-card-icon { background: #0A66C2; color: #fff; }
+
+.social-link-card--youtube .social-card-icon { background: #FDECEA; color: #FF0000; }
+.social-link-card--youtube:hover { border-color: #FF0000; box-shadow: 0 12px 40px rgba(255,0,0,0.14); }
+.social-link-card--youtube:hover .social-card-icon { background: #FF0000; color: #fff; }
+
+.social-link-card--twitter .social-card-icon { background: #E8F5FD; color: #1DA1F2; }
+.social-link-card--twitter:hover { border-color: #1DA1F2; box-shadow: 0 12px 40px rgba(29,161,242,0.18); }
+.social-link-card--twitter:hover .social-card-icon { background: #1DA1F2; color: #fff; }
+
+
+/* ================================================================
+   06. MAP EMBED
+   ================================================================ */
+.contact-map-section {
+    border-radius: var(--radius-xl);
+    overflow: hidden;
+    box-shadow: var(--shadow-lg);
+    border: 1px solid var(--clr-border);
+    position: relative;
+}
+.contact-map-section iframe {
+    display: block;
+    width: 100%;
+    height: 420px;
+    border: none;
+}
+
+/* Map placeholder (when no embed URL) */
+.contact-map-placeholder {
+    height: 340px;
+    background: linear-gradient(135deg, var(--clr-secondary-light), var(--clr-primary-light));
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    color: var(--clr-secondary-mid);
+    font-size: var(--fs-md);
+    font-weight: 500;
+    border-radius: var(--radius-xl);
+    border: 2px dashed var(--clr-border);
+}
+.contact-map-placeholder i {
+    font-size: 3rem;
+    color: var(--clr-primary);
+    opacity: 0.5;
+}
+
+
+/* ================================================================
+   07. RESPONSIVE OVERRIDES — contact page
+   ================================================================ */
+@media (max-width: 991px) {
+    .contact-cards-row { grid-template-columns: repeat(2, 1fr); }
+    .contact-hours-strip { flex-direction: column; align-items: flex-start; padding: 28px 28px; }
+    .hours-schedule { gap: 20px; }
+}
+@media (max-width: 767px) {
+    .contact-cards-row { grid-template-columns: 1fr; gap: 16px; }
+    .contact-info-card { padding: 28px 22px; }
+    .contact-section { padding: var(--space-xl) 0 var(--space-2xl); }
+    .contact-social-grid { gap: 12px; }
+    .social-link-card { min-width: calc(50% - 6px); padding: 14px 18px; }
+    .contact-map-section iframe { height: 320px; }
+}
+@media (max-width: 480px) {
+    .social-link-card { min-width: 100%; }
+    .contact-hours-strip { border-radius: var(--radius-lg); }
+}

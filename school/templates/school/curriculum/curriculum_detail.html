@@ -1,0 +1,71 @@
+{% extends "school/base.html" %}
+{% load static %}
+
+{% block title %}{{ stage.label }} — Peace International School{% endblock %}
+
+{% block content %}
+
+<section class="page-hero">
+    <div class="container">
+        <div class="page-hero-inner">
+            <span class="page-hero-label">
+                <i class="fa-solid fa-book-open me-1"></i> Curriculum
+            </span>
+            <h1 class="page-hero-title">{{ stage.label }}</h1>
+            <nav class="page-breadcrumb" aria-label="breadcrumb">
+                <a href="/">Home</a>
+                <span class="bc-sep"><i class="fa-solid fa-chevron-right"></i></span>
+                <span>Curriculum</span>
+                <span class="bc-sep"><i class="fa-solid fa-chevron-right"></i></span>
+                <span class="bc-current">{{ stage.label }}</span>
+            </nav>
+        </div>
+    </div>
+</section>
+
+<section class="py-5">
+    <div class="container">
+        <div class="row align-items-start g-5">
+
+            {% if stage.image %}
+            <div class="col-lg-5" data-aos="fade-right">
+                <div class="rounded-4 overflow-hidden shadow-sm">
+                    <img src="{{ stage.image.url }}" alt="{{ stage.label }}"
+                         class="img-fluid w-100" style="object-fit:cover; max-height:380px;">
+                </div>
+            </div>
+            <div class="col-lg-7" data-aos="fade-left">
+            {% else %}
+            <div class="col-12" data-aos="fade-up">
+            {% endif %}
+
+                {% if stage.age_group %}
+                <div class="mb-2" style="color:var(--clr-primary); font-weight:600; font-size:.9rem;">
+                    <i class="fas fa-users me-1"></i> {{ stage.age_group }}
+                </div>
+                {% endif %}
+
+                <h2 class="fw-bold mb-3" style="color:var(--clr-secondary-dark);">{{ stage.heading }}</h2>
+                <p class="lh-lg mb-4" style="font-size:1.05rem; color:#374151;">{{ stage.description }}</p>
+
+                {% if stage.feature_1 or stage.feature_2 or stage.feature_3 %}
+                <ul class="list-unstyled" style="display:flex; flex-direction:column; gap:.6rem;">
+                    {% if stage.feature_1 %}
+                    <li><i class="fas fa-check-circle me-2" style="color:var(--clr-primary);"></i> {{ stage.feature_1 }}</li>
+                    {% endif %}
+                    {% if stage.feature_2 %}
+                    <li><i class="fas fa-check-circle me-2" style="color:var(--clr-primary);"></i> {{ stage.feature_2 }}</li>
+                    {% endif %}
+                    {% if stage.feature_3 %}
+                    <li><i class="fas fa-check-circle me-2" style="color:var(--clr-primary);"></i> {{ stage.feature_3 }}</li>
+                    {% endif %}
+                </ul>
+                {% endif %}
+
+            </div>
+
+        </div>
+    </div>
+</section>
+
+{% endblock %}

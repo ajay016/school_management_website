@@ -1,0 +1,325 @@
+{% extends "school/base.html" %}
+{% load static %}
+
+{% block custom_css %}
+<link rel="stylesheet" href="{% static 'school/assets/css/galleries.css' %}">
+{% endblock custom_css %}
+
+{% block content %}
+
+{# ── PAGE HERO / BREADCRUMB BANNER ── #}
+<section class="page-hero">
+    <div class="container">
+        <div class="page-hero-inner">
+            <span class="page-hero-label">
+                <i class="fa-solid fa-images me-1"></i> Media
+            </span>
+            <h1 class="page-hero-title">School <em>Gallery</em></h1>
+            <nav class="page-breadcrumb" aria-label="breadcrumb">
+                <a href="/">Home</a>
+                <span class="bc-sep"><i class="fa-solid fa-chevron-right"></i></span>
+                <span class="bc-current">Gallery</span>
+            </nav>
+        </div>
+    </div>
+</section>
+
+{# ── GALLERY SECTION ── #}
+<section class="gallery-section">
+    <div class="container">
+
+        {# ── FILTER TAB BAR ── #}
+        <div class="gallery-filter-bar" id="galleryFilterBar">
+            <button class="gallery-filter-btn active" data-filter="all">
+                <i class="fa-solid fa-border-all"></i> All Photos
+            </button>
+            <button class="gallery-filter-btn" data-filter="events">
+                <i class="fa-solid fa-calendar-star"></i> Events
+            </button>
+            <button class="gallery-filter-btn" data-filter="sports">
+                <i class="fa-solid fa-trophy"></i> Sports
+            </button>
+            <button class="gallery-filter-btn" data-filter="academics">
+                <i class="fa-solid fa-graduation-cap"></i> Academics
+            </button>
+            <button class="gallery-filter-btn" data-filter="campus">
+                <i class="fa-solid fa-school"></i> Campus
+            </button>
+        </div>
+
+        {# ── GALLERY GRID (CSS masonry — aspect ratios preserved) ── #}
+        <div class="gallery-grid" id="galleryGrid">
+
+            {# ── ITEM 1 ── #}
+            <div class="gallery-item" data-category="events">
+                <div class="gallery-card" data-src="https://images.unsplash.com/photo-1523580494863-6f3031224c94?w=1200&q=85" data-caption="Annual Prize Giving Day 2024" data-index="0">
+                    <div class="gallery-card-img-wrap">
+                        <img src="https://images.unsplash.com/photo-1523580494863-6f3031224c94?w=600&q=75" alt="Annual Prize Giving Day 2024" loading="lazy">
+                        <div class="gallery-card-overlay">
+                            <div class="gallery-zoom-icon"><i class="fa-solid fa-magnifying-glass-plus"></i></div>
+                        </div>
+                    </div>
+                    <div class="gallery-card-caption">
+                        <i class="fa-solid fa-image"></i>
+                        Annual Prize Giving Day 2024
+                    </div>
+                </div>
+            </div>
+
+            {# ── ITEM 2 ── #}
+            <div class="gallery-item" data-category="sports">
+                <div class="gallery-card" data-src="https://images.unsplash.com/photo-1546519638405-a9f9b2db0a47?w=1200&q=85" data-caption="Inter-School Basketball Championship" data-index="1">
+                    <div class="gallery-card-img-wrap">
+                        <img src="https://images.unsplash.com/photo-1546519638405-a9f9b2db0a47?w=600&q=75" alt="Basketball Championship" loading="lazy">
+                        <div class="gallery-card-overlay">
+                            <div class="gallery-zoom-icon"><i class="fa-solid fa-magnifying-glass-plus"></i></div>
+                        </div>
+                    </div>
+                    <div class="gallery-card-caption">
+                        <i class="fa-solid fa-image"></i>
+                        Inter-School Basketball Championship
+                    </div>
+                </div>
+            </div>
+
+            {# ── ITEM 3 (no caption) ── #}
+            <div class="gallery-item" data-category="academics">
+                <div class="gallery-card" data-src="https://images.unsplash.com/photo-1580582932707-520aed937b7b?w=1200&q=85" data-caption="" data-index="2">
+                    <div class="gallery-card-img-wrap">
+                        <img src="https://images.unsplash.com/photo-1580582932707-520aed937b7b?w=600&q=75" alt="Classroom Activity" loading="lazy">
+                        <div class="gallery-card-overlay">
+                            <div class="gallery-zoom-icon"><i class="fa-solid fa-magnifying-glass-plus"></i></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {# ── ITEM 4 ── #}
+            <div class="gallery-item" data-category="campus">
+                <div class="gallery-card" data-src="https://images.unsplash.com/photo-1562774053-701939374585?w=1200&q=85" data-caption="Our Beautiful Campus — Main Building" data-index="3">
+                    <div class="gallery-card-img-wrap">
+                        <img src="https://images.unsplash.com/photo-1562774053-701939374585?w=600&q=75" alt="Campus Main Building" loading="lazy">
+                        <div class="gallery-card-overlay">
+                            <div class="gallery-zoom-icon"><i class="fa-solid fa-magnifying-glass-plus"></i></div>
+                        </div>
+                    </div>
+                    <div class="gallery-card-caption">
+                        <i class="fa-solid fa-image"></i>
+                        Our Beautiful Campus — Main Building
+                    </div>
+                </div>
+            </div>
+
+            {# ── ITEM 5 ── #}
+            <div class="gallery-item" data-category="events">
+                <div class="gallery-card" data-src="https://images.unsplash.com/photo-1492538368677-f6e0afe31dcc?w=1200&q=85" data-caption="Science Fair 2024 — Student Innovations" data-index="4">
+                    <div class="gallery-card-img-wrap">
+                        <img src="https://images.unsplash.com/photo-1492538368677-f6e0afe31dcc?w=600&q=75" alt="Science Fair 2024" loading="lazy">
+                        <div class="gallery-card-overlay">
+                            <div class="gallery-zoom-icon"><i class="fa-solid fa-magnifying-glass-plus"></i></div>
+                        </div>
+                    </div>
+                    <div class="gallery-card-caption">
+                        <i class="fa-solid fa-image"></i>
+                        Science Fair 2024 — Student Innovations
+                    </div>
+                </div>
+            </div>
+
+            {# ── ITEM 6 ── #}
+            <div class="gallery-item" data-category="sports">
+                <div class="gallery-card" data-src="https://images.unsplash.com/photo-1543326727-cf6c39e8f84c?w=1200&q=85" data-caption="" data-index="5">
+                    <div class="gallery-card-img-wrap">
+                        <img src="https://images.unsplash.com/photo-1543326727-cf6c39e8f84c?w=600&q=75" alt="Athletics Day" loading="lazy">
+                        <div class="gallery-card-overlay">
+                            <div class="gallery-zoom-icon"><i class="fa-solid fa-magnifying-glass-plus"></i></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {# ── ITEM 7 ── #}
+            <div class="gallery-item" data-category="academics">
+                <div class="gallery-card" data-src="https://images.unsplash.com/photo-1427504494785-3a9ca7044f45?w=1200&q=85" data-caption="Library Reading Programme" data-index="6">
+                    <div class="gallery-card-img-wrap">
+                        <img src="https://images.unsplash.com/photo-1427504494785-3a9ca7044f45?w=600&q=75" alt="Library Reading Programme" loading="lazy">
+                        <div class="gallery-card-overlay">
+                            <div class="gallery-zoom-icon"><i class="fa-solid fa-magnifying-glass-plus"></i></div>
+                        </div>
+                    </div>
+                    <div class="gallery-card-caption">
+                        <i class="fa-solid fa-image"></i>
+                        Library Reading Programme
+                    </div>
+                </div>
+            </div>
+
+            {# ── ITEM 8 ── #}
+            <div class="gallery-item" data-category="campus">
+                <div class="gallery-card" data-src="https://images.unsplash.com/photo-1509062522246-3755977927d7?w=1200&q=85" data-caption="State-of-the-art Science Laboratory" data-index="7">
+                    <div class="gallery-card-img-wrap">
+                        <img src="https://images.unsplash.com/photo-1509062522246-3755977927d7?w=600&q=75" alt="Science Laboratory" loading="lazy">
+                        <div class="gallery-card-overlay">
+                            <div class="gallery-zoom-icon"><i class="fa-solid fa-magnifying-glass-plus"></i></div>
+                        </div>
+                    </div>
+                    <div class="gallery-card-caption">
+                        <i class="fa-solid fa-image"></i>
+                        State-of-the-art Science Laboratory
+                    </div>
+                </div>
+            </div>
+
+        </div>{# /gallery-grid #}
+
+        {# ── EMPTY STATE (shown by JS when filter yields no results) ── #}
+        <div class="gallery-empty d-none" id="galleryEmpty">
+            <i class="fa-regular fa-images"></i>
+            <p>No photos found in this category.</p>
+        </div>
+
+    </div>{# /container #}
+</section>
+
+{# ================================================================ #}
+{# LIGHTBOX MODAL                                                    #}
+{# ================================================================ #}
+<div class="gallery-lightbox" id="galleryLightbox" role="dialog" aria-modal="true" aria-label="Image Lightbox">
+
+    {# Backdrop — click to close #}
+    <div class="lightbox-backdrop" id="lightboxBackdrop"></div>
+
+    <div class="lightbox-dialog">
+
+        {# Close button #}
+        <button class="lightbox-close" id="lightboxClose" aria-label="Close lightbox">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+
+        {# Image area #}
+        <div class="lightbox-image-wrap">
+            <img src="" alt="" id="lightboxImg">
+        </div>
+
+        {# Caption bar #}
+        <div class="lightbox-caption-bar">
+            <div class="lightbox-caption-text" id="lightboxCaption">
+                <strong id="lightboxCaptionTitle"></strong>
+            </div>
+            <span class="lightbox-caption-count" id="lightboxCount">1 / 8</span>
+        </div>
+
+    </div>{# /lightbox-dialog #}
+
+    {# Prev / Next #}
+    <button class="lightbox-nav-btn lightbox-prev" id="lightboxPrev" aria-label="Previous image">
+        <i class="fa-solid fa-chevron-left"></i>
+    </button>
+    <button class="lightbox-nav-btn lightbox-next" id="lightboxNext" aria-label="Next image">
+        <i class="fa-solid fa-chevron-right"></i>
+    </button>
+
+</div>{# /gallery-lightbox #}
+
+{% endblock %}
+
+
+{% block custom_js %}
+<script>
+(function () {
+    'use strict';
+
+    /* ── Collect all cards ── */
+    const cards       = Array.from(document.querySelectorAll('.gallery-card'));
+    const items       = Array.from(document.querySelectorAll('.gallery-item'));
+    const lightbox    = document.getElementById('galleryLightbox');
+    const lbImg       = document.getElementById('lightboxImg');
+    const lbTitle     = document.getElementById('lightboxCaptionTitle');
+    const lbCount     = document.getElementById('lightboxCount');
+    const lbClose     = document.getElementById('lightboxClose');
+    const lbBackdrop  = document.getElementById('lightboxBackdrop');
+    const lbPrev      = document.getElementById('lightboxPrev');
+    const lbNext      = document.getElementById('lightboxNext');
+    const emptyState  = document.getElementById('galleryEmpty');
+
+    let visibleCards  = cards.slice();   /* subset visible after filter */
+    let currentIndex  = 0;
+
+    /* ── Animate items in on load ── */
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); } });
+    }, { threshold: 0.12 });
+    items.forEach(i => observer.observe(i));
+
+    /* ── FILTER ── */
+    document.getElementById('galleryFilterBar').addEventListener('click', function (e) {
+        const btn = e.target.closest('.gallery-filter-btn');
+        if (!btn) return;
+
+        document.querySelectorAll('.gallery-filter-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+
+        const filter = btn.dataset.filter;
+        visibleCards = [];
+
+        items.forEach(item => {
+            const show = filter === 'all' || item.dataset.category === filter;
+            item.style.display = show ? 'block' : 'none';
+            if (show) visibleCards.push(item.querySelector('.gallery-card'));
+        });
+
+        emptyState.classList.toggle('d-none', visibleCards.length > 0);
+    });
+
+    /* ── OPEN LIGHTBOX ── */
+    function openLightbox(index) {
+        currentIndex = index;
+        const card = visibleCards[index];
+        lbImg.src  = card.dataset.src;
+        lbImg.alt  = card.dataset.caption || 'Gallery image';
+        lbTitle.textContent = card.dataset.caption || '';
+        lbCount.textContent = (index + 1) + ' / ' + visibleCards.length;
+        lightbox.classList.add('open');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeLightbox() {
+        lightbox.classList.remove('open');
+        document.body.style.overflow = '';
+    }
+
+    function navigate(dir) {
+        currentIndex = (currentIndex + dir + visibleCards.length) % visibleCards.length;
+        openLightbox(currentIndex);
+    }
+
+    cards.forEach((card, i) => {
+        card.addEventListener('click', () => {
+            const idx = visibleCards.indexOf(card);
+            if (idx >= 0) openLightbox(idx);
+        });
+    });
+
+    lbClose.addEventListener('click', closeLightbox);
+    lbBackdrop.addEventListener('click', closeLightbox);
+    lbPrev.addEventListener('click', () => navigate(-1));
+    lbNext.addEventListener('click', () => navigate(1));
+
+    document.addEventListener('keydown', (e) => {
+        if (!lightbox.classList.contains('open')) return;
+        if (e.key === 'Escape')      closeLightbox();
+        if (e.key === 'ArrowLeft')   navigate(-1);
+        if (e.key === 'ArrowRight')  navigate(1);
+    });
+
+    /* ── Touch swipe on lightbox ── */
+    let touchStartX = 0;
+    lightbox.addEventListener('touchstart', e => { touchStartX = e.changedTouches[0].screenX; }, { passive: true });
+    lightbox.addEventListener('touchend',   e => {
+        const dx = e.changedTouches[0].screenX - touchStartX;
+        if (Math.abs(dx) > 50) navigate(dx < 0 ? 1 : -1);
+    });
+
+})();
+</script>
+{% endblock %}

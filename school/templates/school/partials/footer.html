@@ -1,0 +1,111 @@
+{% load static %}
+
+
+
+
+<footer class="site-footer">
+    <div class="footer-top">
+        <div class="container-xl">
+            <div class="row g-5">
+
+                <!-- Brand Column -->
+                <div class="col-lg-4 col-md-6">
+                    <div class="footer-brand">
+                        <a href="{% url 'home' %}" class="footer-logo">
+                            <div class=""><img src="{% static 'school/assets/images/logo.png' %}" class="logo-img" alt=""></div>
+                            <div class="footer-logo-text">
+                                <span class="footer-logo-name">Peace International</span>
+                                <span class="footer-logo-tagline">School & College</span>
+                            </div>
+                        </a>
+                        <p class="footer-about">Nurturing excellence from Nursery to A-Levels since 1996. A vibrant community built on learning, character and aspiration.</p>
+                        <div class="footer-social">
+                            <a href="https://www.facebook.com/peace.isc" target="_blank" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+                            <a href="#" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
+                            <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                            <a href="#" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+                            <a href="#" aria-label="Twitter/X"><i class="fab fa-x-twitter"></i></a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Links -->
+                <div class="col-lg-2 col-md-6 col-sm-6">
+                    <div class="footer-widget">
+                        <h5 class="footer-widget-title">Quick Links</h5>
+                        <ul class="footer-links">
+                            <li><a href="#"><i class="fas fa-chevron-right"></i> Home</a></li>
+                            <li><a href="#about"><i class="fas fa-chevron-right"></i> About Us</a></li>
+                            <li><a href="#"><i class="fas fa-chevron-right"></i> Admission</a></li>
+                            <li><a href="#curriculum"><i class="fas fa-chevron-right"></i> Curriculum</a></li>
+                            <li><a href="#facilities"><i class="fas fa-chevron-right"></i> Facilities</a></li>
+                            <li><a href="#"><i class="fas fa-chevron-right"></i> Gallery</a></li>
+                            <li><a href="#"><i class="fas fa-chevron-right"></i> Contact</a></li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Academic -->
+                <div class="col-lg-2 col-md-6 col-sm-6">
+                    <div class="footer-widget">
+                        <h5 class="footer-widget-title">Academic</h5>
+                        <ul class="footer-links">
+                            <li><a href="#"><i class="fas fa-chevron-right"></i> Nursery & KG</a></li>
+                            <li><a href="#"><i class="fas fa-chevron-right"></i> Primary School</a></li>
+                            <li><a href="#"><i class="fas fa-chevron-right"></i> Secondary School</a></li>
+                            <li><a href="#"><i class="fas fa-chevron-right"></i> Higher Secondary</a></li>
+                            <li><a href="#"><i class="fas fa-chevron-right"></i> A-Levels</a></li>
+                            <li><a href="#"><i class="fas fa-chevron-right"></i> Exam Schedule</a></li>
+                            <li><a href="#"><i class="fas fa-chevron-right"></i> Circulars</a></li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Contact -->
+                <div class="col-lg-4 col-md-6">
+                    <div class="footer-widget">
+                        <h5 class="footer-widget-title">Get In Touch</h5>
+                        <ul class="footer-contact-list">
+                            <li>
+                                <div class="footer-contact-icon"><i class="fas fa-map-marker-alt"></i></div>
+                                <div>13 O.R Nizam Road,<br>Chittagong, Bangladesh, 4000</div>
+                            </li>
+                            <li>
+                                <div class="footer-contact-icon"><i class="fas fa-phone-alt"></i></div>
+                                <div>
+                                    <a href="tel:+8801700000000">+880 1780-242908</a><br>
+                                    <a href="tel:+8801800000001">+880 1970-482908</a>
+                                </div>
+                            </li>
+                            <li>
+                                <div class="footer-contact-icon"><i class="fas fa-envelope"></i></div>
+                                <div>
+                                    <a href="mailto:info@peace.ctg.edu@gmail.com">peace.ctg.edu@gmail.com</a><br>
+                                </div>
+                            </li>
+                            <li>
+                                <div class="footer-contact-icon"><i class="fas fa-clock"></i></div>
+                                <div>Sun – Thu: 9:00 AM – 5:00 PM</div>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer Bottom -->
+    <div class="footer-bottom">
+        <div class="container-xl">
+            <div class="footer-bottom-inner">
+                <p>&copy; <span id="footerYear"></span> All Rights Reserved. Designed & Developed by <a href="https://iglweb.com/web/" target="_blank">IGL Web Ltd.</a></p>
+                {% comment %} <div class="footer-bottom-links">
+                    <a href="#">Privacy Policy</a>
+                    <a href="#">Terms of Use</a>
+                    <a href="#">Sitemap</a>
+                </div> {% endcomment %}
+            </div>
+        </div>
+    </div>
+</footer>

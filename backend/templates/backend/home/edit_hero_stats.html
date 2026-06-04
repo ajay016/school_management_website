@@ -1,0 +1,94 @@
+{% extends 'backend/base.html' %}
+{% load static %}
+{% block title %}Edit Hero Stats | Admin{% endblock %}
+
+{% block custom_css %}
+<style>
+    .btn-modern { background:linear-gradient(135deg,#3b82f6,#2563eb); color:#fff; border:none; padding:.6rem 1.5rem; border-radius:2rem; font-weight:600; box-shadow:0 4px 15px rgba(59,130,246,.3); transition:all .3s; display:inline-flex; align-items:center; gap:.5rem; }
+    .btn-modern:hover { transform:translateY(-2px); color:#fff; }
+    .form-container { background:#fff; padding:2.5rem; border-radius:1rem; box-shadow:0 4px 20px rgba(0,0,0,.03); border:1px solid #e2e8f0; }
+    .stat-group { background:#f8fafc; border:1px solid #e2e8f0; border-radius:.75rem; padding:1.25rem; }
+    .stat-group-label { font-size:.78rem; font-weight:700; text-transform:uppercase; letter-spacing:1px; color:#6366f1; margin-bottom:.75rem; }
+    .msg-success { background:rgba(16,185,129,.1); color:#059669; border:1px solid rgba(16,185,129,.2); }
+    .msg-error   { background:rgba(239,68,68,.1); color:#dc2626; border:1px solid rgba(239,68,68,.2); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="mb-0">Hero Stats Bar</h2>
+        <p class="text-muted mb-0 mt-1" style="font-size:.9rem;">The 4 counter items shown at the bottom of the hero slider</p>
+    </div>
+</div>
+
+<div class="form-container">
+    <form id="statsForm">
+        {% csrf_token %}
+
+        <div class="row g-4 mb-4">
+            {% for n, cnt, sfx, lbl in stat_rows %}
+            <div class="col-md-6">
+                <div class="stat-group">
+                    <div class="stat-group-label">Stat {{ n }}</div>
+                    <div class="row g-3">
+                        <div class="col-5">
+                            <label class="form-label fw-semibold" style="font-size:.85rem;">Number</label>
+                            <input type="number" name="stat{{ n }}_count" class="form-control" value="{{ cnt }}" min="0">
+                        </div>
+                        <div class="col-3">
+                            <label class="form-label fw-semibold" style="font-size:.85rem;">Suffix</label>
+                            <input type="text" name="stat{{ n }}_suffix" class="form-control" value="{{ sfx }}" placeholder="+">
+                        </div>
+                        <div class="col-4">
+                            <label class="form-label fw-semibold" style="font-size:.85rem;">Label</label>
+                            <input type="text" name="stat{{ n }}_label" class="form-control" value="{{ lbl }}">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="d-flex justify-content-between align-items-center pt-3 border-top">
+            <div id="statusMessage" style="display:none;" class="d-flex align-items-center gap-2 py-2 px-3 rounded-3">
+                <iconify-icon id="statusIcon" icon=""></iconify-icon>
+                <span id="statusText"></span>
+            </div>
+            <button type="submit" class="btn-modern ms-auto" id="submitBtn">
+                <iconify-icon icon="solar:disk-bold-duotone" style="font-size:1.2rem;"></iconify-icon> Save Stats
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block custom_js %}
+<script>
+document.getElementById('statsForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const btn = document.getElementById('submitBtn');
+    const orig = btn.innerHTML;
+    btn.innerHTML = '<iconify-icon icon="line-md:loading-twotone-loop"></iconify-icon> Saving…';
+    btn.disabled = true;
+
+    fetch("{% url 'edit_hero_stats' %}", {
+        method:'POST', body:new FormData(this),
+        headers:{'X-Requested-With':'XMLHttpRequest'}
+    })
+    .then(r=>r.json())
+    .then(data=>showStatus(data.message, data.success?'success':'error'))
+    .catch(()=>showStatus('A server error occurred.','error'))
+    .finally(()=>{btn.innerHTML=orig;btn.disabled=false;});
+});
+
+function showStatus(msg,type){
+    const el=document.getElementById('statusMessage');
+    document.getElementById('statusIcon').setAttribute('icon',type==='success'?'solar:check-circle-bold-duotone':'solar:danger-triangle-bold-duotone');
+    document.getElementById('statusText').innerText=msg;
+    el.className=`d-flex align-items-center gap-2 py-2 px-3 rounded-3 ${type==='success'?'msg-success':'msg-error'}`;
+    el.style.display='flex';
+    setTimeout(()=>{el.style.display='none';},5000);
+}
+</script>
+{% endblock %}

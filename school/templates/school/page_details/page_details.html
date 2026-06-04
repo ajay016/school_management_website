@@ -1,0 +1,122 @@
+{% extends "school/base.html" %}
+{% load static %}
+
+{% block custom_css %}
+<link rel="stylesheet" href="{% static 'school/assets/css/page_details.css' %}">
+{% endblock %}
+
+{% block content %}
+
+{# ── PAGE HERO / BREADCRUMB BANNER ── #}
+<section class="page-hero">
+    <div class="container">
+        <div class="page-hero-inner">
+            <span class="page-hero-label">
+                <i class="fa-solid fa-book-open me-1"></i> About Us
+            </span>
+            <h1 class="page-hero-title">Our <em>Academic Programme</em></h1>
+            <nav class="page-breadcrumb" aria-label="breadcrumb">
+                <a href="/">Home</a>
+                <span class="bc-sep"><i class="fa-solid fa-chevron-right"></i></span>
+                <a href="#">About</a>
+                <span class="bc-sep"><i class="fa-solid fa-chevron-right"></i></span>
+                <span class="bc-current">Academic Programme</span>
+            </nav>
+        </div>
+    </div>
+</section>
+
+{# ── DETAIL SECTION ── #}
+<section class="detail-section">
+    <div class="container">
+        <div class="detail-grid detail-grid--full">
+
+            {# ── IMAGE COLUMN ── #}
+            <div class="detail-image-col">
+                <div class="detail-image-wrap">
+                    {# Replace with {{ object.image.url }} when using dynamic data #}
+                    <img
+                        src="https://images.unsplash.com/photo-1580582932707-520aed937b7b?w=800&q=80"
+                        alt="Academic Programme at Peace International School"
+                        loading="lazy"
+                    >
+                </div>
+                <p class="detail-image-caption">
+                    <i class="fa-solid fa-camera me-1"></i>
+                    Students engaged in collaborative learning at Peace International School
+                </p>
+            </div>
+
+            {# ── CONTENT COLUMN ── #}
+            <div class="detail-content-col">
+
+                {# Meta tags row #}
+                <div class="detail-meta-row">
+                    <span class="detail-meta-tag">
+                        <i class="fa-solid fa-graduation-cap"></i> Academics
+                    </span>
+                    <span class="detail-meta-tag tag--navy">
+                        <i class="fa-regular fa-calendar"></i> Updated Jan 2025
+                    </span>
+                </div>
+
+                <h1 class="detail-content-title">Academic <em>Programme</em> Overview</h1>
+                <p class="detail-content-subtitle">
+                    A rigorous, balanced curriculum designed to unlock every child's potential.
+                </p>
+                <div class="detail-divider"></div>
+
+                {# Body text #}
+                <div class="detail-body">
+                    <p>At Peace International School, our academic programme is built on the belief that every student deserves a world-class education. Our curriculum integrates traditional core subjects with modern interdisciplinary learning to prepare students for the challenges of the 21st century.</p>
+
+                    <p>From Early Years through to Sixth Form, we offer a carefully sequenced pathway that nurtures curiosity, builds critical thinking, and fosters a genuine love for lifelong learning. Our dedicated faculty bring passion and expertise to every classroom, ensuring each student is both challenged and supported.</p>
+
+                    <p>Our STEM-enriched programme combines rigorous mathematics and sciences with cutting-edge technology initiatives, including robotics clubs, coding workshops, and partnerships with leading universities. The humanities and arts departments are equally vibrant, producing students who are articulate, empathetic, and culturally aware.</p>
+
+                    <p>Assessment at Peace International School is both formative and summative — we believe that continuous feedback is as important as examination results. Students receive regular progress reports and have access to one-on-one academic counselling sessions throughout the year.</p>
+
+                    <p>Extracurricular activities form an integral part of our holistic education model. With over 40 clubs and societies, students are encouraged to explore their passions beyond the classroom — from Model United Nations and the school orchestra to competitive sports and community service projects.</p>
+                </div>
+
+                {# Key-value info table #}
+                <div class="detail-info-list">
+                    <div class="detail-info-row">
+                        <div class="detail-info-key"><i class="fa-solid fa-layer-group"></i> Levels</div>
+                        <div class="detail-info-val">Early Years, Primary, Secondary, Sixth Form</div>
+                    </div>
+                    <div class="detail-info-row">
+                        <div class="detail-info-key"><i class="fa-solid fa-clock"></i> Duration</div>
+                        <div class="detail-info-val">Full Academic Year (September – July)</div>
+                    </div>
+                    <div class="detail-info-row">
+                        <div class="detail-info-key"><i class="fa-solid fa-users"></i> Class Size</div>
+                        <div class="detail-info-val">Maximum 22 students per class</div>
+                    </div>
+                    <div class="detail-info-row">
+                        <div class="detail-info-key"><i class="fa-solid fa-certificate"></i> Accreditation</div>
+                        <div class="detail-info-val">Cambridge International & National Curriculum</div>
+                    </div>
+                    <div class="detail-info-row">
+                        <div class="detail-info-key"><i class="fa-solid fa-language"></i> Language</div>
+                        <div class="detail-info-val">English (medium of instruction)</div>
+                    </div>
+                </div>
+
+                {# CTA Buttons #}
+                <div class="detail-cta-row">
+                    <a href="/admissions/" class="btn btn-primary">
+                        <i class="fa-solid fa-paper-plane me-2"></i> Apply Now
+                    </a>
+                    <a href="/contact/" class="btn btn-outline-secondary">
+                        <i class="fa-solid fa-phone me-2"></i> Contact Us
+                    </a>
+                </div>
+
+            </div>{# /detail-content-col #}
+
+        </div>{# /detail-grid #}
+    </div>{# /container #}
+</section>
+
+{% endblock %}

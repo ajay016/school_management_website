@@ -1,0 +1,80 @@
+{% extends "school/base.html" %}
+{% load static %}
+
+{% block title %}{{ submenu.name }} — Peace International School{% endblock %}
+
+{% block content %}
+
+<section class="page-hero">
+    <div class="container">
+        <div class="page-hero-inner">
+            <span class="page-hero-label">
+                <i class="fa-solid fa-align-left me-1"></i> {{ submenu.menu.name }}
+            </span>
+            <h1 class="page-hero-title">{{ submenu.name }}</h1>
+            <nav class="page-breadcrumb" aria-label="breadcrumb">
+                <a href="/">Home</a>
+                <span class="bc-sep"><i class="fa-solid fa-chevron-right"></i></span>
+                <span>{{ submenu.menu.name }}</span>
+                <span class="bc-sep"><i class="fa-solid fa-chevron-right"></i></span>
+                <span class="bc-current">{{ submenu.name }}</span>
+            </nav>
+        </div>
+    </div>
+</section>
+
+<section class="py-5">
+    <div class="container">
+        {% for block in rich_texts %}
+        <div class="mb-5" data-aos="fade-up">
+            {% if block.section_title %}
+            <h3 class="fw-bold mb-4" style="color:var(--clr-secondary-dark); border-left:4px solid var(--clr-primary); padding-left:.75rem;">
+                {{ block.section_title }}
+            </h3>
+            {% endif %}
+            {# Content comes from the Quill/CKEditor rich text field — rendered as raw HTML #}
+            <div class="rich-text-content lh-lg">
+                {{ block.content|safe }}
+            </div>
+        </div>
+        {% if not forloop.last %}<hr class="my-5">{% endif %}
+        {% empty %}
+        <div class="text-center py-5 text-muted">
+            <i class="fas fa-file-circle-exclamation fa-3x mb-3"></i>
+            <p>No content has been added to this page yet.</p>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+
+{% endblock %}
+
+{% block custom_css %}
+<style>
+/* Basic rich-text content styling so tables, lists, headings look good */
+.rich-text-content h1, .rich-text-content h2, .rich-text-content h3 {
+    color: var(--clr-secondary-dark); margin-top: 1.5rem; margin-bottom: .75rem;
+}
+.rich-text-content table {
+    width: 100%; border-collapse: collapse; margin: 1.25rem 0; font-size: .95rem;
+}
+.rich-text-content table th,
+.rich-text-content table td {
+    border: 1px solid #e2e8f0; padding: .6rem .9rem; text-align: left;
+}
+.rich-text-content table thead th {
+    background: var(--clr-primary); color: #fff; font-weight: 600;
+}
+.rich-text-content table tbody tr:nth-child(even) { background: #f8fafc; }
+.rich-text-content ul, .rich-text-content ol {
+    padding-left: 1.5rem; margin-bottom: 1rem;
+}
+.rich-text-content li { margin-bottom: .35rem; }
+.rich-text-content a { color: var(--clr-primary); }
+.rich-text-content blockquote {
+    border-left: 4px solid var(--clr-primary); margin: 1.25rem 0;
+    padding: .75rem 1.25rem; background: #f0f9ff; border-radius: 0 .5rem .5rem 0;
+    color: var(--clr-secondary-dark); font-style: italic;
+}
+</style>
+{% endblock %}

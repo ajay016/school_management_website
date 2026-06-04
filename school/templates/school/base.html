@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+{% include "school/partials/header.html" %}
+{% block custom_css %}{% endblock custom_css %}
+<body>
+
+    {% include "school/partials/navbar.html" %}
+
+    <main>
+        {% block content %}{% endblock %}
+        {% include "school/partials/footer.html" %}
+    </main>
+
+    {% include "school/partials/scripts.html" %}
+
+    {% block custom_js %}{% endblock %}
+
+</body>
+</html>

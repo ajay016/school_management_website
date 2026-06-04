@@ -1,0 +1,200 @@
+{% extends 'backend/base.html' %}
+{% load static %}
+
+{% block title %}Edit Rich Text | Admin{% endblock %}
+
+{% block custom_css %}
+<link href="https://cdn.quilljs.com/1.3.7/quill.snow.css" rel="stylesheet">
+
+<style>
+    /* Modern Form & Buttons */
+    .btn-modern {
+        background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: white;
+        border: none; padding: 0.6rem 1.5rem; border-radius: 2rem;
+        font-weight: 600; letter-spacing: 0.5px; box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+        transition: all 0.3s ease; display: inline-flex; align-items: center; gap: 0.5rem;
+    }
+    .btn-modern:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4); color: white; }
+    
+    /* Layout Container */
+    .form-container {
+        background: #ffffff; padding: 2.5rem; border-radius: 1rem;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.03); border: 1px solid #e2e8f0;
+    }
+
+    /* Status Messages */
+    #statusMessage {
+        display: none; padding: 1rem 1.25rem; border-radius: 0.75rem;
+        font-weight: 500; margin-bottom: 1.5rem; font-size: 0.95rem;
+        align-items: center; gap: 0.5rem;
+    }
+    .msg-success { background-color: rgba(16, 185, 129, 0.1); color: #059669; border: 1px solid rgba(16, 185, 129, 0.2); }
+    .msg-error { background-color: rgba(239, 68, 68, 0.1); color: #dc2626; border: 1px solid rgba(239, 68, 68, 0.2); }
+
+    /* Quill Editor Customization */
+    .ql-toolbar.ql-snow {
+        border-top-left-radius: 0.5rem; border-top-right-radius: 0.5rem;
+        border-color: #cbd5e1; background-color: #f8fafc; font-family: inherit;
+    }
+    .ql-container.ql-snow {
+        border-bottom-left-radius: 0.5rem; border-bottom-right-radius: 0.5rem;
+        border-color: #cbd5e1; min-height: 400px; font-size: 1rem; font-family: inherit;
+    }
+    .ql-editor { min-height: 400px; }
+    .ql-editor:focus { box-shadow: 0 0 0 0.25rem rgba(59, 130, 246, 0.25); border-radius: 0 0 0.5rem 0.5rem; outline: none; }
+</style>
+{% endblock custom_css %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="mb-0">Edit Rich Text <span class="badge bg-secondary fs-6 align-middle ms-2">Layout 3</span></h2>
+    <a href="{% url 'list_layout3_rich_text' %}" class="btn btn-light rounded-pill px-4 border">
+        <iconify-icon icon="solar:hamburger-menu-bold-duotone" class="me-1"></iconify-icon> Back to List
+    </a>
+</div>
+
+<div class="form-container">
+    <form id="richTextForm">
+        {% csrf_token %}
+        <div class="row g-4 mb-4">
+            <div class="col-md-5">
+                <label class="form-label fw-semibold">Target Submenu</label>
+                <input type="text" class="form-control bg-light" value="{{ current_submenu.menu.name }} &rsaquo; {{ current_submenu.name }}" disabled>
+            </div>
+            <div class="col-md-5">
+                <label class="form-label fw-semibold">Section Title</label>
+                <input type="text" name="section_title" class="form-control" value="{{ rich_text.section_title|default_if_none:'' }}" placeholder="e.g., Introduction, History">
+                <small class="text-muted">Optional title displayed above this text block.</small>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label fw-semibold">Order</label>
+                <input type="number" name="order" class="form-control" value="{{ rich_text.order|default:'0' }}" required>
+                <small class="text-muted">Display order.</small>
+            </div>
+        </div>
+
+        <div class="mb-4">
+            <label class="form-label fw-semibold">Content <span class="text-danger">*</span></label>
+            <input type="hidden" name="content" id="hiddenContent">
+            
+            <div id="quillEditor">{{ rich_text.content|safe }}</div>
+        </div>
+
+        <div id="statusMessage">
+            <iconify-icon id="statusIcon" icon="" style="font-size: 1.5rem;"></iconify-icon>
+            <span id="statusText"></span>
+        </div>
+
+        <div class="text-end mt-4 pt-3 border-top">
+            <button type="submit" class="btn-modern" id="submitBtn">
+                <iconify-icon icon="solar:disk-bold-duotone" style="font-size: 1.2rem;"></iconify-icon> Update Content
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock content %}
+
+{% block custom_js %}
+<script src="https://cdn.quilljs.com/1.3.7/quill.min.js"></script>
+
+<script>
+    // Initialize Full-Fledged Quill Editor
+    var toolbarOptions = [
+        ['bold', 'italic', 'underline', 'strike'],        
+        ['blockquote', 'code-block'],
+        [{ 'header': 1 }, { 'header': 2 }],               
+        [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+        [{ 'script': 'sub'}, { 'script': 'super' }],      
+        [{ 'indent': '-1'}, { 'indent': '+1' }],          
+        [{ 'direction': 'rtl' }],                         
+        [{ 'size': ['small', false, 'large', 'huge'] }],  
+        [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
+        [{ 'color': [] }, { 'background': [] }],          
+        [{ 'font': [] }],
+        [{ 'align': [] }],
+        ['link', 'image', 'video'],
+        ['clean']                                         
+    ];
+
+    var quill = new Quill('#quillEditor', {
+        modules: {
+            toolbar: toolbarOptions
+        },
+        theme: 'snow',
+        placeholder: 'Write your rich text content here...'
+    });
+
+    // Form Submission Handling
+    document.addEventListener("DOMContentLoaded", function() {
+        document.getElementById('richTextForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Sync Quill content to hidden input
+            const hiddenContent = document.getElementById('hiddenContent');
+            const editorHTML = quill.root.innerHTML;
+            hiddenContent.value = editorHTML;
+
+            // Validation
+            if (editorHTML === '<p><br></p>' || editorHTML.trim() === '') {
+                showStatus('Content cannot be empty.', 'error');
+                return;
+            }
+
+            const form = e.target;
+            const formData = new FormData(form);
+            const btn = document.getElementById('submitBtn');
+            const originalText = btn.innerHTML;
+            
+            btn.innerHTML = '<iconify-icon icon="line-md:loading-twotone-loop" class="me-1"></iconify-icon> Updating...';
+            btn.disabled = true;
+
+            // Fetch request sends to the current URL
+            fetch(`{% url 'edit_layout3_rich_text' current_submenu.id %}`, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    showStatus(data.message, 'success');
+                    // We don't reset the form here because they are editing
+                } else {
+                    let errMsg = data.message + " ";
+                    if(data.errors) {
+                        for(const [field, errors] of Object.entries(data.errors)) {
+                            errMsg += errors.join(" ");
+                        }
+                    }
+                    showStatus(errMsg, 'error');
+                }
+            })
+            .catch(err => {
+                showStatus('A server error occurred. Please try again.', 'error');
+            })
+            .finally(() => {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            });
+        });
+    });
+
+    // Status UI helper
+    function showStatus(msg, type) {
+        const el = document.getElementById('statusMessage');
+        const icon = document.getElementById('statusIcon');
+        const text = document.getElementById('statusText');
+        
+        el.className = type === 'success' ? 'msg-success d-flex' : 'msg-error d-flex';
+        icon.setAttribute('icon', type === 'success' ? 'solar:check-circle-bold-duotone' : 'solar:danger-triangle-bold-duotone');
+        text.innerText = msg; 
+        
+        el.style.display = 'flex';
+        window.scrollTo({top: 0, behavior: 'smooth'});
+        
+        setTimeout(() => { el.style.display = 'none'; }, 5000);
+    }
+</script>
+{% endblock custom_js %}

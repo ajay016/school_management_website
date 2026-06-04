@@ -1,0 +1,373 @@
+{% extends 'backend/base.html' %}
+{% load static %}
+
+{% block title %}Edit Menu | Admin{% endblock %}
+
+{% block custom_css %}
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+<link rel="stylesheet" href="{% static 'backend/assets/css/custom_datatable.css' %}">
+<style>
+    #statusMessage {
+        display: none; padding: 1rem 1.25rem; border-radius: 0.75rem;
+        font-weight: 500; margin-bottom: 1.5rem; font-size: 0.95rem;
+        align-items: center; gap: 0.5rem; transition: all 0.3s ease;
+    }
+    .msg-success { background-color: rgba(16, 185, 129, 0.1); color: #059669; border: 1px solid rgba(16, 185, 129, 0.2); }
+    .msg-error { background-color: rgba(239, 68, 68, 0.1); color: #dc2626; border: 1px solid rgba(239, 68, 68, 0.2); }
+    
+    .btn-modern {
+        background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: white;
+        border: none; padding: 0.75rem 2rem; border-radius: 2rem;
+        font-weight: 600; letter-spacing: 0.5px; box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+        transition: all 0.3s ease; display: inline-flex; align-items: center; gap: 0.5rem;
+    }
+    .btn-modern:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4); color: white; }
+    
+    .form-control, .form-select { border-radius: 0.5rem; border: 1px solid rgba(15, 23, 42, 0.1); padding: 0.6rem 1rem; }
+    .form-control:focus, .form-select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1); }
+    .error-text { color: #dc2626; font-size: 0.85rem; margin-top: 0.25rem; display: none; }
+</style>
+{% endblock custom_css %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="mb-0">Edit Menu: <span class="text-primary">{{ menu.name }}</span></h2>
+    <a href="{% url 'list_menus' %}" class="btn btn-outline-secondary rounded-pill px-4">Back to Menus</a>
+</div>
+
+<div id="statusMessage">
+    <iconify-icon id="statusIcon" icon="" style="font-size: 1.5rem;"></iconify-icon>
+    <span id="statusText"></span>
+</div>
+
+<div class="card bg-white border-0 p-4 mb-5" style="border-radius: 1.2rem; box-shadow: var(--panel-glow);">
+    <form id="menuForm">
+        {% csrf_token %}
+        <div class="row g-4">
+            <div class="col-lg-6">
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Menu Name</label>
+                    <input type="text" name="name" class="form-control" value="{{ menu.name }}" required>
+                    <div class="error-text" id="err_menu_name"></div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Sort Order</label>
+                    <input type="number" name="order" class="form-control" value="{{ menu.order }}" min="0" required>
+                    <div class="error-text" id="err_menu_order"></div>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Direct Page Link (Optional)</label>
+                    <select name="page" class="form-select">
+                        <option value="">-- No Direct Link (Has Submenus) --</option>
+                        {% for choice_val, choice_label in page_choices %}
+                            <option value="{{ choice_val }}" {% if menu.page == choice_val %}selected{% endif %}>{{ choice_label }}</option>
+                        {% endfor %}
+                    </select>
+                    <small class="text-muted">Only select if this menu has NO submenus.</small>
+                    <div class="error-text" id="err_menu_page"></div>
+                </div>
+                <div class="d-flex justify-content-between align-items-center mt-4">
+                    <div class="form-check form-switch" style="padding-left: 2.5rem;">
+                        <input class="form-check-input" type="checkbox" name="is_active" id="menuActiveSwitch" value="true" {% if menu.is_active %}checked{% endif %} style="width: 3rem; height: 1.5rem; margin-left: -2.5rem;">
+                        <label class="form-check-label fw-semibold mt-1 ms-2" for="menuActiveSwitch">Active</label>
+                    </div>
+                    <button type="submit" class="btn-modern" id="submitMenuBtn">Update Menu</button>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h3 class="mb-0 h4">Submenus</h3>
+    <button class="btn-modern" style="padding: 0.5rem 1.25rem;" onclick="openCreateSubmodal()">
+        <iconify-icon icon="solar:add-circle-bold-duotone" style="font-size: 1.2rem;"></iconify-icon> Add Submenu
+    </button>
+</div>
+
+<div class="modern-table-wrapper">
+    <table id="submenuTable" class="table-modern">
+        <thead>
+            <tr>
+                <th width="10%">Order</th>
+                <th width="25%">Submenu Name</th>
+                <th width="25%">Page Layout</th>
+                <th width="15%">Status</th>
+                <th width="25%" class="text-end">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for sub in submenus %}
+            <tr>
+                <td class="text-muted fw-medium">{{ sub.order }}</td>
+                <td class="fw-medium">{{ sub.name }}</td>
+                <td class="text-muted">{{ sub.get_page_display }}</td>
+                <td>
+                    {% if sub.is_active %}<span class="modern-badge badge-active">Active</span>
+                    {% else %}<span class="modern-badge badge-inactive">Inactive</span>{% endif %}
+                </td>
+                <td class="text-end">
+                    <button class="btn-action btn-edit me-1" onclick="openEditSubmodal({{ sub.id }})" title="Edit">
+                        <iconify-icon icon="solar:pen-new-round-bold-duotone" style="font-size: 1.2rem;"></iconify-icon>
+                    </button>
+                    <button class="btn-action btn-delete" onclick="triggerDeleteModal({{ sub.id }})" title="Delete">
+                        <iconify-icon icon="solar:trash-bin-trash-bold-duotone" style="font-size: 1.2rem;"></iconify-icon>
+                    </button>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<div class="modal fade modal-modern" id="submenuModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <form id="submenuForm">
+                {% csrf_token %}
+                <input type="hidden" id="submenuId" name="submenu_id">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold" id="submenuModalTitle">Add Submenu</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div id="subStatusMsg" class="error-text mb-3" style="font-weight:500;"></div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Name</label>
+                        <input type="text" name="name" id="subName" class="form-control" required>
+                        <div class="error-text" id="err_sub_name"></div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Page Layout (Required)</label>
+                        <select name="page" id="subPage" class="form-select" required>
+                            <option value="">-- Select Layout --</option>
+                            {% for choice_val, choice_label in page_choices %}
+                                <option value="{{ choice_val }}">{{ choice_label }}</option>
+                            {% endfor %}
+                        </select>
+                        <div class="error-text" id="err_sub_page"></div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Order</label>
+                        <input type="number" name="order" id="subOrder" class="form-control" value="0" min="0" required>
+                        <div class="error-text" id="err_sub_order"></div>
+                    </div>
+                    <div class="form-check form-switch mt-4 ps-5">
+                        <input class="form-check-input" type="checkbox" name="is_active" id="subActive" value="true" checked style="width: 2.5rem; height: 1.25rem; margin-left: -2.5rem;">
+                        <label class="form-check-label fw-medium ms-2" for="subActive">Is Active</label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn-modern" id="saveSubBtn" style="padding: 0.5rem 1.5rem;">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade modal-modern" id="deleteModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold d-flex align-items-center gap-2">
+                    <iconify-icon icon="solar:danger-triangle-bold-duotone" style="color: #ef4444; font-size: 1.5rem;"></iconify-icon> Confirm Deletion
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center py-4">
+                <p class="mb-0 text-muted">Delete this submenu? <br><span class="text-dark fw-medium">Order will be re-sequenced automatically.</span></p>
+            </div>
+            <div class="modal-footer justify-content-center gap-2">
+                <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger rounded-pill px-4" id="confirmDeleteBtn">Yes, Delete</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}
+
+{% block custom_js %}
+<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+
+<script>
+    const MENU_ID = {{ menu.id }};
+    const CSRF = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    let dataTable = null;
+
+    document.addEventListener('DOMContentLoaded', function() {
+        dataTable = $('#submenuTable').DataTable({
+            "language": { "search": "", "searchPlaceholder": "Search submenus..." },
+            "pageLength": 10,
+            "ordering": false, // Handled by DB order
+            "dom": '<"d-flex justify-content-between align-items-center mb-3"lf>rt<"d-flex justify-content-between align-items-center mt-3"ip>'
+        });
+
+        // --- 1. MAIN MENU UPDATE FORM ---
+        document.getElementById('menuForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const btn = document.getElementById('submitMenuBtn');
+            btn.innerHTML = 'Updating...'; btn.disabled = true;
+            
+            const formData = new FormData(this);
+            if (!document.getElementById('menuActiveSwitch').checked) formData.append('is_active', 'false');
+
+            fetch("{% url 'edit_menu' menu.id %}", {
+                method: 'POST', 
+                body: formData, 
+                // ADDED: Explicit CSRF token to headers
+                headers: { 'X-Requested-With': 'XMLHttpRequest', 'X-CSRFToken': CSRF }
+            })
+            // ADDED: Check if response is HTML error to prevent JSON crash
+            .then(res => {
+                if (!res.ok && res.status !== 400) throw new Error('Server returned an error.');
+                return res.json().then(data => ({status: res.status, body: data}));
+            })
+            .then(res => {
+                document.querySelectorAll('[id^="err_menu_"]').forEach(el => { el.style.display='none'; el.innerText=''; });
+                if (res.status === 200 && res.body.success) showStatus(res.body.message, 'success');
+                else {
+                    showStatus('Validation error.', 'error');
+                    if (res.body.errors) {
+                        for (const [field, errs] of Object.entries(res.body.errors)) {
+                            const el = document.getElementById(`err_menu_${field}`);
+                            if(el) { el.innerText = errs[0]; el.style.display = 'block'; }
+                        }
+                    }
+                }
+            })
+            // ADDED: Catch block so the button resets if it fails
+            .catch(err => { showStatus('A server error occurred.', 'error'); console.error(err); })
+            .finally(() => { btn.innerHTML = 'Update Menu'; btn.disabled = false; });
+        });
+
+        // --- 2. SUBMENU MODAL FORM (CREATE & EDIT) ---
+        document.getElementById('submenuForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const btn = document.getElementById('saveSubBtn');
+            btn.innerHTML = 'Saving...'; btn.disabled = true;
+
+            const subId = document.getElementById('submenuId').value;
+            const isEdit = subId !== "";
+            
+            // REPLACED: Hardcoded /dashboard/ URLs with Django template tags
+            let url = isEdit 
+                ? `{% url 'update_submenu' 0 %}`.replace('0', subId) 
+                : `{% url 'create_submenu' menu.id %}`;
+            
+            const formData = new FormData(this);
+            if (!document.getElementById('subActive').checked) formData.append('is_active', 'false');
+
+            fetch(url, { 
+                method: 'POST', 
+                body: formData, 
+                // ADDED: Explicit CSRF token
+                headers: { 'X-Requested-With': 'XMLHttpRequest', 'X-CSRFToken': CSRF } 
+            })
+            // ADDED: Safety check for HTML errors
+            .then(res => {
+                if (!res.ok && res.status !== 400) throw new Error('Server returned an error.');
+                return res.json().then(data => ({status: res.status, body: data}));
+            })
+            .then(res => {
+                document.querySelectorAll('[id^="err_sub_"]').forEach(el => el.style.display='none');
+                if (res.status === 200 && res.body.success) {
+                    bootstrap.Modal.getInstance(document.getElementById('submenuModal')).hide();
+                    showStatus(res.body.message, 'success');
+                    setTimeout(() => window.location.reload(), 800);
+                } else {
+                    document.getElementById('subStatusMsg').innerText = 'Please fix the errors below.';
+                    document.getElementById('subStatusMsg').style.display = 'block';
+                    if (res.body.errors) {
+                        for (const [field, errs] of Object.entries(res.body.errors)) {
+                            const el = document.getElementById(`err_sub_${field}`);
+                            if(el) { el.innerText = errs[0]; el.style.display = 'block'; }
+                        }
+                    }
+                }
+            })
+            .catch(err => { 
+                document.getElementById('subStatusMsg').innerText = 'A server error occurred. Check console.';
+                document.getElementById('subStatusMsg').style.display = 'block';
+                console.error(err); 
+            })
+            .finally(() => { btn.innerHTML = 'Save'; btn.disabled = false; });
+        });
+    });
+
+    // --- 3. SUBMENU MODAL TRIGGERS ---
+    const subModal = new bootstrap.Modal(document.getElementById('submenuModal'));
+    
+    function resetSubForm(title) {
+        document.getElementById('submenuForm').reset();
+        document.getElementById('submenuId').value = "";
+        document.getElementById('submenuModalTitle').innerText = title;
+        document.querySelectorAll('[id^="err_sub_"]').forEach(el => el.style.display='none');
+        document.getElementById('subStatusMsg').style.display='none';
+    }
+
+    function openCreateSubmodal() {
+        resetSubForm('Add Submenu');
+        subModal.show();
+    }
+
+    function openEditSubmodal(id) {
+        resetSubForm('Edit Submenu');
+        
+        // REPLACED: Hardcoded URL with Django template tag
+        fetch(`{% url 'get_submenu' 0 %}`.replace('0', id), { 
+            headers: {'X-Requested-With': 'XMLHttpRequest'} 
+        })
+        .then(res => res.json())
+        .then(data => {
+            document.getElementById('submenuId').value = data.id;
+            document.getElementById('subName').value = data.name;
+            document.getElementById('subPage').value = data.page;
+            document.getElementById('subOrder').value = data.order;
+            document.getElementById('subActive').checked = data.is_active;
+            subModal.show();
+        })
+        .catch(err => console.error("Error fetching submenu:", err));
+    }
+
+    // --- 4. DELETE SUBMENU LOGIC ---
+    let deleteId = null;
+    const deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+    
+    function triggerDeleteModal(id) { deleteId = id; deleteModal.show(); }
+
+    document.getElementById('confirmDeleteBtn').addEventListener('click', function() {
+        if(!deleteId) return;
+        this.innerHTML = 'Deleting...'; this.disabled = true;
+
+        // REPLACED: Hardcoded URL with Django template tag
+        fetch(`{% url 'delete_submenu' 0 %}`.replace('0', deleteId), {
+            method: 'POST', 
+            headers: { 'X-Requested-With': 'XMLHttpRequest', 'X-CSRFToken': CSRF }
+        })
+        .then(res => res.json())
+        .then(data => {
+            deleteModal.hide();
+            if(data.success) {
+                showStatus(data.message, 'success');
+                setTimeout(() => window.location.reload(), 800);
+            } else { showStatus('Error deleting submenu.', 'error'); }
+        })
+        .catch(err => showStatus('A server error occurred.', 'error'))
+        .finally(() => { this.innerHTML = 'Yes, Delete'; this.disabled = false; deleteId = null; });
+    });
+
+    function showStatus(msg, type) {
+        const el = document.getElementById('statusMessage');
+        const icon = document.getElementById('statusIcon');
+        const text = document.getElementById('statusText');
+        el.className = type === 'success' ? 'msg-success d-flex' : 'msg-error d-flex';
+        icon.setAttribute('icon', type === 'success' ? 'solar:check-circle-bold-duotone' : 'solar:danger-triangle-bold-duotone');
+        text.innerText = msg; el.style.display = 'flex';
+        window.scrollTo({top: 0, behavior: 'smooth'});
+    }
+</script>
+{% endblock custom_js %}

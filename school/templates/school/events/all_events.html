@@ -1,0 +1,351 @@
+{% extends "school/base.html" %}
+{% load static %}
+
+{% block custom_css %}
+<link rel="stylesheet" href="{% static 'school/assets/css/event.css' %}">
+{% endblock %}
+
+{% block content %}
+
+{# ── PAGE HERO / BREADCRUMB BANNER ── #}
+<section class="page-hero">
+    <div class="container">
+        <div class="page-hero-inner">
+            <span class="page-hero-label">
+                <i class="fa-solid fa-calendar-days me-1"></i> School Life
+            </span>
+            <h1 class="page-hero-title">Events &amp; <em>Activities</em></h1>
+            <nav class="page-breadcrumb" aria-label="breadcrumb">
+                <a href="/">Home</a>
+                <span class="bc-sep"><i class="fa-solid fa-chevron-right"></i></span>
+                <span class="bc-current">Events</span>
+            </nav>
+        </div>
+    </div>
+</section>
+
+{# ── EVENTS SECTION ── #}
+<section class="events-page-section">
+    <div class="container">
+
+        {# ── UPCOMING / PAST TABS ── #}
+        <div class="events-tab-bar" role="tablist" aria-label="Event tabs">
+            <button class="events-tab-btn active" id="tab-upcoming" role="tab"
+                    aria-selected="true" aria-controls="panel-upcoming" data-tab="upcoming">
+                <i class="fa-solid fa-calendar-check"></i>
+                Upcoming Events
+                <span class="tab-count">{{ upcoming_events|length }}</span>
+            </button>
+            <button class="events-tab-btn tab--past" id="tab-past" role="tab"
+                    aria-selected="false" aria-controls="panel-past" data-tab="past">
+                <i class="fa-solid fa-calendar-xmark"></i>
+                Past Events
+                <span class="tab-count">{{ past_events|length }}</span>
+            </button>
+        </div>
+
+        {# ══════════════════════════════════════════════════════ #}
+        {# TAB PANEL — UPCOMING EVENTS                           #}
+        {# ══════════════════════════════════════════════════════ #}
+        <div class="events-tab-panel active" id="panel-upcoming" role="tabpanel" aria-labelledby="tab-upcoming">
+            <div class="events-cards-grid">
+                {% for event in upcoming_events %}
+                <div class="ev-card ev-visible"
+                     data-event-id="{{ event.id }}"
+                     data-title="{{ event.title }}"
+                     data-date="{{ event.event_date|date:'d F Y' }}"
+                     data-time="{% if event.event_time %}{{ event.event_time|time:'g:i A' }}{% else %}—{% endif %}"
+                     data-venue="{{ event.venue|default:'' }}"
+                     data-status="upcoming"
+                     data-image="{% if event.image %}{{ event.image.url }}{% endif %}"
+                     data-description="{{ event.description|striptags }}"
+                     tabindex="0" role="button">
+
+                    <div class="ev-card-image">
+                        {% if event.image %}
+                            <img src="{{ event.image.url }}" alt="{{ event.title }}" loading="lazy">
+                        {% else %}
+                            <div class="ev-card-image-placeholder">
+                                <i class="fa-solid fa-calendar-days"></i>
+                                {{ event.title|truncatewords:4 }}
+                            </div>
+                        {% endif %}
+                        <div class="ev-card-date-badge">
+                            <span class="ev-date-day">{{ event.event_date|date:"d" }}</span>
+                            <span class="ev-date-month">{{ event.event_date|date:"M" }}</span>
+                        </div>
+                        <span class="ev-status-pill ev-status-pill--upcoming">
+                            <i class="fa-solid fa-circle"></i> Upcoming
+                        </span>
+                    </div>
+
+                    <div class="ev-card-body">
+                        <span class="ev-card-category">
+                            <i class="fa-solid fa-calendar-alt"></i>
+                            {{ event.event_date|date:"d M Y" }}
+                        </span>
+                        <h3 class="ev-card-title">{{ event.title }}</h3>
+                        {% if event.description %}
+                        <p class="ev-card-desc">{{ event.description|striptags|truncatewords:20 }}</p>
+                        {% endif %}
+                        <div class="ev-card-meta">
+                            {% if event.event_time %}
+                            <div class="ev-card-meta-item">
+                                <i class="fa-regular fa-clock"></i> {{ event.event_time|time:"g:i A" }}
+                            </div>
+                            {% endif %}
+                            {% if event.venue %}
+                            <div class="ev-card-meta-item">
+                                <i class="fa-solid fa-location-dot"></i> {{ event.venue }}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="ev-card-footer">
+                        View Details <i class="fa-solid fa-arrow-right ms-1"></i>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="col-12 text-center text-muted py-5" style="grid-column:1/-1;">
+                    <i class="fa-solid fa-calendar-xmark fa-3x mb-3"></i>
+                    <p>No upcoming events at the moment.</p>
+                </div>
+                {% endfor %}
+            </div>{# /events-cards-grid #}
+        </div>{# /panel-upcoming #}
+
+        {# ══════════════════════════════════════════════════════ #}
+        {# TAB PANEL — PAST EVENTS                               #}
+        {# ══════════════════════════════════════════════════════ #}
+        <div class="events-tab-panel" id="panel-past" role="tabpanel" aria-labelledby="tab-past">
+            <div class="events-cards-grid">
+                {% for event in past_events %}
+                <div class="ev-card ev-card--past ev-visible"
+                     data-event-id="{{ event.id }}"
+                     data-title="{{ event.title }}"
+                     data-date="{{ event.event_date|date:'d F Y' }}"
+                     data-time="{% if event.event_time %}{{ event.event_time|time:'g:i A' }}{% else %}—{% endif %}"
+                     data-venue="{{ event.venue|default:'' }}"
+                     data-status="past"
+                     data-image="{% if event.image %}{{ event.image.url }}{% endif %}"
+                     data-description="{{ event.description|striptags }}"
+                     tabindex="0" role="button">
+
+                    <div class="ev-card-image">
+                        {% if event.image %}
+                            <img src="{{ event.image.url }}" alt="{{ event.title }}" loading="lazy">
+                        {% else %}
+                            <div class="ev-card-image-placeholder">
+                                <i class="fa-solid fa-calendar-days"></i>
+                                {{ event.title|truncatewords:4 }}
+                            </div>
+                        {% endif %}
+                        <div class="ev-card-date-badge">
+                            <span class="ev-date-day">{{ event.event_date|date:"d" }}</span>
+                            <span class="ev-date-month">{{ event.event_date|date:"M" }}</span>
+                        </div>
+                        <span class="ev-status-pill ev-status-pill--past">
+                            <i class="fa-solid fa-circle"></i> Past
+                        </span>
+                    </div>
+
+                    <div class="ev-card-body">
+                        <span class="ev-card-category">
+                            <i class="fa-solid fa-calendar-alt"></i>
+                            {{ event.event_date|date:"d M Y" }}
+                        </span>
+                        <h3 class="ev-card-title">{{ event.title }}</h3>
+                        {% if event.description %}
+                        <p class="ev-card-desc">{{ event.description|striptags|truncatewords:20 }}</p>
+                        {% endif %}
+                        <div class="ev-card-meta">
+                            {% if event.event_time %}
+                            <div class="ev-card-meta-item">
+                                <i class="fa-regular fa-clock"></i> {{ event.event_time|time:"g:i A" }}
+                            </div>
+                            {% endif %}
+                            {% if event.venue %}
+                            <div class="ev-card-meta-item">
+                                <i class="fa-solid fa-location-dot"></i> {{ event.venue }}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="ev-card-footer">
+                        View Details <i class="fa-solid fa-arrow-right ms-1"></i>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="col-12 text-center text-muted py-5" style="grid-column:1/-1;">
+                    <i class="fa-solid fa-clock-rotate-left fa-3x mb-3"></i>
+                    <p>No past events to display.</p>
+                </div>
+                {% endfor %}
+            </div>{# /events-cards-grid #}
+        </div>{# /panel-past #}
+
+    </div>{# /container #}
+</section>
+
+{# ================================================================ #}
+{# EVENT DETAIL MODAL                                               #}
+{# ================================================================ #}
+<div class="event-modal-overlay" id="eventModalOverlay" role="dialog" aria-modal="true" aria-labelledby="eventModalTitle">
+
+    <div class="event-modal" id="eventModal">
+
+        {# Close button #}
+        <button class="event-modal-close" id="eventModalClose" aria-label="Close modal">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+
+        {# Hero image (swapped by JS) #}
+        <div class="event-modal-hero" id="eventModalHero">
+            <img src="" alt="" id="eventModalHeroImg" style="display:none;">
+            <div class="event-modal-hero-placeholder" id="eventModalHeroPlaceholder">
+                <i class="fa-solid fa-calendar-days"></i>
+            </div>
+        </div>
+
+        {# Body #}
+        <div class="event-modal-body">
+
+            <span class="event-modal-status" id="eventModalStatus"></span>
+            <h2 class="event-modal-title" id="eventModalTitle"></h2>
+
+            {# Meta grid #}
+            <div class="event-modal-meta-grid">
+                <div class="event-modal-meta-item">
+                    <div class="event-modal-meta-icon">
+                        <i class="fa-regular fa-calendar"></i>
+                    </div>
+                    <div>
+                        <span class="event-modal-meta-label">Date</span>
+                        <span class="event-modal-meta-value" id="eventModalDate"></span>
+                    </div>
+                </div>
+                <div class="event-modal-meta-item">
+                    <div class="event-modal-meta-icon">
+                        <i class="fa-regular fa-clock"></i>
+                    </div>
+                    <div>
+                        <span class="event-modal-meta-label">Time</span>
+                        <span class="event-modal-meta-value" id="eventModalTime"></span>
+                    </div>
+                </div>
+                <div class="event-modal-meta-item" id="eventModalVenueWrap">
+                    <div class="event-modal-meta-icon">
+                        <i class="fa-solid fa-location-dot"></i>
+                    </div>
+                    <div>
+                        <span class="event-modal-meta-label">Venue</span>
+                        <span class="event-modal-meta-value" id="eventModalVenue"></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="event-modal-divider"></div>
+            <div class="event-modal-desc" id="eventModalDesc"></div>
+
+        </div>{# /event-modal-body #}
+    </div>{# /event-modal #}
+</div>{# /event-modal-overlay #}
+
+{% endblock %}
+
+
+{% block custom_js %}
+<script>
+(function () {
+    'use strict';
+
+    /* ── Tab switching ── */
+    const tabBtns   = document.querySelectorAll('.events-tab-btn');
+    const tabPanels = document.querySelectorAll('.events-tab-panel');
+
+    tabBtns.forEach(btn => {
+        btn.addEventListener('click', function () {
+            const target = this.dataset.tab;
+
+            tabBtns.forEach(b => { b.classList.remove('active'); b.setAttribute('aria-selected','false'); });
+            tabPanels.forEach(p => p.classList.remove('active'));
+
+            this.classList.add('active');
+            this.setAttribute('aria-selected','true');
+            document.getElementById('panel-' + target).classList.add('active');
+        });
+    });
+
+    /* ── Animate cards in on load ── */
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('ev-visible'); });
+    }, { threshold: 0.1 });
+    document.querySelectorAll('.ev-card').forEach(c => observer.observe(c));
+
+    /* ── Modal ── */
+    const overlay     = document.getElementById('eventModalOverlay');
+    const closeBtn    = document.getElementById('eventModalClose');
+    const heroImg     = document.getElementById('eventModalHeroImg');
+    const heroPlch    = document.getElementById('eventModalHeroPlaceholder');
+    const modalTitle  = document.getElementById('eventModalTitle');
+    const modalStatus = document.getElementById('eventModalStatus');
+    const modalDate   = document.getElementById('eventModalDate');
+    const modalTime   = document.getElementById('eventModalTime');
+    const modalVenue  = document.getElementById('eventModalVenue');
+    const modalDesc   = document.getElementById('eventModalDesc');
+
+    function openModal(card) {
+        const d = card.dataset;
+
+        /* Hero image */
+        if (d.image) {
+            heroImg.src = d.image;
+            heroImg.alt = d.title;
+            heroImg.style.display = 'block';
+            heroPlch.style.display = 'none';
+        } else {
+            heroImg.style.display = 'none';
+            heroPlch.style.display = 'flex';
+        }
+
+        /* Status pill */
+        const isPast = d.status === 'past';
+        modalStatus.className = 'event-modal-status ' + (isPast ? 'event-modal-status--past' : 'event-modal-status--upcoming');
+        modalStatus.innerHTML = isPast
+            ? '<i class="fa-solid fa-clock-rotate-left me-1"></i> Past Event'
+            : '<i class="fa-solid fa-circle me-1"></i> Upcoming';
+
+        modalTitle.textContent  = d.title;
+        modalDate.textContent   = d.date  || '—';
+        modalTime.textContent   = d.time  || '—';
+        modalVenue.textContent  = d.venue || '—';
+
+        /* Render description paragraphs */
+        modalDesc.innerHTML = d.description
+            ? d.description.split('\n').map(p => p.trim() ? `<p>${p}</p>` : '').join('')
+            : '<p>No description available.</p>';
+
+        overlay.classList.add('open');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeModal() {
+        overlay.classList.remove('open');
+        document.body.style.overflow = '';
+    }
+
+    /* Attach click to every card */
+    document.querySelectorAll('.ev-card').forEach(card => {
+        card.addEventListener('click',  () => openModal(card));
+        card.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') openModal(card); });
+    });
+
+    closeBtn.addEventListener('click', closeModal);
+    overlay.addEventListener('click',  e => { if (e.target === overlay) closeModal(); });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+})();
+</script>
+{% endblock %}

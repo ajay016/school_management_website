@@ -1,0 +1,480 @@
+{% extends 'backend/base.html' %}
+{% load static %}
+ 
+{% block title %}Edit Album | Admin{% endblock %}
+ 
+{% block custom_css %}
+<style>
+    .btn-modern {
+        background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: white;
+        border: none; padding: 0.6rem 1.5rem; border-radius: 2rem;
+        font-weight: 600; letter-spacing: 0.5px; box-shadow: 0 4px 15px rgba(59,130,246,0.3);
+        transition: all 0.3s ease; display: inline-flex; align-items: center; gap: 0.5rem;
+    }
+    .btn-modern:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(59,130,246,0.4); color: white; }
+ 
+    #statusMessage {
+        display: none; padding: 1rem 1.25rem; border-radius: 0.75rem;
+        font-weight: 500; margin-bottom: 1.5rem; font-size: 0.95rem;
+        align-items: center; gap: 0.5rem;
+    }
+    .msg-success { background-color: rgba(16,185,129,0.1); color: #059669; border: 1px solid rgba(16,185,129,0.2); }
+    .msg-error   { background-color: rgba(239,68,68,0.1);  color: #dc2626; border: 1px solid rgba(239,68,68,0.2); }
+ 
+    /* Two-panel layout */
+    .gallery-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; align-items: start; }
+    @media (max-width: 991.98px) { .gallery-layout { grid-template-columns: 1fr; } }
+ 
+    .panel {
+        background: #ffffff; border-radius: 1rem;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.03); border: 1px solid #e2e8f0; overflow: hidden;
+    }
+    .panel-head {
+        padding: 1.25rem 1.75rem; border-bottom: 1px solid #f1f5f9;
+        display: flex; align-items: center; gap: 0.75rem;
+        background: linear-gradient(135deg, #f8fafc, #ffffff);
+    }
+    .panel-head-icon {
+        width: 36px; height: 36px; border-radius: 0.5rem; background: rgba(59,130,246,0.1);
+        display: flex; align-items: center; justify-content: center; color: #3b82f6; font-size: 1.1rem;
+    }
+    .panel-body { padding: 1.75rem; }
+ 
+    .form-switch .form-check-input { height: 1.5rem; width: 3rem; cursor: pointer; }
+    .form-switch .form-check-input:checked { background-color: #3b82f6; border-color: #3b82f6; }
+ 
+    /* Cover */
+    .cover-upload-zone {
+        border: 2px dashed #cbd5e1; border-radius: 0.75rem;
+        text-align: center; cursor: pointer; transition: all 0.3s ease;
+        background: #f8fafc; position: relative; overflow: hidden;
+        height: 160px; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    }
+    .cover-upload-zone:hover { border-color: #3b82f6; }
+    .cover-upload-zone input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; z-index: 10; }
+    .cover-upload-zone img.cover-preview { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; background-color: #f8fafc; border-radius: 0.65rem; }
+    .cover-upload-overlay {
+        position: absolute; inset: 0; background: rgba(15,23,42,0.45);
+        display: flex; flex-direction: column; align-items: center; justify-content: center;
+        color: #fff; opacity: 0; transition: opacity 0.2s;
+    }
+    .cover-upload-zone:hover .cover-upload-overlay { opacity: 1; }
+ 
+    /* Existing photos grid */
+    .existing-grid {
+        display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.65rem; margin-bottom: 1.25rem;
+    }
+    .existing-photo-card {
+        border: 1px solid #e2e8f0; border-radius: 0.65rem; overflow: hidden; position: relative;
+        transition: box-shadow 0.2s;
+    }
+    .existing-photo-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+    .existing-photo-card img { width: 100%; height: 100px; object-fit: contain; display: block; background-color: #f8fafc; }
+    .existing-photo-card .caption-text {
+        padding: 0.35rem 0.5rem; font-size: 0.75rem; color: #64748b;
+        white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .existing-photo-delete {
+        position: absolute; top: 0.35rem; right: 0.35rem;
+        width: 26px; height: 26px; border-radius: 50%;
+        background: rgba(239,68,68,0.9); color: white; border: none;
+        cursor: pointer; display: flex; align-items: center; justify-content: center;
+        font-size: 0.7rem; transition: background 0.2s;
+    }
+    .existing-photo-delete:hover { background: #dc2626; }
+ 
+    /* New photo upload */
+    .photo-dropzone {
+        border: 2px dashed #cbd5e1; border-radius: 0.75rem; padding: 1.5rem;
+        text-align: center; transition: all 0.3s ease; background: #f8fafc;
+        cursor: pointer; position: relative;
+    }
+    .photo-dropzone.drag-over { border-color: #3b82f6; background: rgba(59,130,246,0.05); }
+    .photo-dropzone input[type="file"] { position: absolute; inset: 0; opacity: 0; width: 100%; cursor: pointer; }
+ 
+    .new-photo-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.65rem; margin-top: 0.75rem; }
+    .new-photo-card {
+        border: 1px solid #e2e8f0; border-radius: 0.65rem; overflow: hidden; position: relative;
+    }
+    .new-photo-card img { width: 100%; height: 90px; object-fit: contain; display: block; background-color: #f8fafc; }
+    .new-photo-remove {
+        position: absolute; top: 0.3rem; right: 0.3rem; width: 24px; height: 24px;
+        border-radius: 50%; background: rgba(239,68,68,0.85); color: white;
+        border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 0.65rem;
+    }
+    .new-photo-caption { padding: 0.4rem 0.5rem; }
+    .new-photo-caption input { width: 100%; border: 1px solid #e2e8f0; border-radius: 0.4rem; padding: 0.25rem 0.5rem; font-size: 0.75rem; }
+    .new-photo-caption input:focus { outline: none; border-color: #3b82f6; }
+ 
+    .section-divider {
+        display: flex; align-items: center; gap: 0.75rem; margin: 1rem 0;
+        color: #94a3b8; font-size: 0.8rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;
+    }
+    .section-divider::before, .section-divider::after {
+        content: ''; flex: 1; height: 1px; background: #e2e8f0;
+    }
+ 
+    .action-bar {
+        background: #ffffff; border-radius: 1rem; padding: 1.25rem 1.75rem;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.03); border: 1px solid #e2e8f0;
+        display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;
+    }
+ 
+    /* Delete photo modal */
+    .photo-delete-modal-overlay {
+        position: fixed; inset: 0; background: rgba(15,23,42,0.5); z-index: 2000;
+        display: flex; align-items: center; justify-content: center;
+        opacity: 0; visibility: hidden; transition: all 0.3s ease;
+    }
+    .photo-delete-modal-overlay.open { opacity: 1; visibility: visible; }
+    .photo-delete-modal {
+        background: #fff; border-radius: 1rem; padding: 1.75rem; max-width: 380px; width: 90%;
+        transform: scale(0.95); transition: all 0.3s ease; box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+    }
+    .photo-delete-modal-overlay.open .photo-delete-modal { transform: scale(1); }
+ 
+    .toast-container { position: fixed; top: 1.5rem; right: 1.5rem; z-index: 9999; }
+    .toast-msg {
+        display: flex; align-items: center; gap: 0.6rem;
+        padding: 0.85rem 1.2rem; border-radius: 0.75rem; font-size: 0.9rem; font-weight: 500;
+        box-shadow: 0 8px 25px rgba(0,0,0,0.12); margin-bottom: 0.5rem;
+        animation: slideIn 0.3s ease; min-width: 260px;
+    }
+    .toast-success { background: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; }
+    .toast-error   { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
+    @keyframes slideIn { from { transform: translateX(30px); opacity:0; } to { transform: translateX(0); opacity:1; } }
+</style>
+{% endblock custom_css %}
+ 
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="mb-0">Edit Album</h2>
+        <p class="text-muted mb-0 mt-1" style="font-size:0.9rem;">{{ album.title }}</p>
+    </div>
+    <a href="{% url 'album_list' %}" class="btn btn-light rounded-pill px-4 border">
+        <iconify-icon icon="solar:list-bold-duotone" class="me-1"></iconify-icon> Back to List
+    </a>
+</div>
+ 
+<form id="albumForm" enctype="multipart/form-data">
+    {% csrf_token %}
+ 
+    <div id="statusMessage">
+        <iconify-icon id="statusIcon" icon="" style="font-size:1.5rem;"></iconify-icon>
+        <span id="statusText"></span>
+    </div>
+ 
+    <div class="gallery-layout">
+ 
+        {# ── LEFT: Album Details ── #}
+        <div class="panel">
+            <div class="panel-head">
+                <div class="panel-head-icon"><iconify-icon icon="solar:album-bold-duotone"></iconify-icon></div>
+                <div>
+                    <div class="fw-semibold" style="font-size:0.95rem;">Album Details</div>
+                    <div class="text-muted" style="font-size:0.8rem;">Update album metadata</div>
+                </div>
+            </div>
+            <div class="panel-body">
+ 
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Album Title <span class="text-danger">*</span></label>
+                    <input type="text" name="title" class="form-control" value="{{ album.title }}" required>
+                </div>
+ 
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Album Date</label>
+                    <input type="date" name="date" class="form-control" value="{{ album.date|date:'Y-m-d'|default:'' }}">
+                </div>
+ 
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Display Order</label>
+                    <input type="number" name="order" class="form-control" value="{{ album.order }}" min="0">
+                </div>
+ 
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Description</label>
+                    <textarea name="description" class="form-control" rows="3">{{ album.description|default:'' }}</textarea>
+                </div>
+ 
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Cover Image</label>
+                    <div class="cover-upload-zone" id="coverZone">
+                        <input type="file" name="cover_image" id="coverInput" accept="image/*">
+                        {% if album.cover_image %}
+                            <img id="coverPreview" src="{{ album.cover_image.url }}" alt="" class="cover-preview">
+                        {% else %}
+                            <img id="coverPreview" src="" alt="" class="cover-preview" style="display:none;">
+                        {% endif %}
+                        <div class="cover-upload-overlay">
+                            <iconify-icon icon="solar:camera-add-bold-duotone" style="font-size:1.5rem;"></iconify-icon>
+                            <small class="mt-1">Change Cover</small>
+                        </div>
+                        {% if not album.cover_image %}
+                        <div id="coverPlaceholder">
+                            <iconify-icon icon="solar:gallery-bold-duotone" style="font-size:2rem; color:#94a3b8;"></iconify-icon>
+                            <p class="mb-0 mt-1 text-muted" style="font-size:0.8rem;">Upload cover image</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+ 
+                <div class="p-3 bg-light rounded-3 border">
+                    <div class="form-check form-switch d-flex align-items-center gap-3">
+                        <input class="form-check-input mt-0" type="checkbox" name="is_published" id="isPublished" {% if album.is_published %}checked{% endif %}>
+                        <label class="form-check-label fw-semibold mb-0" for="isPublished">Publish Album</label>
+                    </div>
+                    <small class="text-muted ms-5">Uncheck to keep as a private draft.</small>
+                </div>
+ 
+            </div>
+        </div>
+ 
+        {# ── RIGHT: Photos ── #}
+        <div class="panel">
+            <div class="panel-head">
+                <div class="panel-head-icon"><iconify-icon icon="solar:camera-bold-duotone"></iconify-icon></div>
+                <div>
+                    <div class="fw-semibold" style="font-size:0.95rem;">Photos</div>
+                    <div class="text-muted" style="font-size:0.8rem;">
+                        {{ photos|length }} existing photo{{ photos|length|pluralize }}
+                    </div>
+                </div>
+            </div>
+            <div class="panel-body">
+ 
+                {# Existing photos #}
+                {% if photos %}
+                <div class="existing-grid" id="existingGrid">
+                    {% for photo in photos %}
+                    <div class="existing-photo-card" id="photoCard{{ photo.id }}">
+                        <img src="{{ photo.image.url }}" alt="{{ photo.caption|default:'Photo' }}">
+                        <button type="button" class="existing-photo-delete"
+                                data-url="{% url 'delete_photo' photo.id %}"
+                                data-card="photoCard{{ photo.id }}"
+                                onclick="deleteExistingPhoto(this)" title="Remove photo">
+                            <iconify-icon icon="solar:close-square-bold-duotone"></iconify-icon>
+                        </button>
+                        <div class="caption-text">{{ photo.caption|default:"No caption" }}</div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="text-center text-muted py-3" id="noPhotosMsg">
+                    <iconify-icon icon="solar:gallery-bold-duotone" style="font-size:2rem;"></iconify-icon>
+                    <p class="mb-0 mt-1" style="font-size:0.85rem;">No photos in this album yet.</p>
+                </div>
+                {% endif %}
+ 
+                <div class="section-divider">Add More Photos</div>
+ 
+                <div class="photo-dropzone" id="photoDropzone">
+                    <input type="file" name="photoFiles" id="photoFileInput" accept="image/*" multiple>
+                    <iconify-icon icon="solar:gallery-add-bold-duotone" style="font-size:2rem; color:#94a3b8;"></iconify-icon>
+                    <p class="mb-0 mt-1 text-muted" style="font-size:0.82rem;">Click or drag new photos here</p>
+                </div>
+ 
+                <div class="new-photo-grid" id="newPhotoGrid"></div>
+ 
+            </div>
+        </div>
+ 
+    </div>
+ 
+    <div class="action-bar mt-4">
+        <div class="text-muted" style="font-size:0.875rem;">
+            <iconify-icon icon="solar:info-circle-bold-duotone" class="me-1"></iconify-icon>
+            Deleting a photo is immediate and cannot be undone.
+        </div>
+        <button type="submit" class="btn-modern" id="submitBtn">
+            <iconify-icon icon="solar:disk-bold-duotone" style="font-size:1.2rem;"></iconify-icon> Update Album
+        </button>
+    </div>
+</form>
+ 
+{# Photo delete confirmation modal #}
+<div class="photo-delete-modal-overlay" id="photoDeleteModal">
+    <div class="photo-delete-modal">
+        <div class="text-center mb-3">
+            <div style="width:48px;height:48px;border-radius:50%;background:rgba(239,68,68,0.1);display:flex;align-items:center;justify-content:center;margin:0 auto 0.75rem;">
+                <iconify-icon icon="solar:trash-bin-trash-bold-duotone" style="font-size:1.5rem;color:#ef4444;"></iconify-icon>
+            </div>
+            <h6 class="mb-1">Remove this photo?</h6>
+            <p class="text-muted mb-0" style="font-size:0.85rem;">This action is permanent and cannot be undone.</p>
+        </div>
+        <div class="d-flex gap-2 mt-3">
+            <button class="btn btn-light flex-grow-1 rounded-pill" onclick="closePhotoDeleteModal()">Cancel</button>
+            <button class="btn btn-danger flex-grow-1 rounded-pill" id="confirmPhotoDeleteBtn">Remove</button>
+        </div>
+    </div>
+</div>
+ 
+<div class="toast-container" id="toastContainer"></div>
+{% endblock content %}
+ 
+{% block custom_js %}
+<script>
+(function () {
+    // Cover preview
+    document.getElementById('coverInput').addEventListener('change', function () {
+        const file = this.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = e => {
+            const prev = document.getElementById('coverPreview');
+            prev.src = e.target.result;
+            prev.style.display = 'block';
+            const ph = document.getElementById('coverPlaceholder');
+            if (ph) ph.style.display = 'none';
+        };
+        reader.readAsDataURL(file);
+    });
+ 
+    // New photo upload
+    let newFiles = [];
+    const newGrid = document.getElementById('newPhotoGrid');
+    const fileInput = document.getElementById('photoFileInput');
+ 
+    fileInput.addEventListener('change', function () {
+        Array.from(this.files).forEach(addNewPhoto);
+        this.value = '';
+    });
+ 
+    const dropzone = document.getElementById('photoDropzone');
+    dropzone.addEventListener('dragover',  e => { e.preventDefault(); dropzone.classList.add('drag-over'); });
+    dropzone.addEventListener('dragleave', ()  => dropzone.classList.remove('drag-over'));
+    dropzone.addEventListener('drop', e => {
+        e.preventDefault();
+        dropzone.classList.remove('drag-over');
+        Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/')).forEach(addNewPhoto);
+    });
+ 
+    function addNewPhoto(file) {
+        const idx = newFiles.length;
+        newFiles.push(file);
+        const reader = new FileReader();
+        reader.onload = e => {
+            const card = document.createElement('div');
+            card.className = 'new-photo-card';
+            card.dataset.idx = idx;
+            card.innerHTML = `
+                <img src="${e.target.result}" alt="">
+                <button type="button" class="new-photo-remove" onclick="removeNewPhoto(${idx}, this)">
+                    <iconify-icon icon="solar:close-square-bold-duotone"></iconify-icon>
+                </button>
+                <div class="new-photo-caption">
+                    <input type="text" placeholder="Caption…" data-caption-idx="${idx}">
+                </div>
+            `;
+            newGrid.appendChild(card);
+        };
+        reader.readAsDataURL(file);
+    }
+ 
+    window.removeNewPhoto = function (idx, btn) {
+        newFiles[idx] = null;
+        btn.closest('.new-photo-card').remove();
+    };
+ 
+    // Form submission
+    document.getElementById('albumForm').addEventListener('submit', function (e) {
+        e.preventDefault();
+        const formData = new FormData(this);
+        formData.delete('photoFiles');
+ 
+        const captionInputs = newGrid.querySelectorAll('[data-caption-idx]');
+        const captions = {};
+        captionInputs.forEach(inp => { captions[inp.dataset.captionIdx] = inp.value; });
+ 
+        newFiles.forEach((file, i) => {
+            if (!file) return;
+            formData.append('new_photos', file);
+            formData.append('new_captions', captions[i] || '');
+        });
+ 
+        const btn = document.getElementById('submitBtn');
+        const orig = btn.innerHTML;
+        btn.innerHTML = '<iconify-icon icon="line-md:loading-twotone-loop"></iconify-icon> Updating…';
+        btn.disabled = true;
+ 
+        fetch("{% url 'edit_album' album.id %}", {
+            method: 'POST',
+            body: formData,
+            headers: {'X-Requested-With': 'XMLHttpRequest'}
+        })
+        .then(r => r.json())
+        .then(data => {
+            showStatus(data.message, data.success ? 'success' : 'error');
+            if (data.success) {
+                newGrid.innerHTML = '';
+                newFiles = [];
+            }
+        })
+        .catch(() => showStatus('A server error occurred.', 'error'))
+        .finally(() => { btn.innerHTML = orig; btn.disabled = false; });
+    });
+ 
+    // Existing photo delete
+    let photoDeleteUrl = '';
+    let photoCardId   = '';
+ 
+    window.deleteExistingPhoto = function (btn) {
+        photoDeleteUrl = btn.dataset.url;
+        photoCardId   = btn.dataset.card;
+        document.getElementById('photoDeleteModal').classList.add('open');
+    };
+ 
+    window.closePhotoDeleteModal = function () {
+        document.getElementById('photoDeleteModal').classList.remove('open');
+    };
+ 
+    document.getElementById('photoDeleteModal').addEventListener('click', function (e) {
+        if (e.target === this) closePhotoDeleteModal();
+    });
+ 
+    document.getElementById('confirmPhotoDeleteBtn').addEventListener('click', function () {
+        this.disabled = true;
+        this.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>';
+ 
+        fetch(photoDeleteUrl, {
+            method: 'POST',
+            headers: {'X-Requested-With': 'XMLHttpRequest', 'X-CSRFToken': '{{ csrf_token }}'}
+        })
+        .then(r => r.json())
+        .then(data => {
+            closePhotoDeleteModal();
+            if (data.success) {
+                document.getElementById(photoCardId)?.remove();
+                showToast('Photo removed.', 'success');
+            } else {
+                showToast(data.message, 'error');
+            }
+        })
+        .catch(() => showToast('A server error occurred.', 'error'))
+        .finally(() => { this.disabled = false; this.innerHTML = 'Remove'; });
+    });
+ 
+    function showStatus(msg, type) {
+        const el   = document.getElementById('statusMessage');
+        const icon = document.getElementById('statusIcon');
+        const text = document.getElementById('statusText');
+        el.className = type === 'success' ? 'msg-success d-flex' : 'msg-error d-flex';
+        icon.setAttribute('icon', type === 'success' ? 'solar:check-circle-bold-duotone' : 'solar:danger-triangle-bold-duotone');
+        text.innerText = msg;
+        el.style.display = 'flex';
+        window.scrollTo({top: 0, behavior: 'smooth'});
+        setTimeout(() => { el.style.display = 'none'; }, 5000);
+    }
+ 
+    function showToast(msg, type) {
+        const c = document.getElementById('toastContainer');
+        const t = document.createElement('div');
+        t.className = `toast-msg toast-${type}`;
+        t.innerHTML = `<iconify-icon icon="${type === 'success' ? 'solar:check-circle-bold-duotone' : 'solar:danger-triangle-bold-duotone'}"></iconify-icon> ${msg}`;
+        c.appendChild(t);
+        setTimeout(() => t.remove(), 4000);
+    }
+})();
+</script>
+{% endblock custom_js %}

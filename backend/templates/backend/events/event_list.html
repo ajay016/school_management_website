@@ -1,0 +1,310 @@
+{% extends 'backend/base.html' %}
+{% load static %}
+ 
+{% block title %}Events | Admin{% endblock %}
+ 
+{% block custom_css %}
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+<link rel="stylesheet" href="{% static 'backend/assets/css/custom_datatable.css' %}">
+<style>
+    .list-container {
+        background: #ffffff; border-radius: 1rem;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.03); border: 1px solid #e2e8f0;
+        overflow: hidden;
+    }
+    .list-header {
+        padding: 1.5rem 2rem; border-bottom: 1px solid #f1f5f9;
+        display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap;
+    }
+    .list-search {
+        position: relative; max-width: 280px; flex-grow: 1;
+    }
+    .list-search iconify-icon {
+        position: absolute; left: 0.85rem; top: 50%; transform: translateY(-50%);
+        color: #94a3b8; font-size: 1rem; pointer-events: none;
+    }
+    .list-search input {
+        padding-left: 2.4rem; border-radius: 2rem; border: 1px solid #e2e8f0;
+        background: #f8fafc; font-size: 0.9rem; height: 2.5rem; width: 100%;
+    }
+    .list-search input:focus { outline: none; border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,0.1); }
+ 
+    .btn-create {
+        background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: white;
+        border: none; padding: 0.55rem 1.25rem; border-radius: 2rem;
+        font-weight: 600; font-size: 0.875rem; box-shadow: 0 4px 12px rgba(59,130,246,0.3);
+        transition: all 0.3s ease; display: inline-flex; align-items: center; gap: 0.4rem; white-space: nowrap;
+    }
+    .btn-create:hover { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(59,130,246,0.4); color: white; }
+ 
+    .data-table { width: 100%; border-collapse: collapse; }
+    .data-table thead th {
+        padding: 0.9rem 1.25rem; background: #f8fafc; font-size: 0.78rem;
+        font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;
+        color: #64748b; border-bottom: 1px solid #e2e8f0; white-space: nowrap;
+    }
+    .data-table tbody tr {
+        border-bottom: 1px solid #f1f5f9; transition: background 0.15s ease;
+    }
+    .data-table tbody tr:last-child { border-bottom: none; }
+    .data-table tbody tr:hover { background: rgba(59,130,246,0.025); }
+    .data-table td { padding: 1rem 1.25rem; vertical-align: middle; }
+ 
+    .event-thumb {
+        width: 56px; height: 40px; border-radius: 0.5rem; object-fit: cover;
+        background: #f1f5f9;
+    }
+    .event-thumb-placeholder {
+        width: 56px; height: 40px; border-radius: 0.5rem; background: #f1f5f9;
+        display: flex; align-items: center; justify-content: center; color: #cbd5e1;
+    }
+ 
+    .badge-published { background: rgba(16,185,129,0.1); color: #059669; font-size:0.78rem; padding:0.3rem 0.75rem; border-radius:2rem; font-weight:600; }
+    .badge-draft     { background: rgba(100,116,139,0.1); color: #64748b; font-size:0.78rem; padding:0.3rem 0.75rem; border-radius:2rem; font-weight:600; }
+ 
+    .action-btn {
+        width: 34px; height: 34px; border-radius: 0.5rem; border: none;
+        display: inline-flex; align-items: center; justify-content: center;
+        font-size: 1.1rem; cursor: pointer; transition: all 0.2s ease;
+    }
+    .action-btn-edit   { background: rgba(59,130,246,0.08); color: #3b82f6; }
+    .action-btn-delete { background: rgba(239,68,68,0.08); color: #ef4444; }
+    .action-btn-edit:hover   { background: rgba(59,130,246,0.18); transform: translateY(-1px); }
+    .action-btn-delete:hover { background: rgba(239,68,68,0.18); transform: translateY(-1px); }
+ 
+    .empty-state {
+        text-align: center; padding: 4rem 2rem; color: #94a3b8;
+    }
+    .empty-state iconify-icon { font-size: 3rem; display: block; margin-bottom: 1rem; }
+ 
+    /* Delete Modal */
+    .delete-modal-overlay {
+        position: fixed; inset: 0; background: rgba(15,23,42,0.5);
+        z-index: 2000; display: flex; align-items: center; justify-content: center;
+        opacity: 0; visibility: hidden; transition: all 0.3s ease;
+    }
+    .delete-modal-overlay.open { opacity: 1; visibility: visible; }
+    .delete-modal {
+        background: #fff; border-radius: 1rem; padding: 2rem; max-width: 420px; width: 90%;
+        transform: scale(0.95) translateY(10px); transition: all 0.3s ease;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+    }
+    .delete-modal-overlay.open .delete-modal { transform: scale(1) translateY(0); }
+ 
+    /* Toast */
+    .toast-container { position: fixed; top: 1.5rem; right: 1.5rem; z-index: 9999; }
+    .toast-msg {
+        display: flex; align-items: center; gap: 0.6rem;
+        padding: 0.85rem 1.2rem; border-radius: 0.75rem; font-size: 0.9rem; font-weight: 500;
+        box-shadow: 0 8px 25px rgba(0,0,0,0.12); margin-bottom: 0.5rem;
+        animation: slideIn 0.3s ease; min-width: 260px;
+    }
+    .toast-success { background: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; }
+    .toast-error   { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
+    @keyframes slideIn { from { transform: translateX(30px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+ 
+    .row-hidden { display: none !important; }
+</style>
+{% endblock %}
+ 
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="mb-0">Events</h2>
+        <p class="text-muted mb-0 mt-1" style="font-size:0.9rem;">{{ events|length }} event{{ events|length|pluralize }} total</p>
+    </div>
+</div>
+ 
+<div class="list-container">
+    <div class="list-header">
+        <div class="list-search">
+            <iconify-icon icon="solar:magnifer-linear"></iconify-icon>
+            <input type="search" id="tableSearch" placeholder="Search events…">
+        </div>
+        <a href="{% url 'create_event' %}" class="btn-create">
+            <iconify-icon icon="solar:add-circle-bold-duotone"></iconify-icon> New Event
+        </a>
+    </div>
+ 
+    {% if events %}
+    <div class="modern-table-wrapper">
+        <table id="eventsTable" class="table-modern" style="width:100%">
+            <thead>
+                <tr>
+                    <th style="width:60px;">#</th>
+                    <th style="width:70px;">Image</th>
+                    <th>Title</th>
+                    <th>Date</th>
+                    <th>Time</th>
+                    <th>Venue</th>
+                    <th>Status</th>
+                    <th style="width:100px; text-align:center;">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for event in events %}
+                <tr data-search="{{ event.title|lower }} {{ event.venue|lower|default:'' }}">
+                    <td class="text-muted" style="font-size:0.85rem;">{{ forloop.counter }}</td>
+                    <td>
+                        {% if event.image %}
+                            <img src="{{ event.image.url }}" alt="{{ event.title }}" class="event-thumb">
+                        {% else %}
+                            <div class="event-thumb-placeholder">
+                                <iconify-icon icon="solar:gallery-minimalistic-bold-duotone"></iconify-icon>
+                            </div>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <span class="fw-semibold" style="color: #0f172a;">{{ event.title }}</span>
+                    </td>
+                    <td style="white-space:nowrap; color:#475569;">
+                        <iconify-icon icon="solar:calendar-linear" class="me-1"></iconify-icon>
+                        {{ event.event_date|date:"d M Y" }}
+                    </td>
+                    <td style="color:#475569;">
+                        {% if event.event_time %}{{ event.event_time|time:"H:i" }}{% else %}<span class="text-muted">—</span>{% endif %}
+                    </td>
+                    <td style="color:#475569; max-width:180px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+                        {{ event.venue|default:"—" }}
+                    </td>
+                    <td>
+                        {% if event.is_published %}
+                            <span class="badge-published">Published</span>
+                        {% else %}
+                            <span class="badge-draft">Draft</span>
+                        {% endif %}
+                    </td>
+                    <td class="d-flex text-end">
+                        <a href="{% url 'edit_event' event.id %}" class="action-btn action-btn-edit" title="Edit">
+                            <iconify-icon icon="solar:pen-bold-duotone"></iconify-icon>
+                        </a>
+                        <button class="action-btn action-btn-delete ms-1"
+                                data-id="{{ event.id }}"
+                                data-name="{{ event.title }}"
+                                data-url="{% url 'delete_event' event.id %}"
+                                onclick="confirmDelete(this)" title="Delete">
+                            <iconify-icon icon="solar:trash-bin-trash-bold-duotone"></iconify-icon>
+                        </button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <iconify-icon icon="solar:calendar-bold-duotone"></iconify-icon>
+        <h5>No Events Yet</h5>
+        <p class="mb-3">Get started by adding your first event.</p>
+        <a href="{% url 'create_event' %}" class="btn-create">
+            <iconify-icon icon="solar:add-circle-bold-duotone"></iconify-icon> New Event
+        </a>
+    </div>
+    {% endif %}
+</div>
+ 
+{# ── Delete Confirmation Modal ── #}
+<div class="delete-modal-overlay" id="deleteModal">
+    <div class="delete-modal">
+        <div class="text-center mb-3">
+            <div style="width:56px;height:56px;border-radius:50%;background:rgba(239,68,68,0.1);display:flex;align-items:center;justify-content:center;margin:0 auto 1rem;">
+                <iconify-icon icon="solar:trash-bin-trash-bold-duotone" style="font-size:1.75rem;color:#ef4444;"></iconify-icon>
+            </div>
+            <h5 class="mb-1">Delete Event?</h5>
+            <p class="text-muted mb-0" style="font-size:0.9rem;">
+                You are about to delete <strong id="deleteItemName"></strong>. This action cannot be undone.
+            </p>
+        </div>
+        <div class="d-flex gap-2 mt-4">
+            <button class="btn btn-light flex-grow-1 rounded-pill" onclick="closeDeleteModal()">Cancel</button>
+            <button class="btn btn-danger flex-grow-1 rounded-pill" id="confirmDeleteBtn">Delete</button>
+        </div>
+    </div>
+</div>
+ 
+<div class="toast-container" id="toastContainer"></div>
+{% endblock %}
+ 
+{% block custom_js %}
+<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script>
+    // 2. WRAPPED IN DOCUMENT READY
+    $(document).ready(function() {
+        // 3. INITIALIZED DATATABLE AND SAVED TO A VARIABLE
+        let table = $('#eventsTable').DataTable({
+            "language": {
+                "search": "",
+                "searchPlaceholder": "Search events...", // Fixed wording
+                "lengthMenu": "Show _MENU_",
+                "emptyTable": "No events found. Click 'New Event' to get started." // Fixed wording
+            },
+            "pageLength": 10,
+            "ordering": false,
+            // 4. REMOVED 'f' (filter) from 'dom' so it doesn't duplicate your custom search box
+            "dom": '<"d-flex justify-content-between align-items-center mb-3"l>rt<"d-flex justify-content-between align-items-center mt-3"ip>'
+        });
+
+        // 5. REPLACED VANILLA JS SEARCH WITH DATATABLES API
+        $('#tableSearch').on('input', function () {
+            table.search(this.value).draw();
+        });
+    });
+ 
+    // Delete modal
+    let deleteUrl = '';
+    let deleteRow = null;
+ 
+    function confirmDelete(btn) {
+        deleteUrl = btn.dataset.url;
+        deleteRow = btn.closest('tr');
+        document.getElementById('deleteItemName').textContent = `"${btn.dataset.name}"`;
+        document.getElementById('deleteModal').classList.add('open');
+    }
+ 
+    function closeDeleteModal() {
+        document.getElementById('deleteModal').classList.remove('open');
+    }
+ 
+    document.getElementById('deleteModal').addEventListener('click', function (e) {
+        if (e.target === this) closeDeleteModal();
+    });
+ 
+    document.getElementById('confirmDeleteBtn').addEventListener('click', function () {
+        this.disabled = true;
+        this.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Deleting…';
+ 
+        fetch(deleteUrl, {
+            method: 'POST',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRFToken': '{{ csrf_token }}'
+            }
+        })
+        .then(r => r.json())
+        .then(data => {
+            closeDeleteModal();
+            if (data.success) {
+                if (deleteRow) deleteRow.remove();
+                showToast(data.message, 'success');
+            } else {
+                showToast(data.message, 'error');
+            }
+        })
+        .catch(() => showToast('A server error occurred.', 'error'))
+        .finally(() => {
+            this.disabled = false;
+            this.innerHTML = 'Delete';
+        });
+    });
+ 
+    function showToast(msg, type) {
+        const container = document.getElementById('toastContainer');
+        const toast = document.createElement('div');
+        toast.className = `toast-msg toast-${type}`;
+        toast.innerHTML = `<iconify-icon icon="${type === 'success' ? 'solar:check-circle-bold-duotone' : 'solar:danger-triangle-bold-duotone'}"></iconify-icon> ${msg}`;
+        container.appendChild(toast);
+        setTimeout(() => toast.remove(), 4000);
+    }
+</script>
+{% endblock custom_js %}

@@ -1,0 +1,180 @@
+{% extends "school/base.html" %}
+{% load static %}
+
+{% block custom_css %}
+<link rel="stylesheet" href="{% static 'school/assets/css/page_richtext.css' %}">
+{% endblock %}
+
+{% block content %}
+<section class="page-hero">
+    <div class="container">
+        <div class="page-hero-inner">
+            <span class="page-hero-label">
+                <i class="fa-solid fa-scale-balanced me-1"></i> Policies
+            </span>
+
+            <h1 class="page-hero-title">School <em>Rules</em></h1>
+
+            <nav class="page-breadcrumb" aria-label="breadcrumb">
+                <a href="/">Home</a>
+
+                <span class="bc-sep">
+                    <i class="fa-solid fa-chevron-right"></i>
+                </span>
+
+                <a href="#">Policies</a>
+
+                <span class="bc-sep">
+                    <i class="fa-solid fa-chevron-right"></i>
+                </span>
+
+                <span class="bc-current">School Rules</span>
+            </nav>
+        </div>
+    </div>
+</section>
+
+
+<section class="richtext-section">
+    <div class="container">
+
+        <article class="ql-content">
+
+            <h1>School Rules & Regulations</h1>
+
+            <p>
+                At Peace International School, discipline, respect, and responsibility are considered essential values for creating a positive academic environment. All students are expected to follow the school rules and maintain behaviour that reflects honesty, courtesy, and good character.
+            </p>
+
+            <p>
+                The school aims to provide a safe, supportive, and academically focused atmosphere where students can learn, grow, and achieve their full potential. Every student is encouraged to respect teachers, classmates, school staff, and school property at all times.
+            </p>
+
+            <h2>Attendance & Punctuality</h2>
+
+            <p>
+                Students must attend school regularly and arrive on time every day. Consistent attendance is important for academic success and personal development. Parents are requested to inform the school in case of absence.
+            </p>
+
+            <ul>
+                <li>Students should arrive before the school assembly begins.</li>
+                <li>Late arrival without valid reason may result in disciplinary action.</li>
+                <li>Leave applications should be submitted in advance whenever possible.</li>
+                <li>Students are not allowed to leave the campus during school hours without permission.</li>
+            </ul>
+
+            <h2>Classroom Discipline</h2>
+
+            <p>
+                Students are expected to behave respectfully and maintain a positive learning environment inside classrooms.
+            </p>
+
+            <ol>
+                <li>Follow teachers’ instructions carefully.</li>
+                <li>Complete homework and assignments on time.</li>
+                <li>Bring necessary books and materials to class.</li>
+                <li>Avoid unnecessary noise and disruption during lessons.</li>
+                <li>Respect classmates and participate positively in activities.</li>
+            </ol>
+
+            <blockquote>
+                “Good discipline is the foundation of success.”
+            </blockquote>
+
+            <h2>Uniform & Personal Appearance</h2>
+
+            <p>
+                Students must wear the prescribed school uniform neatly and properly on all school days. Cleanliness, modesty, and proper grooming are expected from every student.
+            </p>
+
+            <p>
+                Wearing inappropriate accessories, untidy uniforms, or unsuitable hairstyles is discouraged. The school uniform represents the identity and discipline of the institution.
+            </p>
+
+            <h2>Care of School Property</h2>
+
+            <p>
+                Students must take proper care of classrooms, furniture, laboratory equipment, library books, computers, and all other school facilities.
+            </p>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Area</th>
+                        <th>Expected Behaviour</th>
+                        <th>Restriction</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    <tr>
+                        <td>Classrooms</td>
+                        <td>Keep clean and organized</td>
+                        <td>No writing on desks or walls</td>
+                    </tr>
+
+                    <tr>
+                        <td>Library</td>
+                        <td>Maintain silence</td>
+                        <td>No food or loud conversation</td>
+                    </tr>
+
+                    <tr>
+                        <td>Science Labs</td>
+                        <td>Follow lab safety rules</td>
+                        <td>No experiments without permission</td>
+                    </tr>
+
+                    <tr>
+                        <td>Computer Lab</td>
+                        <td>Use computers responsibly</td>
+                        <td>No unauthorized websites or software</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h2>Digital Conduct</h2>
+
+            <p>
+                Students are expected to use technology responsibly. Misuse of mobile phones, social media, or digital platforms that negatively affects others or the school environment is strictly prohibited.
+            </p>
+
+            <p>
+                Electronic devices should only be used according to school policies and teacher instructions during academic activities.
+            </p>
+
+            <h2>Prohibited Activities</h2>
+
+            <p>
+                The following behaviours are strictly prohibited within the school premises or during school-related programmes:
+            </p>
+
+            <ul>
+                <li>Bullying or harassment</li>
+                <li>Fighting or violent behaviour</li>
+                <li>Using abusive language</li>
+                <li>Cheating during examinations</li>
+                <li>Damaging school property intentionally</li>
+                <li>Possession of prohibited or harmful items</li>
+            </ul>
+
+            <h2>Disciplinary Actions</h2>
+
+            <p>
+                Students who violate school rules may face disciplinary measures depending on the seriousness of the offence. Actions may include verbal warnings, written notices, parent meetings, suspension, or other appropriate measures decided by the school administration.
+            </p>
+
+            <hr>
+
+            <h2>Final Statement</h2>
+
+            <p>
+                These rules are established to maintain a respectful, secure, and productive educational environment for all students. Parents and guardians are encouraged to cooperate with the school in promoting discipline, responsibility, and positive values.
+            </p>
+
+        </article>
+
+    </div>
+</section>
+
+{% endblock %}

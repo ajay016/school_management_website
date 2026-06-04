@@ -1,0 +1,615 @@
+{% extends "school/base.html" %}
+{% load static %}
+
+{% block title %}Home — Peace International School{% endblock %}
+
+{% block custom_css %}
+<link rel="stylesheet" href="{% static 'school/assets/css/index.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<!-- ============================================================
+     SECTION 1 — HERO SLIDER
+     ============================================================ -->
+<section class="hero-slider-section">
+    <div class="swiper heroSwiper">
+        {% comment %} <div class="swiper-wrapper">
+
+            <!-- Slide 1 -->
+            <div class="swiper-slide hero-slide slide-1">
+                <div class="slide-bg" style="background-image: url('{% static 'school/assets/images/slider/slide-1.jpg' %}')"></div>
+                <div class="slide-overlay"></div>
+                <div class="slide-content container-xl">
+                    <div class="slide-text" data-swiper-parallax="-300">
+                        <span class="slide-badge">Welcome to Peace International School</span>
+                        <h1>Where Every Child's <em>Potential</em> is Unlocked</h1>
+                        <p>A vibrant learning community from Nursery to A-Levels, nurturing curious minds and shaping tomorrow's leaders.</p>
+                        <div class="slide-actions">
+                            <a href="#" class="btn-primary-custom">Explore Admission <i class="fas fa-arrow-right"></i></a>
+                            <a href="#about" class="btn-ghost-custom">Discover More <i class="fas fa-chevron-down"></i></a>
+                        </div>
+                    </div>
+                    <!-- Placeholder image frame -->
+                    <div class="slide-image-frame" data-swiper-parallax="-150">
+                        <div class="image-placeholder">
+                            <span>Hero Image 1<br>Recommended: 700×460px</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Slide 2 -->
+            <div class="swiper-slide hero-slide slide-2">
+                <div class="slide-bg" style="background-image: url('{% static 'school/assets/images/slider/slide-2.jpg' %}')"></div>
+                <div class="slide-overlay"></div>
+                <div class="slide-content container-xl">
+                    <div class="slide-text" data-swiper-parallax="-300">
+                        <span class="slide-badge">Academic Excellence</span>
+                        <h1>Curriculum Built for <em>Modern</em> Success</h1>
+                        <p>From foundational learning to advanced A-Level preparation, we equip students with skills that matter in the real world.</p>
+                        <div class="slide-actions">
+                            <a href="#curriculum" class="btn-primary-custom">View Curriculum <i class="fas fa-arrow-right"></i></a>
+                            <a href="#" class="btn-ghost-custom">Our Results <i class="fas fa-chart-line"></i></a>
+                        </div>
+                    </div>
+                    <div class="slide-image-frame" data-swiper-parallax="-150">
+                        <div class="image-placeholder">
+                            <span>Hero Image 2<br>Recommended: 700×460px</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Slide 3 -->
+            <div class="swiper-slide hero-slide slide-3">
+                <div class="slide-bg" style="background-image: url('{% static 'school/assets/images/slider/slide-3.jpg' %}')"></div>
+                <div class="slide-overlay"></div>
+                <div class="slide-content container-xl">
+                    <div class="slide-text" data-swiper-parallax="-300">
+                        <span class="slide-badge">World-Class Facilities</span>
+                        <h1>A Campus Designed to <em>Inspire</em> Learning</h1>
+                        <p>State-of-the-art labs, libraries, sports complexes, and creative spaces that make every school day an adventure.</p>
+                        <div class="slide-actions">
+                            <a href="#facilities" class="btn-primary-custom">See Facilities <i class="fas fa-arrow-right"></i></a>
+                            <a href="#" class="btn-ghost-custom">Take a Tour <i class="fas fa-play-circle"></i></a>
+                        </div>
+                    </div>
+                    <div class="slide-image-frame" data-swiper-parallax="-150">
+                        <div class="image-placeholder">
+                            <span>Hero Image 3<br>Recommended: 700×460px</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div><!-- /.swiper-wrapper --> {% endcomment %}
+
+
+        <div class="swiper-wrapper">
+            {% for slider in sliders %}
+                <div class="swiper-slide hero-slide slide-{{ forloop.counter }}">
+                    
+                    {% if slider.slider_image %}
+                        <div class="slide-bg" style="background-image: url('{{ slider.slider_image.url }}')"></div>
+                    {% else %}
+                        <div class="slide-bg" style="background-color: var(--clr-secondary-dark);"></div>
+                    {% endif %}
+                    
+                    <div class="slide-overlay"></div>
+                    
+                    <div class="slide-content container-xl">
+                        <div class="slide-text" data-swiper-parallax="-300">
+                            
+                            {% if slider.greeting_badge %}
+                                <span class="slide-badge">{{ slider.greeting_badge }}</span>
+                            {% endif %}
+                            
+                            {% if slider.heading %}
+                                <h1>{{ slider.heading }}</h1>
+                            {% endif %}
+                            
+                            {% if slider.short_description %}
+                                <p>{{ slider.short_description }}</p>
+                            {% endif %}
+                            
+                            <div class="slide-actions">
+                                {% if slider.button_label and slider.button_link %}
+                                    <a href="{{ slider.button_link }}" class="btn-primary-custom">
+                                        {{ slider.button_label }} <i class="fas fa-arrow-right"></i>
+                                    </a>
+                                {% endif %}
+                            </div>
+                            
+                        </div>
+                        
+                        <div class="slide-image-frame" data-swiper-parallax="-150">
+                            {% if slider.hero_image %}
+                                <img src="{{ slider.hero_image.url }}" alt="{{ slider.heading }}" style="width: 100%; border-radius: var(--radius-lg); object-fit: cover;">
+                            {% endif %}
+                        </div>
+                        
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+        <!-- Navigation -->
+        <div class="swiper-pagination heroSwiper-pagination"></div>
+        <div class="swiper-button-prev hero-prev"><i class="fas fa-chevron-left"></i></div>
+        <div class="swiper-button-next hero-next"><i class="fas fa-chevron-right"></i></div>
+    </div>
+
+    <!-- Floating stats bar (data from HeroStat model) -->
+    <div class="hero-stats-bar">
+        <div class="container-xl">
+            <div class="stats-bar-inner">
+                <div class="stat-item">
+                    <span class="stat-number" data-count="{{ hero_stats.stat1_count }}">0</span><span class="stat-suffix">{{ hero_stats.stat1_suffix }}</span>
+                    <span class="stat-label">{{ hero_stats.stat1_label }}</span>
+                </div>
+                <div class="stat-divider"></div>
+                <div class="stat-item">
+                    <span class="stat-number" data-count="{{ hero_stats.stat2_count }}">0</span><span class="stat-suffix">{{ hero_stats.stat2_suffix }}</span>
+                    <span class="stat-label">{{ hero_stats.stat2_label }}</span>
+                </div>
+                <div class="stat-divider"></div>
+                <div class="stat-item">
+                    <span class="stat-number" data-count="{{ hero_stats.stat3_count }}">0</span><span class="stat-suffix">{{ hero_stats.stat3_suffix }}</span>
+                    <span class="stat-label">{{ hero_stats.stat3_label }}</span>
+                </div>
+                <div class="stat-divider"></div>
+                <div class="stat-item">
+                    <span class="stat-number" data-count="{{ hero_stats.stat4_count }}">0</span><span class="stat-suffix">{{ hero_stats.stat4_suffix }}</span>
+                    <span class="stat-label">{{ hero_stats.stat4_label }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+<!-- ============================================================
+     SECTION 2 — ABOUT US  (data from HomeAbout model)
+     ============================================================ -->
+<section class="about-section" id="about">
+    <div class="container-xl">
+        <div class="row align-items-center g-5">
+            <div class="col-lg-6" data-aos="fade-right">
+                <div class="about-image-grid">
+                    <div class="about-img-main">
+                        {% if about.main_image %}
+                            <img src="{{ about.main_image.url }}" alt="{{ about.heading }}" style="width:100%;height:100%;object-fit:cover;border-radius:var(--radius-lg);">
+                        {% else %}
+                            <div class="image-placeholder large">
+                                <i class="fas fa-image"></i>
+                                <span>About Us Main Image<br>500×400px</span>
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="about-img-accent">
+                        {% if about.accent_image %}
+                            <img src="{{ about.accent_image.url }}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:var(--radius-md);">
+                        {% else %}
+                            <div class="image-placeholder small">
+                                <i class="fas fa-image"></i>
+                                <span>250×200px</span>
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="about-year-badge">
+                        <span class="year-number">{{ about.years_of_excellence }}</span>
+                        <span class="year-text">Years of<br>Excellence</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6" data-aos="fade-left">
+                <div class="about-content">
+                    <div class="section-label">{{ about.section_label }}</div>
+                    <h2 class="section-heading">{{ about.heading }}</h2>
+                    <p class="about-lead">{{ about.lead_text }}</p>
+                    <p>{{ about.body_text }}</p>
+
+                    {% comment %}
+                    <div class="about-highlights">
+                        <div class="highlight-item">
+                            <div class="highlight-icon"><i class="{{ about.highlight_1_icon }}"></i></div>
+                            <div class="highlight-text">
+                                <strong>{{ about.highlight_1_title }}</strong>
+                                <span>{{ about.highlight_1_text }}</span>
+                            </div>
+                        </div>
+                        <div class="highlight-item">
+                            <div class="highlight-icon"><i class="{{ about.highlight_2_icon }}"></i></div>
+                            <div class="highlight-text">
+                                <strong>{{ about.highlight_2_title }}</strong>
+                                <span>{{ about.highlight_2_text }}</span>
+                            </div>
+                        </div>
+                        <div class="highlight-item">
+                            <div class="highlight-icon"><i class="{{ about.highlight_3_icon }}"></i></div>
+                            <div class="highlight-text">
+                                <strong>{{ about.highlight_3_title }}</strong>
+                                <span>{{ about.highlight_3_text }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    {% endcomment %}
+
+                    {% if about.button_label and about.button_link %}
+                    <a href="{{ about.button_link }}" class="btn-primary-custom mt-4">
+                        {{ about.button_label }} <i class="fas fa-arrow-right"></i>
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="about-blob"></div>
+</section>
+
+
+<!-- ============================================================
+     SECTION 3 — EVENTS  (hidden if no published events exist)
+     Shows 3 upcoming events; if none, shows 3 most recent past events.
+     ============================================================ -->
+{% if home_events %}
+<section class="events-section" id="events">
+    <div class="events-bg-pattern"></div>
+    <div class="container-xl">
+        <div class="section-header text-center" data-aos="fade-up">
+            <div class="section-label">Mark Your Calendar</div>
+            <h2 class="section-heading">School <em>Events</em></h2>
+            <p class="section-subtext">Stay connected with everything happening at Peace International School</p>
+        </div>
+
+        <div class="row g-4 mt-2">
+            {% for event in home_events %}
+            <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="{{ forloop.counter0 }}00">
+                <div class="event-card {% if forloop.counter == 2 %}event-card--highlight{% endif %}">
+                    <div class="event-date-badge">
+                        <span class="event-day">{{ event.event_date|date:"d" }}</span>
+                        <span class="event-month">{{ event.event_date|date:"M"|upper }}</span>
+                    </div>
+                    <div class="event-content">
+                        <div class="event-category">
+                            <i class="fas fa-calendar-alt"></i>
+                            {{ event.event_date|date:"d M Y" }}
+                        </div>
+                        <h4 class="event-title">{{ event.title }}</h4>
+                        {% if event.description %}
+                        <p class="event-desc">{{ event.description|striptags|truncatewords:18 }}</p>
+                        {% endif %}
+                        <div class="event-meta">
+                            {% if event.event_time %}
+                            <span><i class="fas fa-clock"></i> {{ event.event_time|time:"g:i A" }}</span>
+                            {% endif %}
+                            {% if event.venue %}
+                            <span><i class="fas fa-map-marker-alt"></i> {{ event.venue }}</span>
+                            {% endif %}
+                        </div>
+                        <a href="{% url 'events' %}" class="event-link">Learn More <i class="fas fa-arrow-right"></i></a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="text-center mt-5" data-aos="fade-up">
+            <a href="{% url 'events' %}" class="btn-outline-custom">View All Events <i class="fas fa-calendar-alt"></i></a>
+        </div>
+    </div>
+</section>
+{% endif %}
+
+
+<!-- ============================================================
+     SECTION 4 — OUR CORE PILLARS  (hidden if no pillars exist)
+     ============================================================ -->
+{% if pillars %}
+<section class="motives-section" id="motives">
+    <div class="container-xl">
+        <div class="section-header text-center" data-aos="fade-up">
+            <div class="section-label">What Drives Us</div>
+            <h2 class="section-heading">Our <em>Core Pillars</em></h2>
+            <p class="section-subtext">The values and principles that guide every decision we make as an institution</p>
+        </div>
+
+        <div class="motives-grid" data-aos="fade-up" data-aos-delay="100">
+            {% for pillar in pillars %}
+            <div class="motive-card">
+                <div class="motive-icon-wrap">
+                    <div class="motive-icon"><i class="{{ pillar.icon_class }}"></i></div>
+                </div>
+                <h3>{{ pillar.title }}</h3>
+                <p>{{ pillar.description }}</p>
+                <div class="motive-number">{{ forloop.counter|stringformat:"02d" }}</div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+
+<!-- ============================================================
+     SECTION 5 — CURRICULUM CAROUSEL (data from CurriculumStage model)
+     Hidden if no active stages exist.
+     ============================================================ -->
+{% if curriculum_stages %}
+<section class="curriculum-section" id="curriculum">
+    <div class="curriculum-bg"></div>
+    <div class="container-xl">
+        <div class="section-header text-center" data-aos="fade-up">
+            <div class="section-label">Academic Journey</div>
+            <h2 class="section-heading">Our <em>Curriculum</em> Stages</h2>
+            <p class="section-subtext">A carefully structured learning path from your child's very first day to university readiness</p>
+        </div>
+
+        <div class="swiper curriculumSwiper mt-5" data-aos="fade-up" data-aos-delay="100">
+            <div class="swiper-wrapper">
+                {% for stage in curriculum_stages %}
+                <div class="swiper-slide">
+                    <div class="curriculum-card">
+                        <div class="curriculum-image-wrap">
+                            {% if stage.image %}
+                            <img src="{{ stage.image.url }}" alt="{{ stage.label }}"
+                                 style="width:100%; height:100%; object-fit:cover;">
+                            {% else %}
+                            <div class="image-placeholder curriculum">
+                                <i class="{{ stage.icon_class }}"></i>
+                                <span>{{ stage.label }}</span>
+                            </div>
+                            {% endif %}
+                            <div class="curriculum-label">{{ stage.label }}</div>
+                        </div>
+                        <div class="curriculum-body">
+                            {% if stage.age_group %}
+                            <div class="curriculum-age">{{ stage.age_group }}</div>
+                            {% endif %}
+                            <h4>{{ stage.heading }}</h4>
+                            <p>{{ stage.description|striptags|truncatechars:130 }}</p>
+                            {% if stage.feature_1 or stage.feature_2 or stage.feature_3 %}
+                            <ul class="curriculum-features">
+                                {% if stage.feature_1 %}<li><i class="fas fa-check"></i> {{ stage.feature_1 }}</li>{% endif %}
+                                {% if stage.feature_2 %}<li><i class="fas fa-check"></i> {{ stage.feature_2 }}</li>{% endif %}
+                                {% if stage.feature_3 %}<li><i class="fas fa-check"></i> {{ stage.feature_3 }}</li>{% endif %}
+                            </ul>
+                            {% endif %}
+                            <a href="{{ stage.get_absolute_url }}" class="curriculum-link">Learn More <i class="fas fa-arrow-right"></i></a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <div class="swiper-pagination curriculumSwiper-pagination mt-4"></div>
+            <div class="swiper-button-prev curriculum-prev"><i class="fas fa-chevron-left"></i></div>
+            <div class="swiper-button-next curriculum-next"><i class="fas fa-chevron-right"></i></div>
+        </div>
+    </div>
+</section>
+{% endif %}
+
+
+<!-- ============================================================
+     SECTION 6 — FACILITIES  (data from Facility model)
+     ============================================================ -->
+{% if facilities %}
+<section class="facilities-section" id="facilities">
+    <div class="container-xl">
+        <div class="section-header text-center" data-aos="fade-up">
+            <div class="section-label">Campus Life</div>
+            <h2 class="section-heading">World-Class <em>Facilities</em></h2>
+            <p class="section-subtext">Our campus is designed to inspire, challenge, and support every learner</p>
+        </div>
+
+        <div class="facilities-grid mt-5">
+            {% for facility in facilities %}
+            <div class="facility-card {% if forloop.first %}facility-card--large{% endif %}"
+                 data-aos="fade-up" data-aos-delay="{{ forloop.counter0 }}00">
+                <div class="facility-image">
+                    {% if facility.image %}
+                        <img src="{{ facility.image.url }}" alt="{{ facility.heading }}"
+                             style="width:100%; height:100%; object-fit:cover;">
+                    {% else %}
+                        <div class="image-placeholder facility">
+                            <i class="fas fa-building"></i>
+                            <span>{{ facility.heading }}</span>
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="facility-overlay">
+                    <div class="facility-icon"><i class="fas fa-building"></i></div>
+                    <h4>{{ facility.heading }}</h4>
+                    <p>{{ facility.description|striptags|truncatewords:15 }}</p>
+                    <a href="{{ facility.get_absolute_url }}" class="facility-link">Explore <i class="fas fa-arrow-right"></i></a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+
+<!-- ============================================================
+     SECTION 7 — QUOTES & ACHIEVEMENTS  (hidden if no achievements)
+     ============================================================ -->
+<!-- ============================================================
+     QUOTE SECTION — standalone, always visible
+     ============================================================ -->
+<section class="achievements-section" id="quote-section">
+    <div class="achievements-bg"></div>
+    <div class="container-xl">
+        <div class="quote-banner" data-aos="fade-up">
+            <div class="quote-icon"><i class="fas fa-quote-left"></i></div>
+            <blockquote>
+                Education is not the filling of a pail, but the lighting of a fire.
+            </blockquote>
+            <cite>— William Butler Yeats</cite>
+        </div>
+    </div>
+</section>
+
+
+<!-- ============================================================
+     SECTION 7 — NUMBERS THAT SPEAK  (hidden if no achievements)
+     ============================================================ -->
+{% if achievements %}
+<section class="achievements-section" id="achievements">
+    <div class="achievements-bg"></div>
+    <div class="container-xl">
+
+        <!-- Achievement Counters -->
+        <div class="section-header text-center" data-aos="fade-up">
+            <div class="section-label">Our Track Record</div>
+            <h2 class="section-heading">Numbers That <em>Speak</em></h2>
+        </div>
+
+        <div class="achievements-grid mt-4">
+            {% for ach in achievements %}
+            <div class="achievement-card" data-aos="zoom-in" data-aos-delay="{{ forloop.counter0 }}00">
+                <div class="achievement-icon"><i class="{{ ach.icon_class }}"></i></div>
+                <div class="achievement-number" data-count="{{ ach.count }}">0</div>
+                <div class="achievement-suffix">{{ ach.suffix }}</div>
+                <div class="achievement-label">{{ ach.label }}</div>
+            </div>
+            {% endfor %}
+        </div>
+
+        {% comment %} <!-- Testimonial Swiper -->
+        <div class="swiper testimonialSwiper mt-5" data-aos="fade-up">
+            <div class="swiper-wrapper">
+                <div class="swiper-slide">
+                    <div class="testimonial-card">
+                        <div class="testimonial-stars">
+                            <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
+                        </div>
+                        <p>"Peace International School gave my daughter more than just education — it gave her confidence, curiosity, and a love for learning that she carries to university every day."</p>
+                        <div class="testimonial-author">
+                            <div class="author-avatar"><i class="fas fa-user"></i></div>
+                            <div>
+                                <strong>Fatema Begum</strong>
+                                <span>Parent · Class XII Alumni (2022)</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="swiper-slide">
+                    <div class="testimonial-card">
+                        <div class="testimonial-stars">
+                            <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
+                        </div>
+                        <p>"The teachers here genuinely care. My son went from struggling in Mathematics to winning the national Olympiad. That transformation says everything about this school."</p>
+                        <div class="testimonial-author">
+                            <div class="author-avatar"><i class="fas fa-user"></i></div>
+                            <div>
+                                <strong>Rafiqul Islam</strong>
+                                <span>Parent · SSC 2023</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="swiper-slide">
+                    <div class="testimonial-card">
+                        <div class="testimonial-stars">
+                            <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
+                        </div>
+                        <p>"As a Peace International School alumnus now studying at Dhaka University, I can say the foundation this school built for me is unmatched. Best years of my life."</p>
+                        <div class="testimonial-author">
+                            <div class="author-avatar"><i class="fas fa-user"></i></div>
+                            <div>
+                                <strong>Nadia Hossain</strong>
+                                <span>Alumni · Class of 2020</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="swiper-pagination testimonialSwiper-pagination"></div>
+        </div> {% endcomment %}
+
+    </div>
+</section>
+{% endif %}
+
+
+<!-- ============================================================
+SECTION 8 — FOOTER
+============================================================ -->
+
+
+
+{% endblock %}
+
+
+{% block custom_js %}
+<script>
+// ---- Dynamic year in footer ----
+document.getElementById('footerYear').textContent = new Date().getFullYear();
+
+// ---- Hero Swiper ----
+const heroSwiper = new Swiper('.heroSwiper', {
+    loop: true,
+    speed: 900,
+    autoplay: { delay: 5500, disableOnInteraction: false },
+    parallax: true,
+    pagination: { el: '.heroSwiper-pagination', clickable: true },
+    navigation: { nextEl: '.hero-next', prevEl: '.hero-prev' },
+    effect: 'slide',
+});
+
+// ---- Curriculum Swiper ----
+const curriculumSwiper = new Swiper('.curriculumSwiper', {
+    loop: true,
+    speed: 700,
+    autoplay: { delay: 4000, disableOnInteraction: false },
+    slidesPerView: 1,
+    spaceBetween: 24,
+    pagination: { el: '.curriculumSwiper-pagination', clickable: true },
+    navigation: { nextEl: '.curriculum-next', prevEl: '.curriculum-prev' },
+    breakpoints: {
+        640:  { slidesPerView: 1.5 },
+        768:  { slidesPerView: 2 },
+        1024: { slidesPerView: 2.5 },
+        1200: { slidesPerView: 3 },
+    },
+});
+
+// ---- Testimonial Swiper ----
+const testimonialSwiper = new Swiper('.testimonialSwiper', {
+    loop: true,
+    speed: 700,
+    autoplay: { delay: 5000, disableOnInteraction: false },
+    slidesPerView: 1,
+    spaceBetween: 30,
+    pagination: { el: '.testimonialSwiper-pagination', clickable: true },
+    breakpoints: {
+        768:  { slidesPerView: 2 },
+        1200: { slidesPerView: 3 },
+    },
+});
+
+// ---- CountUp on scroll ----
+function animateCounters(entries, observer) {
+    entries.forEach(entry => {
+        if (entry.isIntersecting) {
+            const el = entry.target;
+            const target = parseInt(el.getAttribute('data-count'));
+            const duration = target > 1000 ? 2500 : 1800;
+            let start = 0;
+            const step = Math.ceil(target / (duration / 16));
+            const timer = setInterval(() => {
+                start += step;
+                if (start >= target) { start = target; clearInterval(timer); }
+                el.textContent = start.toLocaleString();
+            }, 16);
+            observer.unobserve(el);
+        }
+    });
+}
+const countObserver = new IntersectionObserver(animateCounters, { threshold: 0.5 });
+document.querySelectorAll('[data-count]').forEach(el => countObserver.observe(el));
+</script>
+{% endblock %}

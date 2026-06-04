@@ -1,0 +1,380 @@
+{% extends 'backend/base.html' %}
+{% load static %}
+ 
+{% block title %}Create Album | Admin{% endblock %}
+ 
+{% block custom_css %}
+<style>
+    .btn-modern {
+        background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: white;
+        border: none; padding: 0.6rem 1.5rem; border-radius: 2rem;
+        font-weight: 600; letter-spacing: 0.5px; box-shadow: 0 4px 15px rgba(59,130,246,0.3);
+        transition: all 0.3s ease; display: inline-flex; align-items: center; gap: 0.5rem;
+    }
+    .btn-modern:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(59,130,246,0.4); color: white; }
+ 
+    #statusMessage {
+        display: none; padding: 1rem 1.25rem; border-radius: 0.75rem;
+        font-weight: 500; margin-bottom: 1.5rem; font-size: 0.95rem;
+        align-items: center; gap: 0.5rem;
+    }
+    .msg-success { background-color: rgba(16,185,129,0.1); color: #059669; border: 1px solid rgba(16,185,129,0.2); }
+    .msg-error   { background-color: rgba(239,68,68,0.1);  color: #dc2626; border: 1px solid rgba(239,68,68,0.2); }
+ 
+    /* Two-panel layout */
+    .gallery-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; align-items: start; }
+    @media (max-width: 991.98px) { .gallery-layout { grid-template-columns: 1fr; } }
+ 
+    .panel {
+        background: #ffffff; border-radius: 1rem;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.03); border: 1px solid #e2e8f0;
+        overflow: hidden;
+    }
+    .panel-head {
+        padding: 1.25rem 1.75rem; border-bottom: 1px solid #f1f5f9;
+        display: flex; align-items: center; gap: 0.75rem;
+        background: linear-gradient(135deg, #f8fafc, #ffffff);
+    }
+    .panel-head-icon {
+        width: 36px; height: 36px; border-radius: 0.5rem; background: rgba(59,130,246,0.1);
+        display: flex; align-items: center; justify-content: center; color: #3b82f6; font-size: 1.1rem;
+    }
+    .panel-body { padding: 1.75rem; }
+ 
+    .form-switch .form-check-input { height: 1.5rem; width: 3rem; cursor: pointer; }
+    .form-switch .form-check-input:checked { background-color: #3b82f6; border-color: #3b82f6; }
+ 
+    /* Cover image upload */
+    .cover-upload-zone {
+        border: 2px dashed #cbd5e1; border-radius: 0.75rem;
+        text-align: center; cursor: pointer; transition: all 0.3s ease;
+        background: #f8fafc; position: relative; overflow: hidden;
+        height: 180px; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    }
+    .cover-upload-zone:hover { border-color: #3b82f6; background: rgba(59,130,246,0.03); }
+    .cover-upload-zone input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; z-index: 10; }
+    .cover-upload-zone img.cover-preview { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; border-radius: 0.65rem; background-color: #f8fafc; }
+    .cover-upload-overlay {
+        position: absolute; inset: 0; background: rgba(15,23,42,0.45);
+        display: flex; flex-direction: column; align-items: center; justify-content: center;
+        color: #fff; opacity: 0; transition: opacity 0.2s; border-radius: 0.65rem;
+    }
+    .cover-upload-zone:hover .cover-upload-overlay { opacity: 1; }
+ 
+    /* Photo drop zone */
+    .photo-dropzone {
+        border: 2px dashed #cbd5e1; border-radius: 0.75rem; padding: 2rem 1.5rem;
+        text-align: center; transition: all 0.3s ease; background: #f8fafc;
+        cursor: pointer; position: relative;
+    }
+    .photo-dropzone.drag-over { border-color: #3b82f6; background: rgba(59,130,246,0.05); }
+    .photo-dropzone input[type="file"] { position: absolute; inset: 0; opacity: 0; width: 100%; cursor: pointer; }
+ 
+    /* Photo grid */
+    .photo-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.75rem; margin-top: 1rem; }
+    .photo-card {
+        border: 1px solid #e2e8f0; border-radius: 0.75rem; overflow: hidden;
+        background: #fff; position: relative;
+    }
+    .photo-card-thumb { position: relative; }
+    .photo-card-thumb img { width: 100%; height: 110px; object-fit: contain; display: block; background-color: #f8fafc; }
+    .photo-card-remove {
+        position: absolute; top: 0.4rem; right: 0.4rem;
+        width: 26px; height: 26px; border-radius: 50%; background: rgba(239,68,68,0.85);
+        color: white; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center;
+        font-size: 0.7rem; transition: background 0.2s;
+    }
+    .photo-card-remove:hover { background: #dc2626; }
+    .photo-card-caption { padding: 0.5rem; }
+    .photo-card-caption input {
+        width: 100%; border: 1px solid #e2e8f0; border-radius: 0.4rem;
+        padding: 0.3rem 0.6rem; font-size: 0.8rem; color: #374151;
+    }
+    .photo-card-caption input:focus { outline: none; border-color: #3b82f6; }
+ 
+    .photo-count-badge {
+        display: inline-flex; align-items: center; gap: 0.4rem;
+        background: rgba(59,130,246,0.1); color: #3b82f6; font-size: 0.8rem;
+        font-weight: 600; padding: 0.3rem 0.75rem; border-radius: 2rem; margin-top: 0.75rem;
+    }
+ 
+    .action-bar {
+        background: #ffffff; border-radius: 1rem; padding: 1.25rem 1.75rem;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.03); border: 1px solid #e2e8f0;
+        display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;
+    }
+</style>
+{% endblock custom_css %}
+ 
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="mb-0">Create Gallery Album</h2>
+        <p class="text-muted mb-0 mt-1" style="font-size:0.9rem;">Build a new photo album for your gallery</p>
+    </div>
+    <a href="{% url 'album_list' %}" class="btn btn-light rounded-pill px-4 border">
+        <iconify-icon icon="solar:list-bold-duotone" class="me-1"></iconify-icon> Back to List
+    </a>
+</div>
+ 
+<form id="albumForm" enctype="multipart/form-data">
+    {% csrf_token %}
+ 
+    <div id="statusMessage">
+        <iconify-icon id="statusIcon" icon="" style="font-size:1.5rem;"></iconify-icon>
+        <span id="statusText"></span>
+    </div>
+ 
+    <div class="gallery-layout">
+ 
+        {# ── LEFT: Album Details ── #}
+        <div class="panel">
+            <div class="panel-head">
+                <div class="panel-head-icon">
+                    <iconify-icon icon="solar:album-bold-duotone"></iconify-icon>
+                </div>
+                <div>
+                    <div class="fw-semibold" style="font-size:0.95rem;">Album Details</div>
+                    <div class="text-muted" style="font-size:0.8rem;">Fill in the album metadata</div>
+                </div>
+            </div>
+            <div class="panel-body">
+ 
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Album Title <span class="text-danger">*</span></label>
+                    <input type="text" name="title" class="form-control" placeholder="e.g. Sports Day 2025" required>
+                </div>
+ 
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Album Date</label>
+                    <input type="date" name="date" class="form-control">
+                </div>
+ 
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Display Order</label>
+                    <input type="number" name="order" class="form-control" value="0" min="0">
+                    <small class="text-muted">Lower numbers appear first.</small>
+                </div>
+ 
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Description</label>
+                    <textarea name="description" class="form-control" rows="3" placeholder="Brief description of this album…"></textarea>
+                </div>
+ 
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Cover Image</label>
+                    <div class="cover-upload-zone" id="coverZone">
+                        <input type="file" name="cover_image" id="coverInput" accept="image/*">
+                        <img id="coverPreview" src="" alt="" class="cover-preview" style="display:none;">
+                        <div class="cover-upload-overlay">
+                            <iconify-icon icon="solar:camera-add-bold-duotone" style="font-size:1.5rem;"></iconify-icon>
+                            <small class="mt-1">Change Cover</small>
+                        </div>
+                        <div id="coverPlaceholder">
+                            <iconify-icon icon="solar:gallery-bold-duotone" style="font-size:2.5rem; color:#94a3b8;"></iconify-icon>
+                            <p class="mb-0 mt-2 text-muted" style="font-size:0.85rem;">Click to upload a cover image</p>
+                        </div>
+                    </div>
+                </div>
+ 
+                <div class="p-3 bg-light rounded-3 border">
+                    <div class="form-check form-switch d-flex align-items-center gap-3">
+                        <input class="form-check-input mt-0" type="checkbox" name="is_published" id="isPublished" checked>
+                        <label class="form-check-label fw-semibold mb-0" for="isPublished">Publish Album</label>
+                    </div>
+                    <small class="text-muted ms-5">Uncheck to keep as a private draft.</small>
+                </div>
+ 
+            </div>
+        </div>
+ 
+        {# ── RIGHT: Photo Upload ── #}
+        <div class="panel">
+            <div class="panel-head">
+                <div class="panel-head-icon">
+                    <iconify-icon icon="solar:camera-bold-duotone"></iconify-icon>
+                </div>
+                <div>
+                    <div class="fw-semibold" style="font-size:0.95rem;">Photos</div>
+                    <div class="text-muted" style="font-size:0.8rem;">Upload multiple photos at once</div>
+                </div>
+            </div>
+            <div class="panel-body">
+ 
+                <div class="photo-dropzone" id="photoDropzone">
+                    <input type="file" name="photoFiles" id="photoFileInput" accept="image/*" multiple>
+                    <iconify-icon icon="solar:gallery-add-bold-duotone" style="font-size:2.5rem; color:#94a3b8;"></iconify-icon>
+                    <p class="mb-1 mt-2 fw-semibold" style="color:#475569;">Click or drag photos here</p>
+                    <p class="mb-0 text-muted" style="font-size:0.8rem;">PNG, JPG, WEBP — multiple files allowed</p>
+                </div>
+ 
+                <div id="photoCountBadge" style="display:none;">
+                    <span class="photo-count-badge">
+                        <iconify-icon icon="solar:camera-bold-duotone"></iconify-icon>
+                        <span id="photoCountText">0 photos selected</span>
+                    </span>
+                </div>
+ 
+                <div class="photo-grid" id="photoGrid"></div>
+ 
+                {# Hidden inputs container — real file inputs and captions built by JS #}
+                <div id="hiddenInputs"></div>
+ 
+            </div>
+        </div>
+ 
+    </div>
+ 
+    {# ── Action Bar ── #}
+    <div class="action-bar mt-4">
+        <div class="text-muted" style="font-size:0.875rem;">
+            <iconify-icon icon="solar:info-circle-bold-duotone" class="me-1"></iconify-icon>
+            Photos can also be added or removed after the album is created.
+        </div>
+        <button type="submit" class="btn-modern" id="submitBtn">
+            <iconify-icon icon="solar:disk-bold-duotone" style="font-size:1.2rem;"></iconify-icon> Create Album
+        </button>
+    </div>
+ 
+</form>
+{% endblock content %}
+ 
+{% block custom_js %}
+<script>
+(function () {
+    // Cover image preview
+    document.getElementById('coverInput').addEventListener('change', function () {
+        const file = this.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = e => {
+            const preview = document.getElementById('coverPreview');
+            preview.src = e.target.result;
+            preview.style.display = 'block';
+            document.getElementById('coverPlaceholder').style.display = 'none';
+        };
+        reader.readAsDataURL(file);
+    });
+ 
+    // Photo multi-upload
+    let selectedFiles = [];   // Array of File objects
+ 
+    const photoInput = document.getElementById('photoFileInput');
+    const photoGrid  = document.getElementById('photoGrid');
+    const hiddenInputs = document.getElementById('hiddenInputs');
+ 
+    photoInput.addEventListener('change', function () {
+        Array.from(this.files).forEach(addPhoto);
+        this.value = '';   // reset so same file can be re-added if removed
+    });
+ 
+    // Drag-over highlight
+    const dropzone = document.getElementById('photoDropzone');
+    dropzone.addEventListener('dragover',  e => { e.preventDefault(); dropzone.classList.add('drag-over'); });
+    dropzone.addEventListener('dragleave', ()  => dropzone.classList.remove('drag-over'));
+    dropzone.addEventListener('drop', e => {
+        e.preventDefault();
+        dropzone.classList.remove('drag-over');
+        Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/')).forEach(addPhoto);
+    });
+ 
+    function addPhoto(file) {
+        const idx = selectedFiles.length;
+        selectedFiles.push(file);
+ 
+        const reader = new FileReader();
+        reader.onload = e => {
+            const card = document.createElement('div');
+            card.className = 'photo-card';
+            card.dataset.idx = idx;
+            card.innerHTML = `
+                <div class="photo-card-thumb">
+                    <img src="${e.target.result}" alt="">
+                    <button type="button" class="photo-card-remove" onclick="removePhoto(${idx}, this)">
+                        <iconify-icon icon="solar:close-square-bold-duotone"></iconify-icon>
+                    </button>
+                </div>
+                <div class="photo-card-caption">
+                    <input type="text" placeholder="Caption (optional)" data-caption-idx="${idx}">
+                </div>
+            `;
+            photoGrid.appendChild(card);
+            updateCount();
+        };
+        reader.readAsDataURL(file);
+    }
+ 
+    window.removePhoto = function (idx, btn) {
+        selectedFiles[idx] = null;
+        btn.closest('.photo-card').remove();
+        updateCount();
+    };
+ 
+    function updateCount() {
+        const count = selectedFiles.filter(Boolean).length;
+        const badge = document.getElementById('photoCountBadge');
+        badge.style.display = count > 0 ? 'block' : 'none';
+        document.getElementById('photoCountText').textContent =
+            count + ' photo' + (count !== 1 ? 's' : '') + ' selected';
+    }
+ 
+    // Form submission — build FormData manually to attach real File objects
+    document.getElementById('albumForm').addEventListener('submit', function (e) {
+        e.preventDefault();
+ 
+        const formData = new FormData(this);
+ 
+        // Remove the dummy file input (photoFiles) from formData; we'll add individually
+        formData.delete('photoFiles');
+ 
+        // Collect captions from visible inputs
+        const captionInputs = photoGrid.querySelectorAll('[data-caption-idx]');
+        const captions = {};
+        captionInputs.forEach(inp => { captions[inp.dataset.captionIdx] = inp.value; });
+ 
+        selectedFiles.forEach((file, i) => {
+            if (!file) return;
+            formData.append('photos', file);
+            formData.append('captions', captions[i] || '');
+        });
+ 
+        const btn = document.getElementById('submitBtn');
+        const orig = btn.innerHTML;
+        btn.innerHTML = '<iconify-icon icon="line-md:loading-twotone-loop"></iconify-icon> Creating…';
+        btn.disabled = true;
+ 
+        fetch("{% url 'create_album' %}", {
+            method: 'POST',
+            body: formData,
+            headers: {'X-Requested-With': 'XMLHttpRequest'}
+        })
+        .then(r => r.json())
+        .then(data => {
+            showStatus(data.message, data.success ? 'success' : 'error');
+            if (data.success) {
+                this.reset();
+                photoGrid.innerHTML = '';
+                selectedFiles = [];
+                updateCount();
+                document.getElementById('coverPreview').style.display = 'none';
+                document.getElementById('coverPlaceholder').style.display = 'block';
+            }
+        })
+        .catch(() => showStatus('A server error occurred.', 'error'))
+        .finally(() => { btn.innerHTML = orig; btn.disabled = false; });
+    });
+ 
+    function showStatus(msg, type) {
+        const el   = document.getElementById('statusMessage');
+        const icon = document.getElementById('statusIcon');
+        const text = document.getElementById('statusText');
+        el.className = type === 'success' ? 'msg-success d-flex' : 'msg-error d-flex';
+        icon.setAttribute('icon', type === 'success' ? 'solar:check-circle-bold-duotone' : 'solar:danger-triangle-bold-duotone');
+        text.innerText = msg;
+        el.style.display = 'flex';
+        window.scrollTo({top: 0, behavior: 'smooth'});
+        setTimeout(() => { el.style.display = 'none'; }, 5000);
+    }
+})();
+</script>
+{% endblock custom_js %}

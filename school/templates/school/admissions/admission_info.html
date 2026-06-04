@@ -1,0 +1,210 @@
+{% extends "school/base.html" %}
+{% load static %}
+
+{% block custom_css %}
+<link rel="stylesheet" href="{% static 'school/assets/css/page_richtext.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<!-- PAGE HERO / BREADCRUMB BANNER -->
+<section class="page-hero">
+    <div class="container">
+        <div class="page-hero-inner">
+            <span class="page-hero-label">
+                <i class="fa-solid fa-file-lines me-1"></i> Policies
+            </span>
+            <h1 class="page-hero-title">Student <em>Code of Conduct</em></h1>
+            <nav class="page-breadcrumb" aria-label="breadcrumb">
+                <a href="/">Home</a>
+                <span class="bc-sep"><i class="fa-solid fa-chevron-right"></i></span>
+                <a href="#">Policies</a>
+                <span class="bc-sep"><i class="fa-solid fa-chevron-right"></i></span>
+                <span class="bc-current">Code of Conduct</span>
+            </nav>
+        </div>
+    </div>
+</section>
+
+{# ── RICH TEXT SECTION ── #}
+<section class="richtext-section">
+    <div class="container">
+        <div class="richtext-layout">
+
+            {# ── STICKY TABLE OF CONTENTS ── #}
+            <aside class="richtext-toc" id="qlToc" aria-label="Table of Contents">
+                <div class="richtext-toc-title">
+                    <i class="fa-solid fa-list-ul"></i> Contents
+                </div>
+                <ul>
+                    <li><a href="#section-purpose">1. Purpose</a></li>
+                    <li><a href="#section-values">2. Core Values</a></li>
+                    <li><a href="#section-expectations">3. Expectations</a></li>
+                    <li><a href="#section-dress-code">4. Dress Code</a></li>
+                    <li><a href="#section-digital">5. Digital Conduct</a></li>
+                    <li><a href="#section-consequences">6. Consequences</a></li>
+                    <li><a href="#section-review">7. Review Schedule</a></li>
+                </ul>
+            </aside>
+            <article class="ql-content">
+
+                {# ── H1 ── #}
+                <h1 id="section-purpose">Student Code of Conduct</h1>
+
+                <p>This document outlines the expected standards of behaviour, responsibility, and mutual respect that every member of the Peace International School community is required to uphold. By enrolling at Peace International School, students and their families acknowledge and agree to these principles.</p>
+
+                {# ── H2 ── #}
+                <h2 id="section-values">Core Values</h2>
+
+                <p>Our community is guided by six foundational values that shape everything we do — from the classroom to the sports field:</p>
+
+                {# Unordered list #}
+                <ul>
+                    <li><strong>Integrity</strong> — We act honestly and transparently in all our dealings.</li>
+                    <li><strong>Respect</strong> — We treat every individual with dignity, regardless of background or ability.</li>
+                    <li><strong>Responsibility</strong> — We own our actions and their consequences.</li>
+                    <li><strong>Excellence</strong> — We strive to do our best in everything we attempt.</li>
+                    <li><strong>Compassion</strong> — We care for others and act in the spirit of service.</li>
+                    <li><strong>Curiosity</strong> — We embrace learning as a lifelong journey of discovery.</li>
+                </ul>
+
+                {# ── H2 ── #}
+                <h2 id="section-expectations">General Expectations</h2>
+
+                <p>All students are expected to arrive punctually, prepared with the necessary materials for each lesson. Disruption of the learning environment — whether in person or online — is not tolerated. Students must also:</p>
+
+                {# Ordered list #}
+                <ol>
+                    <li>Attend all scheduled lessons unless formally excused by a parent or guardian.</li>
+                    <li>Complete all assigned homework and coursework by the stated deadline.</li>
+                    <li>Treat school property, equipment, and facilities with care and respect.</li>
+                    <li>Refrain from any form of bullying, harassment, or discriminatory language.</li>
+                    <li>Report concerns to a trusted adult — teacher, counsellor, or pastoral lead.</li>
+                </ol>
+
+                {# Blockquote #}
+                <blockquote>
+                    "Education is not merely the acquisition of knowledge; it is the formation of character. At Peace International School, we believe the two are inseparable."
+                    <br><br>— Dr. Amara Osei, Principal
+                </blockquote>
+
+                {# ── H2 ── #}
+                <h2 id="section-dress-code">Dress Code</h2>
+
+                <h3>Uniform Requirements</h3>
+                <p>The full school uniform must be worn on all instructional days. It is a source of pride and identity for our community. <em>Smart, clean, and complete</em> — these are the three standards by which uniform is judged.</p>
+
+                {# Inline image #}
+                <img
+                    src="https://images.unsplash.com/photo-1580582932707-520aed937b7b?w=800&q=80"
+                    alt="Students in Peace International School uniform"
+                    class="ql-align-center"
+                >
+
+                <p>On designated non-uniform days, clothing must still conform to the school's modesty guidelines. Branded sportswear is acceptable on PE days only when the student transitions directly from a sports session.</p>
+
+                {# ── H2 ── #}
+                <h2 id="section-digital">Digital Conduct</h2>
+
+                <p>Technology is a powerful tool for learning — but only when used responsibly. The following table outlines permitted and prohibited device usage:</p>
+
+                {# Table #}
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Context</th>
+                            <th>Personal Mobile Phones</th>
+                            <th>School-Issued Tablets</th>
+                            <th>Laptops</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>During lessons</td>
+                            <td>Not permitted (stored in locker)</td>
+                            <td>Permitted with teacher approval</td>
+                            <td>Permitted with teacher approval</td>
+                        </tr>
+                        <tr>
+                            <td>Break & Lunch</td>
+                            <td>Permitted in designated zones</td>
+                            <td>Permitted</td>
+                            <td>Permitted</td>
+                        </tr>
+                        <tr>
+                            <td>Examinations</td>
+                            <td>Strictly prohibited</td>
+                            <td>Strictly prohibited</td>
+                            <td>Only if specified by exam board</td>
+                        </tr>
+                        <tr>
+                            <td>After school (on premises)</td>
+                            <td>Permitted</td>
+                            <td>Must be returned to charging station</td>
+                            <td>Permitted</td>
+                        </tr>
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <td colspan="4">Any violation may result in device confiscation for the remainder of the school day.</td>
+                        </tr>
+                    </tfoot>
+                </table>
+
+                {# ── H2 ── #}
+                <h2 id="section-consequences">Consequences of Misconduct</h2>
+
+                <h3>Staged Response Framework</h3>
+                <p>Peace International School operates a fair, transparent, and proportionate disciplinary process. The response to any incident is staged according to its severity:</p>
+
+                <h4>Stage 1 — Verbal Warning</h4>
+                <p>Minor infringements (e.g., minor uniform violations, lateness) are addressed through a verbal reminder from the class teacher. A note is logged in the student's pastoral record.</p>
+
+                <h4>Stage 2 — Formal Warning</h4>
+                <p>Repeated Stage 1 behaviours, or a moderate first offence, result in a written warning sent to the parent/guardian. A pastoral meeting may be arranged.</p>
+
+                <h4>Stage 3 — Internal Suspension</h4>
+                <p>Serious incidents or persistent disruptive behaviour lead to a period of internal isolation (1–3 days). Parents are notified and a reintegration plan is agreed upon.</p>
+
+                <h4>Stage 4 — External Suspension or Exclusion</h4>
+                <p>In extreme cases — including physical violence, possession of prohibited items, or gross misconduct — the Headteacher may issue a fixed-term or permanent exclusion following the school's formal exclusions procedure.</p>
+
+                <hr>
+
+                {# ── H2 ── #}
+                <h2 id="section-review">Policy Review Schedule</h2>
+
+                <p>This policy is reviewed annually by the Senior Leadership Team in consultation with the Student Council, Parent Advisory Board, and Governing Body. The next scheduled review is <strong>September 2025</strong>.</p>
+
+                <p>Questions or concerns regarding this policy should be directed to the Pastoral Lead at <a href="mailto:peace.ctg.edu@gmail.com">peace.ctg.edu@gmail.com</a>.</p>
+
+            </article>{# /ql-content #}
+
+        </div>{# /richtext-layout #}
+    </div>{# /container #}
+</section>
+
+{% endblock %}
+
+
+{% block custom_js %}
+<script>
+/* ── Highlight active TOC link on scroll ── */
+(function () {
+    const links    = document.querySelectorAll('.richtext-toc a');
+    const headings = document.querySelectorAll('.ql-content h1[id], .ql-content h2[id]');
+
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                links.forEach(l => l.classList.remove('active'));
+                const active = document.querySelector(`.richtext-toc a[href="#${entry.target.id}"]`);
+                if (active) active.classList.add('active');
+            }
+        });
+    }, { rootMargin: '-20% 0px -75% 0px' });
+
+    headings.forEach(h => observer.observe(h));
+})();
+</script>
+{% endblock %}

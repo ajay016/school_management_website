@@ -1,0 +1,121 @@
+{% extends "school/base.html" %}
+{% load static %}
+
+{% block custom_css %}
+<link rel="stylesheet" href="{% static 'school/assets/css/page_details.css' %}">
+{% endblock %}
+
+{% block content %}
+
+{# ── PAGE HERO / BREADCRUMB BANNER ── #}
+<section class="page-hero">
+    <div class="container">
+        <div class="page-hero-inner">
+            <span class="page-hero-label">
+                <i class="fa-solid fa-book-open me-1"></i> Academic Curriculum
+            </span>
+            <h1 class="page-hero-title">National <em>Curriculum</em></h1>
+            <nav class="page-breadcrumb" aria-label="breadcrumb">
+                <a href="/">Home</a>
+                <span class="bc-sep"><i class="fa-solid fa-chevron-right"></i></span>
+                <a href="#">Academics</a>
+                <span class="bc-sep"><i class="fa-solid fa-chevron-right"></i></span>
+                <span class="bc-current">National Curriculum</span>
+            </nav>
+        </div>
+    </div>
+</section>
+
+{# ── DETAIL SECTION ── #}
+<section class="detail-section">
+    <div class="container">
+        <div class="detail-grid detail-grid--full">
+
+            {# ── IMAGE COLUMN ── #}
+            <div class="detail-image-col">
+                <div class="detail-image-wrap">
+                    <img
+                        src="https://images.unsplash.com/photo-1509062522246-3755977927d7?w=800&q=80"
+                        alt="National Curriculum at Peace International School"
+                        loading="lazy"
+                    >
+                </div>
+                <p class="detail-image-caption">
+                    <i class="fa-solid fa-camera me-1"></i>
+                    Students participating in classroom activities under the Bangladesh National Curriculum
+                </p>
+            </div>
+
+            {# ── CONTENT COLUMN ── #}
+            <div class="detail-content-col">
+
+                {# Meta tags row #}
+                <div class="detail-meta-row">
+                    <span class="detail-meta-tag">
+                        <i class="fa-solid fa-school"></i> National Curriculum
+                    </span>
+                    <span class="detail-meta-tag tag--navy">
+                        <i class="fa-regular fa-calendar"></i> Updated Jan 2025
+                    </span>
+                </div>
+
+                <h1 class="detail-content-title">Bangladesh National <em>Curriculum</em></h1>
+                <p class="detail-content-subtitle">
+                    Building strong academic foundations through the nationally approved education system.
+                </p>
+                <div class="detail-divider"></div>
+
+                {# Body text #}
+                <div class="detail-body">
+                    <p>At Peace International School, we proudly offer the Bangladesh National Curriculum, designed to provide students with a strong academic foundation, moral values, and practical life skills. The curriculum follows the guidelines set by the National Curriculum and Textbook Board (NCTB), ensuring students receive a structured and nationally recognized education.</p>
+
+                    <p>Our National Curriculum programme emphasizes academic excellence while nurturing creativity, discipline, and social responsibility. Students are guided by experienced teachers who create engaging and supportive classroom environments that encourage active participation and critical thinking.</p>
+
+                    <p>The curriculum includes core subjects such as Bangla, English, Mathematics, Science, Bangladesh & Global Studies, Religion, and Information & Communication Technology (ICT). We also integrate co-curricular activities, project-based learning, and modern teaching methodologies to enhance student development beyond textbooks.</p>
+
+                    <p>Special attention is given to continuous assessment and student progress monitoring. Regular class tests, assignments, presentations, and examinations help students build confidence and prepare effectively for public examinations including SSC and HSC.</p>
+
+                    <p>In addition to academic learning, students are encouraged to participate in cultural programmes, debates, sports, science fairs, and community engagement activities. Our goal is to develop responsible, knowledgeable, and confident individuals who are prepared for higher education and future leadership.</p>
+                </div>
+
+
+                {% comment %} <div class="detail-info-list">
+                    <div class="detail-info-row">
+                        <div class="detail-info-key"><i class="fa-solid fa-layer-group"></i> Levels</div>
+                        <div class="detail-info-val">Primary, Secondary & Higher Secondary</div>
+                    </div>
+                    <div class="detail-info-row">
+                        <div class="detail-info-key"><i class="fa-solid fa-clock"></i> Duration</div>
+                        <div class="detail-info-val">Academic Year (January – December)</div>
+                    </div>
+                    <div class="detail-info-row">
+                        <div class="detail-info-key"><i class="fa-solid fa-users"></i> Class Size</div>
+                        <div class="detail-info-val">Balanced student-teacher ratio for effective learning</div>
+                    </div>
+                    <div class="detail-info-row">
+                        <div class="detail-info-key"><i class="fa-solid fa-certificate"></i> Curriculum Board</div>
+                        <div class="detail-info-val">National Curriculum and Textbook Board (NCTB)</div>
+                    </div>
+                    <div class="detail-info-row">
+                        <div class="detail-info-key"><i class="fa-solid fa-language"></i> Medium</div>
+                        <div class="detail-info-val">Bangla & English Version</div>
+                    </div>
+                </div>
+
+
+                <div class="detail-cta-row">
+                    <a href="/admissions/" class="btn btn-primary">
+                        <i class="fa-solid fa-paper-plane me-2"></i> Apply Now
+                    </a>
+                    <a href="/contact/" class="btn btn-outline-secondary">
+                        <i class="fa-solid fa-phone me-2"></i> Contact Us
+                    </a>
+                </div> {% endcomment %}
+
+            </div>{# /detail-content-col #}
+
+        </div>{# /detail-grid #}
+    </div>{# /container #}
+</section>
+
+{% endblock %}

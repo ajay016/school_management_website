@@ -1,0 +1,238 @@
+{% load static %}
+
+<!-- ===================== TOP BAR ===================== -->
+<div class="top-bar">
+    <div class="container-xl">
+        <div class="top-bar-inner">
+            <div class="top-bar-contacts">
+                {% if nav_contact.phone_1 %}
+                <a href="tel:{{ nav_contact.phone_1 }}" class="top-bar-link">
+                    <i class="fas fa-phone-alt"></i>
+                    <span>{{ nav_contact.phone_1 }}</span>
+                </a>
+                {% endif %}
+                {% if nav_contact.phone_2 %}
+                <a href="tel:{{ nav_contact.phone_2 }}" class="top-bar-link">
+                    <i class="fas fa-phone-alt"></i>
+                    <span>{{ nav_contact.phone_2 }}</span>
+                </a>
+                {% endif %}
+                {% if nav_contact.email %}
+                <a href="mailto:{{ nav_contact.email }}" class="top-bar-link">
+                    <i class="fas fa-envelope"></i>
+                    <span>{{ nav_contact.email }}</span>
+                </a>
+                {% endif %}
+            </div>
+            <div class="top-bar-social">
+                {% if nav_social.facebook %}
+                <a href="{{ nav_social.facebook }}" target="_blank" rel="noopener" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+                {% endif %}
+                {% if nav_social.youtube %}
+                <a href="{{ nav_social.youtube }}" target="_blank" rel="noopener" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
+                {% endif %}
+                {% if nav_social.instagram %}
+                <a href="{{ nav_social.instagram }}" target="_blank" rel="noopener" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                {% endif %}
+                {% if nav_social.linkedin %}
+                <a href="{{ nav_social.linkedin }}" target="_blank" rel="noopener" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+                {% endif %}
+                {% if nav_social.twitter %}
+                <a href="{{ nav_social.twitter }}" target="_blank" rel="noopener" aria-label="X / Twitter"><i class="fab fa-x-twitter"></i></a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ===================== MAIN NAVBAR ===================== -->
+<nav class="main-navbar" id="mainNavbar">
+    <div class="container-xl">
+        <div class="navbar-inner">
+
+            <!-- Logo -->
+            <a href="{% url 'home' %}" class="navbar-logo">
+                <img src="{% static 'school/assets/images/logo.png' %}" class="logo-img" alt="Peace International School">
+            </a>
+
+            <!-- Desktop Nav -->
+            <ul class="desktop-nav">
+
+                <!-- Home is always present -->
+                <li class="nav-item">
+                    <a href="{% url 'home' %}" class="nav-link {% if request.resolver_match.url_name == 'home' %}active{% endif %}">
+                        <i class="fas fa-home"></i> Home
+                    </a>
+                </li>
+
+                {% for menu in nav_menus %}
+                {% with subs=menu.submenus.all %}
+
+                {% if subs %}
+                {# ── Dropdown: has SubMenu records ── #}
+                <li class="nav-item has-dropdown">
+                    <a href="#" class="nav-link">
+                        {{ menu.name }} <i class="fas fa-chevron-down dropdown-arrow"></i>
+                    </a>
+                    <div class="dropdown-menu-custom">
+                        {% for sub in subs %}
+                        <a href="{{ sub.get_absolute_url }}" class="dropdown-item-custom">
+                            <i class="fas fa-chevron-right" style="font-size:.7rem; opacity:.5;"></i>
+                            {{ sub.name }}
+                        </a>
+                        {% endfor %}
+                    </div>
+                </li>
+
+                {% elif menu.page == 'facilities_list' %}
+                {# ── Dropdown: items pulled from Facility model ── #}
+                <li class="nav-item has-dropdown">
+                    <a href="#" class="nav-link">
+                        {{ menu.name }} <i class="fas fa-chevron-down dropdown-arrow"></i>
+                    </a>
+                    <div class="dropdown-menu-custom">
+                        {% for facility in nav_facilities %}
+                        <a href="{{ facility.get_absolute_url }}" class="dropdown-item-custom">
+                            <i class="fas fa-chevron-right" style="font-size:.7rem; opacity:.5;"></i>
+                            {{ facility.heading }}
+                        </a>
+                        {% empty %}
+                        <span class="dropdown-item-custom text-muted" style="font-size:.85rem; pointer-events:none;">No facilities yet</span>
+                        {% endfor %}
+                    </div>
+                </li>
+
+                {% elif menu.page == 'curriculum_list' %}
+                {# ── Dropdown: items pulled from CurriculumStage model ── #}
+                <li class="nav-item has-dropdown">
+                    <a href="#" class="nav-link">
+                        {{ menu.name }} <i class="fas fa-chevron-down dropdown-arrow"></i>
+                    </a>
+                    <div class="dropdown-menu-custom">
+                        {% for stage in nav_curriculum %}
+                        <a href="{{ stage.get_absolute_url }}" class="dropdown-item-custom">
+                            <i class="fas fa-chevron-right" style="font-size:.7rem; opacity:.5;"></i>
+                            {{ stage.label }}
+                        </a>
+                        {% empty %}
+                        <span class="dropdown-item-custom text-muted" style="font-size:.85rem; pointer-events:none;">No stages yet</span>
+                        {% endfor %}
+                    </div>
+                </li>
+
+                {% elif menu.page %}
+                {# ── Direct-link menu item ── #}
+                <li class="nav-item">
+                    <a href="{{ menu.get_absolute_url }}"
+                       class="nav-link {% if menu.page == 'contact' %}nav-cta{% endif %}">
+                        {% if menu.page == 'contact' %}<i class="fas fa-paper-plane"></i> {% endif %}
+                        {{ menu.name }}
+                    </a>
+                </li>
+                {% endif %}
+
+                {% endwith %}
+                {% endfor %}
+
+            </ul>
+
+            <!-- Hamburger -->
+            <button class="hamburger-btn" id="navToggle" aria-label="Toggle Menu">
+                <span class="bar bar1"></span>
+                <span class="bar bar2"></span>
+                <span class="bar bar3"></span>
+            </button>
+
+        </div>
+    </div>
+</nav>
+
+<!-- ===================== MOBILE OVERLAY ===================== -->
+<div class="mobile-overlay" id="mobileOverlay"></div>
+
+<!-- ===================== MOBILE MENU ===================== -->
+<div class="mobile-menu" id="mobileMenu">
+    <div class="mobile-menu-header">
+        <div class="mobile-logo">
+            <i class="fas fa-graduation-cap"></i>
+            <span>Peace International School</span>
+        </div>
+        <button class="mobile-close-btn" id="mobileClose" onclick="document.getElementById('navToggle').click()">
+            <i class="fas fa-times"></i>
+        </button>
+    </div>
+
+    <div class="mobile-menu-body">
+        <ul class="mobile-nav-list">
+
+            <li class="mobile-menu-item">
+                <a href="{% url 'home' %}" class="mobile-nav-link">
+                    <i class="fas fa-home"></i> Home
+                </a>
+            </li>
+
+            {% for menu in nav_menus %}
+            {% with subs=menu.submenus.all %}
+
+            {% if subs %}
+            <li class="mobile-menu-item has-submenu">
+                <div class="mobile-nav-link mobile-dropdown-toggle">
+                    <span><i class="fas fa-chevron-right" style="font-size:.8rem;"></i> {{ menu.name }}</span>
+                    <i class="fas fa-chevron-down toggle-icon"></i>
+                </div>
+                <ul class="mobile-submenu">
+                    {% for sub in subs %}
+                    <li><a href="{{ sub.get_absolute_url }}"><i class="fas fa-minus" style="font-size:.65rem; opacity:.5;"></i> {{ sub.name }}</a></li>
+                    {% endfor %}
+                </ul>
+            </li>
+
+            {% elif menu.page == 'facilities_list' %}
+            <li class="mobile-menu-item has-submenu">
+                <div class="mobile-nav-link mobile-dropdown-toggle">
+                    <span><i class="fas fa-chevron-right" style="font-size:.8rem;"></i> {{ menu.name }}</span>
+                    <i class="fas fa-chevron-down toggle-icon"></i>
+                </div>
+                <ul class="mobile-submenu">
+                    {% for facility in nav_facilities %}
+                    <li><a href="{{ facility.get_absolute_url }}"><i class="fas fa-minus" style="font-size:.65rem; opacity:.5;"></i> {{ facility.heading }}</a></li>
+                    {% empty %}<li><span class="text-muted" style="font-size:.85rem; padding:.25rem 1rem; display:block;">No facilities yet</span></li>{% endfor %}
+                </ul>
+            </li>
+
+            {% elif menu.page == 'curriculum_list' %}
+            <li class="mobile-menu-item has-submenu">
+                <div class="mobile-nav-link mobile-dropdown-toggle">
+                    <span><i class="fas fa-chevron-right" style="font-size:.8rem;"></i> {{ menu.name }}</span>
+                    <i class="fas fa-chevron-down toggle-icon"></i>
+                </div>
+                <ul class="mobile-submenu">
+                    {% for stage in nav_curriculum %}
+                    <li><a href="{{ stage.get_absolute_url }}"><i class="fas fa-minus" style="font-size:.65rem; opacity:.5;"></i> {{ stage.label }}</a></li>
+                    {% empty %}<li><span class="text-muted" style="font-size:.85rem; padding:.25rem 1rem; display:block;">No stages yet</span></li>{% endfor %}
+                </ul>
+            </li>
+
+            {% elif menu.page %}
+            <li class="mobile-menu-item">
+                <a href="{{ menu.get_absolute_url }}"
+                   class="mobile-nav-link {% if menu.page == 'contact' %}mobile-nav-cta{% endif %}">
+                    {% if menu.page == 'contact' %}<i class="fas fa-paper-plane"></i>{% endif %}
+                    {{ menu.name }}
+                </a>
+            </li>
+            {% endif %}
+
+            {% endwith %}
+            {% endfor %}
+
+        </ul>
+
+        <div class="mobile-menu-footer">
+            <div class="mobile-contacts">
+                {% if nav_contact.phone_1 %}<a href="tel:{{ nav_contact.phone_1 }}"><i class="fas fa-phone-alt"></i> {{ nav_contact.phone_1 }}</a>{% endif %}
+                {% if nav_contact.email %}<a href="mailto:{{ nav_contact.email }}"><i class="fas fa-envelope"></i> {{ nav_contact.email }}</a>{% endif %}
+            </div>
+        </div>
+    </div>
+</div>

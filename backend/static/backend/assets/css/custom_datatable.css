@@ -1,0 +1,137 @@
+/* static/backend/assets/css/custom_datatable.css */
+
+/* Table Wrapper */
+.modern-table-wrapper {
+    background: var(--bg-panel-solid);
+    border-radius: var(--border-radius);
+    padding: 1.5rem;
+    box-shadow: var(--panel-glow);
+}
+
+/* Modern DataTable Styling */
+table.dataTable.no-footer {
+    border-bottom: none !important;
+}
+
+.table-modern {
+    width: 100% !important;
+    border-collapse: separate !important;
+    border-spacing: 0 0.5rem !important; /* Spacing between rows */
+}
+
+.table-modern thead th {
+    border-bottom: 1px solid rgba(15, 23, 42, 0.05) !important;
+    color: var(--text-muted);
+    font-weight: 600;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 1rem !important;
+}
+
+.table-modern tbody tr {
+    transition: all 0.2s ease;
+}
+
+.table-modern tbody tr:hover {
+    background: rgba(59, 130, 246, 0.03) !important;
+    transform: scale(1.002);
+}
+
+.table-modern tbody td {
+    border-top: 1px solid rgba(15, 23, 42, 0.03) !important;
+    border-bottom: 1px solid rgba(15, 23, 42, 0.03) !important;
+    padding: 1rem !important;
+    color: var(--text-main);
+    vertical-align: middle;
+}
+
+/* Rounded edges for first and last cells in a row */
+.table-modern tbody td:first-child {
+    border-left: 1px solid rgba(15, 23, 42, 0.03) !important;
+    border-top-left-radius: 0.75rem;
+    border-bottom-left-radius: 0.75rem;
+}
+
+.table-modern tbody td:last-child {
+    border-right: 1px solid rgba(15, 23, 42, 0.03) !important;
+    border-top-right-radius: 0.75rem;
+    border-bottom-right-radius: 0.75rem;
+}
+
+/* DataTable Controls (Search & Pagination) */
+.dataTables_wrapper .dataTables_filter input,
+.dataTables_wrapper .dataTables_length select {
+    border: 1px solid rgba(15, 23, 42, 0.1);
+    border-radius: 0.5rem;
+    padding: 0.4rem 0.8rem;
+    outline: none;
+    transition: all 0.3s ease;
+}
+
+.dataTables_wrapper .dataTables_filter input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.dataTables_wrapper .dataTables_paginate .paginate_button {
+    border-radius: 0.5rem !important;
+    border: none !important;
+    background: transparent !important;
+    color: var(--text-muted) !important;
+    padding: 0.4rem 0.8rem !important;
+}
+
+.dataTables_wrapper .dataTables_paginate .paginate_button.current,
+.dataTables_wrapper .dataTables_paginate .paginate_button:hover {
+    background: var(--accent) !important;
+    color: white !important;
+    box-shadow: 0 4px 10px rgba(59, 130, 246, 0.2);
+}
+
+/* Action Buttons */
+.btn-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    border: none;
+    background: transparent;
+    transition: all 0.2s ease;
+}
+
+.btn-edit { color: #3b82f6; background: rgba(59, 130, 246, 0.1); }
+.btn-edit:hover { background: #3b82f6; color: white; transform: translateY(-2px); }
+
+.btn-delete { color: #ef4444; background: rgba(239, 68, 68, 0.1); }
+.btn-delete:hover { background: #ef4444; color: white; transform: translateY(-2px); }
+
+/* Badges */
+.modern-badge {
+    padding: 0.35rem 0.75rem;
+    border-radius: 2rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+.badge-active { background: rgba(16, 185, 129, 0.1); color: #059669; }
+.badge-inactive { background: rgba(100, 116, 139, 0.1); color: #475569; }
+
+/* Modern Modal */
+.modal-modern .modal-content {
+    border: none;
+    border-radius: 1.25rem;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+}
+.modal-modern .modal-header {
+    border-bottom: 1px solid rgba(15, 23, 42, 0.05);
+    padding: 1.5rem;
+}
+.modal-modern .modal-footer {
+    border-top: none;
+    padding: 1.5rem;
+    background: #f8fafc;
+    border-bottom-left-radius: 1.25rem;
+    border-bottom-right-radius: 1.25rem;
+}
