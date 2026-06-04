@@ -1,0 +1,142 @@
+{% extends 'backend/base.html' %}
+{% load static %}
+{% block title %}Users | Admin{% endblock %}
+
+{% block custom_css %}
+<style>
+.badge-type { display:inline-flex;align-items:center;padding:3px 10px;border-radius:2rem;font-size:.72rem;font-weight:700;letter-spacing:.5px; }
+.badge-type-1 { background:rgba(59,130,246,.1); color:#2563eb; }
+.badge-type-2 { background:rgba(16,185,129,.1); color:#059669; }
+.badge-type-3 { background:rgba(245,166,35,.13); color:#b45309; }
+.badge-type-4 { background:rgba(139,92,246,.1); color:#7c3aed; }
+.badge-status { display:inline-flex;align-items:center;padding:3px 10px;border-radius:2rem;font-size:.72rem;font-weight:700; }
+.badge-status-1 { background:rgba(16,185,129,.1); color:#059669; }
+.badge-status-0 { background:rgba(100,116,139,.1); color:#475569; }
+.badge-status-2 { background:rgba(239,68,68,.1); color:#dc2626; }
+.btn-action { padding:5px 12px;font-size:.78rem;border-radius:.5rem;font-weight:600;display:inline-flex;align-items:center;gap:4px; }
+.avatar-sm { width:34px;height:34px;border-radius:50%;object-fit:cover; }
+.avatar-placeholder { width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#3b82f6,#2563eb);display:inline-flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:.8rem; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="mb-0">Users</h2>
+        <p class="text-muted mb-0 mt-1" style="font-size:.9rem;">Manage admin, staff, faculty and student accounts</p>
+    </div>
+    <a href="{% url 'create_user' %}" class="btn btn-primary rounded-pill px-4" style="background:linear-gradient(135deg,#3b82f6,#2563eb);border:none;">
+        <iconify-icon icon="solar:user-plus-bold-duotone" class="me-1"></iconify-icon> Add User
+    </a>
+</div>
+
+<div class="card bg-white border-0 shadow-sm" style="border-radius:1rem;">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0" style="font-size:.87rem;">
+                <thead style="background:#f8fafc;border-bottom:2px solid #e2e8f0;">
+                    <tr>
+                        <th class="ps-4 py-3" style="color:#64748b;font-weight:700;font-size:.75rem;text-transform:uppercase;letter-spacing:.6px;">User</th>
+                        <th class="py-3" style="color:#64748b;font-weight:700;font-size:.75rem;text-transform:uppercase;letter-spacing:.6px;">Contact</th>
+                        <th class="py-3" style="color:#64748b;font-weight:700;font-size:.75rem;text-transform:uppercase;letter-spacing:.6px;">Type</th>
+                        <th class="py-3" style="color:#64748b;font-weight:700;font-size:.75rem;text-transform:uppercase;letter-spacing:.6px;">Status</th>
+                        <th class="py-3" style="color:#64748b;font-weight:700;font-size:.75rem;text-transform:uppercase;letter-spacing:.6px;">Joined</th>
+                        <th class="py-3 pe-4 text-end" style="color:#64748b;font-weight:700;font-size:.75rem;text-transform:uppercase;letter-spacing:.6px;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for u in users %}
+                <tr id="user-row-{{ u.id }}">
+                    <td class="ps-4 py-3">
+                        <div class="d-flex align-items-center gap-2">
+                            {% if u.profile.profile_picture %}
+                            <img src="{{ u.profile.profile_picture.url }}" class="avatar-sm" alt="">
+                            {% else %}
+                            <span class="avatar-placeholder">{{ u.first_name|first|upper }}{% if not u.first_name %}{{ u.email|first|upper }}{% endif %}</span>
+                            {% endif %}
+                            <div>
+                                <div class="fw-semibold" style="color:#1e293b;">{{ u.get_display_name }}</div>
+                                <div style="color:#94a3b8;font-size:.75rem;">{{ u.username|default:'' }}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="py-3">
+                        <div style="color:#475569;">{{ u.email }}</div>
+                        {% if u.phone_number %}<div style="color:#94a3b8;font-size:.78rem;">{{ u.phone_number }}</div>{% endif %}
+                    </td>
+                    <td class="py-3">
+                        <span class="badge-type badge-type-{{ u.user_type }}">{{ u.get_user_type_display }}</span>
+                    </td>
+                    <td class="py-3">
+                        <span class="badge-status badge-status-{{ u.user_status }}">{{ u.get_user_status_display }}</span>
+                    </td>
+                    <td class="py-3" style="color:#64748b;">{{ u.created_at|date:"d M Y" }}</td>
+                    <td class="py-3 pe-4 text-end">
+                        <a href="{% url 'edit_user' u.id %}" class="btn btn-sm btn-outline-primary btn-action me-1">
+                            <iconify-icon icon="solar:pen-bold-duotone"></iconify-icon> Edit
+                        </a>
+                        {% if u != request.user %}
+                        <button class="btn btn-sm btn-outline-danger btn-action" onclick="deleteUser({{ u.id }}, '{{ u.get_display_name|escapejs }}')">
+                            <iconify-icon icon="solar:trash-bin-trash-bold-duotone"></iconify-icon> Delete
+                        </button>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="text-center py-5 text-muted">
+                        <iconify-icon icon="solar:users-group-two-rounded-bold-duotone" style="font-size:2.5rem;opacity:.3;"></iconify-icon>
+                        <p class="mt-2 mb-0">No users found. <a href="{% url 'create_user' %}">Add the first user.</a></p>
+                    </td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Delete confirm toast -->
+<div id="deleteToast" style="display:none;position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%);z-index:9999;background:#1e293b;color:#fff;padding:.85rem 1.5rem;border-radius:.75rem;box-shadow:0 8px 30px rgba(0,0,0,.25);display:none;align-items:center;gap:1rem;font-size:.88rem;min-width:320px;">
+    <span id="deleteToastMsg"></span>
+    <div class="d-flex gap-2 ms-auto">
+        <button id="confirmDeleteBtn" class="btn btn-sm btn-danger rounded-pill px-3">Delete</button>
+        <button onclick="document.getElementById('deleteToast').style.display='none'" class="btn btn-sm btn-light rounded-pill px-3">Cancel</button>
+    </div>
+</div>
+{% endblock %}
+
+{% block custom_js %}
+<script>
+let _pendingDeleteId = null;
+
+function deleteUser(id, name) {
+    _pendingDeleteId = id;
+    document.getElementById('deleteToastMsg').textContent = 'Delete user "' + name + '"?';
+    document.getElementById('deleteToast').style.display = 'flex';
+}
+
+document.getElementById('confirmDeleteBtn').addEventListener('click', function () {
+    if (!_pendingDeleteId) return;
+    const btn = this;
+    btn.disabled = true;
+    btn.textContent = '…';
+    fetch('/dashboard/users/' + _pendingDeleteId + '/delete/', {
+        method: 'POST',
+        headers: { 'X-CSRFToken': '{{ csrf_token }}', 'X-Requested-With': 'XMLHttpRequest' }
+    })
+    .then(r => r.json())
+    .then(data => {
+        document.getElementById('deleteToast').style.display = 'none';
+        if (data.success) {
+            const row = document.getElementById('user-row-' + _pendingDeleteId);
+            if (row) row.remove();
+        } else {
+            alert(data.message || 'Delete failed.');
+        }
+    })
+    .catch(() => alert('Server error.'))
+    .finally(() => { btn.disabled = false; btn.textContent = 'Delete'; _pendingDeleteId = null; });
+});
+</script>
+{% endblock %}

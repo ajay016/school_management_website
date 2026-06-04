@@ -171,6 +171,15 @@ def create_menu(request):
         if page and page not in valid_pages:
             errors['page'] = ['Invalid page layout selection.']
 
+        # --- Active Menu Limit ---
+        if is_active:
+            active_count = Menu.objects.filter(is_active=True).count()
+            if active_count >= 13:
+                errors['is_active'] = [
+                    'The navbar already has 13 active menus — the maximum allowed for readability. '
+                    'Please deactivate another menu before activating this one.'
+                ]
+
         # Return Error JSON if validation fails
         if errors:
             return JsonResponse({
@@ -278,9 +287,18 @@ def edit_menu(request, id):
         if page and page not in valid_pages:
             errors['page'] = ['Invalid page layout selection.']
 
+        # Active menu limit — only check if we're activating a currently-inactive menu
+        if is_active and not menu.is_active:
+            active_count = Menu.objects.filter(is_active=True).count()
+            if active_count >= 13:
+                errors['is_active'] = [
+                    'The navbar already has 13 active menus — the maximum allowed for readability. '
+                    'Please deactivate another menu before activating this one.'
+                ]
+
         if errors:
             return JsonResponse({'success': False, 'message': 'Please correct the errors.', 'errors': errors}, status=400)
-            
+
         try:
             menu.name = name
             menu.slug = slugify(name) # Update slug if name changes
@@ -1770,3 +1788,245 @@ def delete_curriculum_stage(request, stage_id):
         get_object_or_404(CurriculumStage, id=stage_id).delete()
         return JsonResponse({'success': True, 'message': 'Stage deleted.'})
     return JsonResponse({'success': False, 'message': 'Invalid request.'}, status=400)
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# USER MANAGEMENT
+# ─────────────────────────────────────────────────────────────────────────────
+
+from django.contrib.auth import get_user_model, update_session_auth_hash
+from user_app.models import UserProfile
+
+User = get_user_model()
+
+# Allowed user types an admin can create/manage (no Root Admin via UI)
+_MANAGEABLE_TYPES = [
+    (1, 'Admin'),
+    (2, 'Staff'),
+    (3, 'Faculty'),
+    (4, 'Student'),
+]
+
+_STATUS_CHOICES = [
+    (1, 'Active'),
+    (0, 'Inactive'),
+    (2, 'Suspended'),
+]
+
+
+def list_users(request):
+    users = User.objects.exclude(user_type=0).order_by('-created_at')
+    return render(request, 'backend/users/user_list.html', {
+        'users': users,
+        'user_type_choices': _MANAGEABLE_TYPES,
+    })
+
+
+def create_user(request):
+    if request.method == 'POST':
+        errors = {}
+        first_name   = request.POST.get('first_name',   '').strip()
+        last_name    = request.POST.get('last_name',    '').strip()
+        email        = request.POST.get('email',        '').strip()
+        phone        = request.POST.get('phone_number', '').strip()
+        password     = request.POST.get('password',     '')
+        password2    = request.POST.get('password2',    '')
+        user_type    = request.POST.get('user_type',    '4')
+        user_status  = request.POST.get('user_status',  '1')
+
+        if not first_name:
+            errors['first_name'] = ['First name is required.']
+        if not email:
+            errors['email'] = ['Email is required.']
+        elif User.objects.filter(email=email).exists():
+            errors['email'] = ['A user with this email already exists.']
+        if not phone:
+            errors['phone_number'] = ['Phone number is required.']
+        elif User.objects.filter(phone_number=phone).exists():
+            errors['phone_number'] = ['A user with this phone number already exists.']
+        if not password:
+            errors['password'] = ['Password is required.']
+        elif len(password) < 6:
+            errors['password'] = ['Password must be at least 6 characters.']
+        elif password != password2:
+            errors['password2'] = ['Passwords do not match.']
+        try:
+            user_type = int(user_type)
+            if user_type not in [t[0] for t in _MANAGEABLE_TYPES]:
+                errors['user_type'] = ['Invalid user type.']
+        except ValueError:
+            errors['user_type'] = ['Invalid user type.']
+
+        if errors:
+            return JsonResponse({'success': False, 'message': 'Please fix the errors below.', 'errors': errors}, status=400)
+
+        try:
+            user = User.objects.create_user(
+                email=email,
+                phone_number=phone or None,
+                password=password,
+                first_name=first_name,
+                last_name=last_name,
+                user_type=user_type,
+                user_status=int(user_status),
+                is_staff=(user_type in (1, 2)),
+            )
+            return JsonResponse({'success': True, 'message': f'User "{user.get_display_name()}" created successfully!'})
+        except Exception as e:
+            return JsonResponse({'success': False, 'message': str(e)}, status=500)
+
+    return render(request, 'backend/users/create_user.html', {
+        'user_type_choices': _MANAGEABLE_TYPES,
+        'status_choices':    _STATUS_CHOICES,
+    })
+
+
+def edit_user(request, user_id):
+    user = get_object_or_404(User, id=user_id)
+    if user.user_type == 0:
+        return JsonResponse({'success': False, 'message': 'Root Admin cannot be edited here.'}, status=403)
+
+    if request.method == 'POST':
+        errors = {}
+        first_name  = request.POST.get('first_name',   '').strip()
+        last_name   = request.POST.get('last_name',    '').strip()
+        email       = request.POST.get('email',        '').strip()
+        phone       = request.POST.get('phone_number', '').strip()
+        password    = request.POST.get('password',     '')
+        password2   = request.POST.get('password2',    '')
+        user_type   = request.POST.get('user_type',    str(user.user_type))
+        user_status = request.POST.get('user_status',  str(user.user_status))
+        is_active   = request.POST.get('is_active') == 'true'
+
+        if not first_name:
+            errors['first_name'] = ['First name is required.']
+        if not email:
+            errors['email'] = ['Email is required.']
+        elif User.objects.filter(email=email).exclude(id=user_id).exists():
+            errors['email'] = ['Another user with this email already exists.']
+        if not phone:
+            errors['phone_number'] = ['Phone number is required.']
+        elif User.objects.filter(phone_number=phone).exclude(id=user_id).exists():
+            errors['phone_number'] = ['Another user with this phone number already exists.']
+        if password:
+            if len(password) < 6:
+                errors['password'] = ['Password must be at least 6 characters.']
+            elif password != password2:
+                errors['password2'] = ['Passwords do not match.']
+        try:
+            user_type = int(user_type)
+        except ValueError:
+            errors['user_type'] = ['Invalid user type.']
+
+        if errors:
+            return JsonResponse({'success': False, 'message': 'Please fix the errors below.', 'errors': errors}, status=400)
+
+        try:
+            user.first_name  = first_name
+            user.last_name   = last_name
+            user.email       = email
+            user.phone_number = phone or None
+            user.user_type   = user_type
+            user.user_status = int(user_status)
+            user.is_active   = is_active
+            user.is_staff    = (user_type in (1, 2))
+            if password:
+                user.set_password(password)
+            user.save()
+            return JsonResponse({'success': True, 'message': 'User updated successfully!'})
+        except Exception as e:
+            return JsonResponse({'success': False, 'message': str(e)}, status=500)
+
+    return render(request, 'backend/users/edit_user.html', {
+        'edit_user_obj':  user,
+        'user_type_choices': _MANAGEABLE_TYPES,
+        'status_choices':    _STATUS_CHOICES,
+    })
+
+
+def delete_user(request, user_id):
+    if request.method == 'POST':
+        user = get_object_or_404(User, id=user_id)
+        if user.user_type == 0:
+            return JsonResponse({'success': False, 'message': 'Root Admin cannot be deleted.'}, status=403)
+        if user == request.user:
+            return JsonResponse({'success': False, 'message': 'You cannot delete your own account.'}, status=400)
+        name = user.get_display_name()
+        user.delete()
+        return JsonResponse({'success': True, 'message': f'User "{name}" deleted.'})
+    return JsonResponse({'success': False, 'message': 'Invalid request.'}, status=400)
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# ADMIN PROFILE
+# ─────────────────────────────────────────────────────────────────────────────
+
+def admin_profile(request):
+    user    = request.user
+    profile, _ = UserProfile.objects.get_or_create(user=user)
+
+    if request.method == 'POST' and request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        errors = {}
+        first_name = request.POST.get('first_name', '').strip()
+        email      = request.POST.get('email',      '').strip()
+        phone      = request.POST.get('phone_number','').strip()
+        last_name  = request.POST.get('last_name',  '').strip()
+        address    = request.POST.get('address',    '').strip()
+
+        # Mandatory field validation
+        if not first_name:
+            errors['first_name']   = ['First name is required.']
+        if not email:
+            errors['email']        = ['Email is required.']
+        elif User.objects.filter(email=email).exclude(pk=user.pk).exists():
+            errors['email']        = ['This email is already in use by another account.']
+        if not phone:
+            errors['phone_number'] = ['Phone number is required.']
+        elif User.objects.filter(phone_number=phone).exclude(pk=user.pk).exists():
+            errors['phone_number'] = ['This phone number is already in use.']
+
+        # Password change (optional — only if fields supplied)
+        old_password  = request.POST.get('old_password',  '')
+        new_password  = request.POST.get('new_password',  '')
+        new_password2 = request.POST.get('new_password2', '')
+        change_pw = bool(old_password or new_password or new_password2)
+        if change_pw:
+            if not user.check_password(old_password):
+                errors['old_password'] = ['Current password is incorrect.']
+            elif len(new_password) < 6:
+                errors['new_password'] = ['New password must be at least 6 characters.']
+            elif new_password != new_password2:
+                errors['new_password2'] = ['Passwords do not match.']
+
+        if errors:
+            return JsonResponse({'success': False, 'message': 'Please fix the errors below.', 'errors': errors}, status=400)
+
+        try:
+            user.first_name   = first_name
+            user.last_name    = last_name
+            user.email        = email
+            user.phone_number = phone or None
+            if change_pw:
+                user.set_password(new_password)
+            user.save()
+
+            profile.address = address
+            if 'profile_picture' in request.FILES:
+                img = request.FILES['profile_picture']
+                if img.content_type.startswith('image/'):
+                    profile.profile_picture = img
+                else:
+                    return JsonResponse({'success': False, 'message': 'Profile picture must be an image file.'})
+            profile.save()
+
+            if change_pw:
+                update_session_auth_hash(request, user)
+
+            return JsonResponse({'success': True, 'message': 'Profile updated successfully!'})
+        except Exception as e:
+            return JsonResponse({'success': False, 'message': str(e)}, status=500)
+
+    return render(request, 'backend/users/profile.html', {
+        'profile_user': user,
+        'profile':      profile,
+    })

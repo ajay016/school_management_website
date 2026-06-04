@@ -2091,9 +2091,16 @@ em {
     .achievements-grid { grid-template-columns: repeat(4, 1fr); }
 }
 
+/* ── Medium Desktop (1200px–1399px): compact for up to 13 menus ── */
+@media (max-width: 1399px) {
+    .nav-link { padding: 5px 9px; font-size: 0.80rem; }
+    .desktop-nav { gap: 1px; }
+}
+
 /* ── Tablet / Small Desktop (992px–1199px) ── */
 @media (max-width: 1199px) {
-    .nav-link { padding: 6px 9px; font-size: 0.78rem; }
+    .nav-link { padding: 5px 7px; font-size: 0.76rem; }
+    .desktop-nav { gap: 0; }
     .stat-item { padding: 12px 24px; }
     .facilities-grid {
         grid-template-columns: 1fr 1fr;

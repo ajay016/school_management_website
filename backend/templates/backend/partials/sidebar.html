@@ -150,6 +150,21 @@
             </div>
         </div>
 
+        <!-- Users -->
+        <a href="#" class="sidebar-link submenu-trigger" aria-expanded="false">
+            <iconify-icon icon="solar:users-group-two-rounded-bold-duotone" class="menu-icon"></iconify-icon>
+            Users
+            <iconify-icon icon="solar:alt-arrow-down-bold-duotone" class="arrow-icon"></iconify-icon>
+        </a>
+        <div class="sidebar-submenu-wrapper">
+            <div class="sidebar-submenu-inner">
+                <ul class="sidebar-submenu">
+                    <li><a href="{% url 'create_user' %}">Add User</a></li>
+                    <li><a href="{% url 'list_users' %}">User List</a></li>
+                </ul>
+            </div>
+        </div>
+
         <!-- Contact & Logo -->
         <a href="{% url 'edit_contact' %}" class="sidebar-link">
             <iconify-icon icon="solar:phone-bold-duotone" class="menu-icon"></iconify-icon>

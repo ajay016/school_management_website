@@ -7,28 +7,40 @@
     </div>
 
     <div class="navbar-right d-flex align-items-center gap-3">
-        
+
         {% if request.user.is_authenticated %}
-            <div class="hover-dropdown">
-                <div class="d-flex align-items-center gap-2" style="cursor: pointer;">
-                    <span class="fw-medium" style="color: var(--text-main);">{{ request.user.username }}</span>
-                    <iconify-icon icon="solar:user-circle-bold-duotone" style="font-size: 2rem; color: var(--accent);"></iconify-icon>
-                </div>
-                
-                <div class="hover-dropdown-menu">
-                    <a href="#">
-                        <iconify-icon icon="solar:user-id-bold-duotone"></iconify-icon> Profile
-                    </a>
-                    <a href="#" class="text-danger">
-                        <iconify-icon icon="solar:logout-2-bold-duotone"></iconify-icon> Logout
-                    </a>
-                </div>
+        <div class="hover-dropdown">
+            <div class="d-flex align-items-center gap-2" style="cursor: pointer;">
+                {% if request.user.profile.profile_picture %}
+                <img src="{{ request.user.profile.profile_picture.url }}"
+                     alt="{{ request.user.get_display_name }}"
+                     style="width:34px;height:34px;border-radius:50%;object-fit:cover;border:2px solid var(--accent);">
+                {% else %}
+                <iconify-icon icon="solar:user-circle-bold-duotone" style="font-size: 2rem; color: var(--accent);"></iconify-icon>
+                {% endif %}
+                <span class="fw-medium d-none d-sm-inline" style="color: var(--text-main); font-size: 0.87rem;">
+                    {{ request.user.get_display_name }}
+                </span>
+                <iconify-icon icon="solar:alt-arrow-down-bold-duotone" style="font-size: 1rem; color: var(--text-muted);"></iconify-icon>
             </div>
+
+            <div class="hover-dropdown-menu">
+                <a href="{% url 'admin_profile' %}">
+                    <iconify-icon icon="solar:user-id-bold-duotone"></iconify-icon> My Profile
+                </a>
+                <div style="height:1px;background:var(--border-color);margin:4px 0;"></div>
+                <a href="{% url 'logout' %}" class="text-danger">
+                    <iconify-icon icon="solar:logout-2-bold-duotone"></iconify-icon> Logout
+                </a>
+            </div>
+        </div>
+
         {% else %}
-            <a href="#" class="btn btn-primary btn-sm px-4 rounded-pill" style="background-color: var(--accent); border: none;">
-                Login
-            </a>
+        <a href="{% url 'login' %}" class="btn btn-primary btn-sm px-4 rounded-pill"
+           style="background-color: var(--accent); border: none; font-size: 0.82rem;">
+            <iconify-icon icon="solar:login-bold-duotone" class="me-1"></iconify-icon> Login
+        </a>
         {% endif %}
-        
+
     </div>
 </nav>

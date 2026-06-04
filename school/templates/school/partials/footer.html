@@ -1,7 +1,19 @@
 {% load static %}
 
-
-
+<style>
+/* Multi-column footer quick links (JS-driven) */
+#quickLinksContainer { display: flex; gap: 1.25rem; flex-wrap: wrap; }
+#quickLinksContainer .footer-links { flex: 1; min-width: 110px; }
+.footer-login-item { margin-top: 0.5rem; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 0.4rem; }
+.footer-login-item a {
+    color: rgba(255,255,255,0.38) !important;
+    font-size: 0.73rem !important;
+    font-style: italic;
+    letter-spacing: 0.3px;
+}
+.footer-login-item a i { opacity: 0.65; margin-right: 4px; }
+.footer-login-item a:hover { color: var(--clr-primary) !important; }
+</style>
 
 <footer class="site-footer">
     <div class="footer-top">
@@ -12,7 +24,13 @@
                 <div class="col-lg-4 col-md-6">
                     <div class="footer-brand">
                         <a href="{% url 'home' %}" class="footer-logo">
-                            <div class=""><img src="{% static 'school/assets/images/logo.png' %}" class="logo-img" alt=""></div>
+                            <div class="">
+                                {% if nav_contact.logo %}
+                                <img src="{{ nav_contact.logo.url }}" class="logo-img" alt="School Logo">
+                                {% else %}
+                                <img src="{% static 'school/assets/images/logo.png' %}" class="logo-img" alt="School Logo">
+                                {% endif %}
+                            </div>
                             <div class="footer-logo-text">
                                 <span class="footer-logo-name">Peace International</span>
                                 <span class="footer-logo-tagline">School & College</span>
@@ -20,69 +38,97 @@
                         </a>
                         <p class="footer-about">Nurturing excellence from Nursery to A-Levels since 1996. A vibrant community built on learning, character and aspiration.</p>
                         <div class="footer-social">
-                            <a href="https://www.facebook.com/peace.isc" target="_blank" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
-                            <a href="#" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
-                            <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
-                            <a href="#" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
-                            <a href="#" aria-label="Twitter/X"><i class="fab fa-x-twitter"></i></a>
+                            {% if nav_social.facebook %}
+                            <a href="{{ nav_social.facebook }}" target="_blank" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+                            {% endif %}
+                            {% if nav_social.youtube %}
+                            <a href="{{ nav_social.youtube }}" target="_blank" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
+                            {% endif %}
+                            {% if nav_social.instagram %}
+                            <a href="{{ nav_social.instagram }}" target="_blank" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                            {% endif %}
+                            {% if nav_social.linkedin %}
+                            <a href="{{ nav_social.linkedin }}" target="_blank" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+                            {% endif %}
+                            {% if nav_social.twitter %}
+                            <a href="{{ nav_social.twitter }}" target="_blank" aria-label="X / Twitter"><i class="fab fa-x-twitter"></i></a>
+                            {% endif %}
                         </div>
                     </div>
                 </div>
 
-                <!-- Quick Links -->
-                <div class="col-lg-2 col-md-6 col-sm-6">
+                <!-- Quick Links — dynamic from nav menus, JS splits into max-8-per-column -->
+                <div class="col-lg-4 col-md-6">
                     <div class="footer-widget">
                         <h5 class="footer-widget-title">Quick Links</h5>
-                        <ul class="footer-links">
-                            <li><a href="#"><i class="fas fa-chevron-right"></i> Home</a></li>
-                            <li><a href="#about"><i class="fas fa-chevron-right"></i> About Us</a></li>
-                            <li><a href="#"><i class="fas fa-chevron-right"></i> Admission</a></li>
-                            <li><a href="#curriculum"><i class="fas fa-chevron-right"></i> Curriculum</a></li>
-                            <li><a href="#facilities"><i class="fas fa-chevron-right"></i> Facilities</a></li>
-                            <li><a href="#"><i class="fas fa-chevron-right"></i> Gallery</a></li>
-                            <li><a href="#"><i class="fas fa-chevron-right"></i> Contact</a></li>
-                        </ul>
-                    </div>
-                </div>
+                        <div id="quickLinksContainer">
+                            <ul class="footer-links" id="quickLinksList">
 
-                <!-- Academic -->
-                <div class="col-lg-2 col-md-6 col-sm-6">
-                    <div class="footer-widget">
-                        <h5 class="footer-widget-title">Academic</h5>
-                        <ul class="footer-links">
-                            <li><a href="#"><i class="fas fa-chevron-right"></i> Nursery & KG</a></li>
-                            <li><a href="#"><i class="fas fa-chevron-right"></i> Primary School</a></li>
-                            <li><a href="#"><i class="fas fa-chevron-right"></i> Secondary School</a></li>
-                            <li><a href="#"><i class="fas fa-chevron-right"></i> Higher Secondary</a></li>
-                            <li><a href="#"><i class="fas fa-chevron-right"></i> A-Levels</a></li>
-                            <li><a href="#"><i class="fas fa-chevron-right"></i> Exam Schedule</a></li>
-                            <li><a href="#"><i class="fas fa-chevron-right"></i> Circulars</a></li>
-                        </ul>
+                                <li><a href="{% url 'home' %}"><i class="fas fa-chevron-right"></i> Home</a></li>
+
+                                {% for menu in nav_menus %}
+                                {% with subs=menu.submenus.all %}
+
+                                {% if subs %}
+                                    {% for sub in subs %}
+                                    <li><a href="{{ sub.get_absolute_url }}"><i class="fas fa-chevron-right"></i> {{ sub.name }}</a></li>
+                                    {% endfor %}
+
+                                {% elif menu.page == 'facilities_list' %}
+                                    {% for facility in nav_facilities %}
+                                    <li><a href="{{ facility.get_absolute_url }}"><i class="fas fa-chevron-right"></i> {{ facility.heading }}</a></li>
+                                    {% endfor %}
+
+                                {% elif menu.page == 'curriculum_list' %}
+                                    {% for stage in nav_curriculum %}
+                                    <li><a href="{{ stage.get_absolute_url }}"><i class="fas fa-chevron-right"></i> {{ stage.label }}</a></li>
+                                    {% endfor %}
+
+                                {% elif menu.page %}
+                                <li><a href="{{ menu.get_absolute_url }}"><i class="fas fa-chevron-right"></i> {{ menu.name }}</a></li>
+
+                                {% endif %}
+                                {% endwith %}
+                                {% endfor %}
+
+                                <!-- Login — subtle, at the bottom -->
+                                <li class="footer-login-item">
+                                    <a href="{% url 'login' %}"><i class="fas fa-lock"></i> Login</a>
+                                </li>
+
+                            </ul>
+                        </div>
                     </div>
                 </div>
 
                 <!-- Contact -->
-                <div class="col-lg-4 col-md-6">
+                <div class="col-lg-4 col-md-12">
                     <div class="footer-widget">
                         <h5 class="footer-widget-title">Get In Touch</h5>
                         <ul class="footer-contact-list">
+                            {% if nav_contact.address %}
                             <li>
                                 <div class="footer-contact-icon"><i class="fas fa-map-marker-alt"></i></div>
-                                <div>13 O.R Nizam Road,<br>Chittagong, Bangladesh, 4000</div>
+                                <div>{{ nav_contact.address }}</div>
                             </li>
+                            {% endif %}
+                            {% if nav_contact.phone_1 or nav_contact.phone_2 %}
                             <li>
                                 <div class="footer-contact-icon"><i class="fas fa-phone-alt"></i></div>
                                 <div>
-                                    <a href="tel:+8801700000000">+880 1780-242908</a><br>
-                                    <a href="tel:+8801800000001">+880 1970-482908</a>
+                                    {% if nav_contact.phone_1 %}<a href="tel:{{ nav_contact.phone_1 }}">{{ nav_contact.phone_1 }}</a>{% endif %}
+                                    {% if nav_contact.phone_2 %}<br><a href="tel:{{ nav_contact.phone_2 }}">{{ nav_contact.phone_2 }}</a>{% endif %}
                                 </div>
                             </li>
+                            {% endif %}
+                            {% if nav_contact.email %}
                             <li>
                                 <div class="footer-contact-icon"><i class="fas fa-envelope"></i></div>
                                 <div>
-                                    <a href="mailto:info@peace.ctg.edu@gmail.com">peace.ctg.edu@gmail.com</a><br>
+                                    <a href="mailto:{{ nav_contact.email }}">{{ nav_contact.email }}</a>
                                 </div>
                             </li>
+                            {% endif %}
                             <li>
                                 <div class="footer-contact-icon"><i class="fas fa-clock"></i></div>
                                 <div>Sun – Thu: 9:00 AM – 5:00 PM</div>
@@ -95,16 +141,36 @@
         </div>
     </div>
 
+    <!-- Quick-links: JS splits single list into columns of max 8 items -->
+    <script>
+    (function () {
+        var MAX = 8;
+        var list = document.getElementById('quickLinksList');
+        if (!list) return;
+        var items = Array.from(list.querySelectorAll('li'));
+        if (items.length <= MAX) return;
+        var numCols = Math.ceil(items.length / MAX);
+        var perCol  = Math.ceil(items.length / numCols);
+        var container = document.getElementById('quickLinksContainer');
+        list.style.display = 'none';
+        for (var c = 0; c < numCols; c++) {
+            var ul = document.createElement('ul');
+            ul.className = 'footer-links';
+            var start = c * perCol;
+            var end   = Math.min(start + perCol, items.length);
+            for (var i = start; i < end; i++) {
+                ul.appendChild(items[i].cloneNode(true));
+            }
+            container.appendChild(ul);
+        }
+    })();
+    </script>
+
     <!-- Footer Bottom -->
     <div class="footer-bottom">
         <div class="container-xl">
             <div class="footer-bottom-inner">
                 <p>&copy; <span id="footerYear"></span> All Rights Reserved. Designed & Developed by <a href="https://iglweb.com/web/" target="_blank">IGL Web Ltd.</a></p>
-                {% comment %} <div class="footer-bottom-links">
-                    <a href="#">Privacy Policy</a>
-                    <a href="#">Terms of Use</a>
-                    <a href="#">Sitemap</a>
-                </div> {% endcomment %}
             </div>
         </div>
     </div>

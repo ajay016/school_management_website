@@ -1,0 +1,180 @@
+{% extends 'backend/base.html' %}
+{% load static %}
+{% block title %}Add User | Admin{% endblock %}
+
+{% block custom_css %}
+<style>
+    .btn-modern { background:linear-gradient(135deg,#3b82f6,#2563eb);color:#fff;border:none;padding:.6rem 1.5rem;border-radius:2rem;font-weight:600;box-shadow:0 4px 15px rgba(59,130,246,.3);transition:all .3s;display:inline-flex;align-items:center;gap:.5rem; }
+    .btn-modern:hover { transform:translateY(-2px);color:#fff; }
+    .form-container { background:#fff;padding:2.5rem;border-radius:1rem;box-shadow:0 4px 20px rgba(0,0,0,.03);border:1px solid #e2e8f0; }
+    .section-divider { border-top:2px solid #e2e8f0;margin:1.75rem 0;padding-top:1.25rem; }
+    .section-divider h5 { font-weight:700;color:#3b82f6;font-size:.85rem;text-transform:uppercase;letter-spacing:1px; }
+    .field-error { color:#dc2626;font-size:.82rem;margin-top:4px;display:none; }
+    .msg-success { background:rgba(16,185,129,.1);color:#059669;border:1px solid rgba(16,185,129,.2); }
+    .msg-error   { background:rgba(239,68,68,.1);color:#dc2626;border:1px solid rgba(239,68,68,.2); }
+    .pw-toggle { cursor:pointer;border-left:none !important;background:#fff !important;color:#94a3b8; }
+    .pw-toggle:hover { color:#475569; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="mb-0">Add User</h2>
+        <p class="text-muted mb-0 mt-1" style="font-size:.9rem;">Create a new user account</p>
+    </div>
+    <a href="{% url 'list_users' %}" class="btn btn-light rounded-pill px-4 border">
+        <iconify-icon icon="solar:list-bold-duotone" class="me-1"></iconify-icon> Back to List
+    </a>
+</div>
+
+<div class="form-container">
+    <form id="userForm">
+        {% csrf_token %}
+
+        <div id="statusMessage" style="display:none;" class="d-flex align-items-center gap-2 py-2 px-3 rounded-3 mb-3">
+            <iconify-icon id="statusIcon" icon=""></iconify-icon>
+            <span id="statusText"></span>
+        </div>
+
+        <!-- Personal Info -->
+        <div class="section-divider" style="border-top:none;margin-top:0;padding-top:0;">
+            <h5><iconify-icon icon="solar:user-bold-duotone" class="me-1"></iconify-icon> Personal Information</h5>
+        </div>
+        <div class="row g-3 mb-3">
+            <div class="col-md-6">
+                <label class="form-label fw-semibold">First Name <span class="text-danger">*</span></label>
+                <input type="text" name="first_name" id="first_name" class="form-control" placeholder="First name">
+                <div class="field-error" id="err_first_name"></div>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label fw-semibold">Last Name</label>
+                <input type="text" name="last_name" class="form-control" placeholder="Last name (optional)">
+            </div>
+        </div>
+
+        <div class="row g-3 mb-3">
+            <div class="col-md-6">
+                <label class="form-label fw-semibold">Email Address <span class="text-danger">*</span></label>
+                <input type="email" name="email" id="email" class="form-control" placeholder="user@example.com">
+                <div class="field-error" id="err_email"></div>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label fw-semibold">Phone Number <span class="text-danger">*</span></label>
+                <input type="text" name="phone_number" id="phone_number" class="form-control" placeholder="+880 1700 000000">
+                <div class="field-error" id="err_phone_number"></div>
+            </div>
+        </div>
+
+        <!-- Account Settings -->
+        <div class="section-divider">
+            <h5><iconify-icon icon="solar:settings-bold-duotone" class="me-1"></iconify-icon> Account Settings</h5>
+        </div>
+        <div class="row g-3 mb-3">
+            <div class="col-md-4">
+                <label class="form-label fw-semibold">User Type <span class="text-danger">*</span></label>
+                <select name="user_type" id="user_type" class="form-select">
+                    {% for value, label in user_type_choices %}
+                    <option value="{{ value }}">{{ label }}</option>
+                    {% endfor %}
+                </select>
+                <div class="field-error" id="err_user_type"></div>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label fw-semibold">Status</label>
+                <select name="user_status" class="form-select">
+                    {% for value, label in status_choices %}
+                    <option value="{{ value }}" {% if value == 1 %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+
+        <!-- Password -->
+        <div class="section-divider">
+            <h5><iconify-icon icon="solar:lock-password-bold-duotone" class="me-1"></iconify-icon> Password</h5>
+        </div>
+        <div class="row g-3 mb-3">
+            <div class="col-md-6">
+                <label class="form-label fw-semibold">Password <span class="text-danger">*</span></label>
+                <div class="input-group">
+                    <input type="password" name="password" id="pw1" class="form-control" placeholder="Min. 6 characters">
+                    <button type="button" class="btn btn-outline-secondary pw-toggle" onclick="togglePw('pw1','pwIcon1')">
+                        <i class="fas fa-eye" id="pwIcon1"></i>
+                    </button>
+                </div>
+                <div class="field-error" id="err_password"></div>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label fw-semibold">Confirm Password <span class="text-danger">*</span></label>
+                <div class="input-group">
+                    <input type="password" name="password2" id="pw2" class="form-control" placeholder="Repeat password">
+                    <button type="button" class="btn btn-outline-secondary pw-toggle" onclick="togglePw('pw2','pwIcon2')">
+                        <i class="fas fa-eye" id="pwIcon2"></i>
+                    </button>
+                </div>
+                <div class="field-error" id="err_password2"></div>
+            </div>
+        </div>
+
+        <div class="d-flex justify-content-end mt-4 pt-3 border-top">
+            <button type="submit" class="btn-modern" id="submitBtn">
+                <iconify-icon icon="solar:user-plus-bold-duotone" style="font-size:1.2rem;"></iconify-icon> Create User
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block custom_js %}
+<script>
+function togglePw(inputId, iconId) {
+    const inp = document.getElementById(inputId);
+    const ico = document.getElementById(iconId);
+    inp.type = inp.type === 'password' ? 'text' : 'password';
+    ico.className = inp.type === 'password' ? 'fas fa-eye' : 'fas fa-eye-slash';
+}
+
+document.getElementById('userForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+    clearErrors();
+    const btn = document.getElementById('submitBtn');
+    const orig = btn.innerHTML;
+    btn.innerHTML = '<iconify-icon icon="line-md:loading-twotone-loop"></iconify-icon> Saving…';
+    btn.disabled = true;
+
+    fetch("{% url 'create_user' %}", {
+        method: 'POST',
+        body: new FormData(this),
+        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    })
+    .then(r => r.json())
+    .then(data => {
+        showStatus(data.message, data.success ? 'success' : 'error');
+        if (data.success) {
+            this.reset();
+        } else if (data.errors) {
+            Object.entries(data.errors).forEach(([f, msgs]) => {
+                const el = document.getElementById('err_' + f);
+                if (el) { el.textContent = msgs[0]; el.style.display = 'block'; }
+            });
+        }
+    })
+    .catch(() => showStatus('A server error occurred.', 'error'))
+    .finally(() => { btn.innerHTML = orig; btn.disabled = false; });
+});
+
+function clearErrors() {
+    document.querySelectorAll('.field-error').forEach(el => { el.style.display = 'none'; el.textContent = ''; });
+}
+function showStatus(msg, type) {
+    const el = document.getElementById('statusMessage');
+    document.getElementById('statusIcon').setAttribute('icon', type === 'success' ? 'solar:check-circle-bold-duotone' : 'solar:danger-triangle-bold-duotone');
+    document.getElementById('statusText').innerText = msg;
+    el.className = `d-flex align-items-center gap-2 py-2 px-3 rounded-3 mb-3 ${type === 'success' ? 'msg-success' : 'msg-error'}`;
+    el.style.display = 'flex';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (type === 'success') setTimeout(() => { el.style.display = 'none'; }, 5000);
+}
+</script>
+{% endblock %}

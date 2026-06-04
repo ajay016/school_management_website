@@ -36,6 +36,20 @@
         content: ''; flex: 1; height: 1px; background: #f1f5f9;
     }
  
+    /* Logo upload zone */
+    .logo-upload-zone {
+        border: 2px dashed #cbd5e1; border-radius: 0.75rem; padding: 1rem;
+        text-align: center; cursor: pointer; transition: all 0.3s;
+        background: #f8fafc; position: relative; min-height: 120px;
+        display: flex; flex-direction: column; align-items: center; justify-content: center; overflow: hidden;
+    }
+    .logo-upload-zone:hover { border-color: #3b82f6; background: rgba(59,130,246,0.03); }
+    .logo-upload-zone input[type="file"] {
+        position: absolute; inset: 0; opacity: 0; cursor: pointer;
+        width: 100%; height: 100%; z-index: 10;
+    }
+    .logo-upload-zone img { max-height: 80px; max-width: 100%; object-fit: contain; border-radius: 0.4rem; }
+
     /* Social icon prefix on input */
     .social-input-group .input-group-text {
         background: #f8fafc; border: 1px solid #dee2e6;
@@ -71,6 +85,40 @@
         </div>
  
         
+        <!-- ── LOGO ── -->
+        <div class="section-title">
+            <iconify-icon icon="solar:gallery-bold-duotone"></iconify-icon> School Logo
+        </div>
+        <div class="row g-4 mb-4">
+            <div class="col-md-5">
+                <label class="form-label fw-semibold">Logo Image</label>
+                <div class="logo-upload-zone" id="logoZone">
+                    <input type="file" name="logo" id="logoInput" accept="image/*">
+                    {% if contact.logo %}
+                        <img src="{{ contact.logo.url }}" id="logoPreview" alt="Current Logo">
+                        <small class="text-muted mt-2" id="logoHint">Click to replace</small>
+                    {% else %}
+                        <iconify-icon id="logoPlaceholder" icon="solar:gallery-add-bold-duotone" style="font-size:2rem;color:#94a3b8;"></iconify-icon>
+                        <img src="" id="logoPreview" alt="" style="display:none;">
+                        <small class="text-muted mt-1" id="logoHint">Upload school logo (PNG / SVG)</small>
+                    {% endif %}
+                </div>
+                <small class="text-muted d-block mt-1">Shown in navbar &amp; footer. Transparent PNG or SVG recommended.</small>
+            </div>
+            <div class="col-md-7 d-flex align-items-center">
+                <div class="p-3 bg-light rounded-3 border w-100">
+                    <p class="mb-0 text-muted" style="font-size:0.85rem; line-height:1.6;">
+                        <iconify-icon icon="solar:info-circle-bold-duotone" class="text-primary me-1"></iconify-icon>
+                        The logo will replace the default static logo in the website navbar and footer.
+                        If no logo is uploaded, the default logo image is used.
+                        <br><strong>Tip:</strong> Use a transparent background PNG for best results. Max display height is 90 px.
+                    </p>
+                </div>
+            </div>
+        </div>
+        <hr class="my-3">
+
+        <!-- ── CONTACT DETAILS ── -->
         <div class="section-title">
             <iconify-icon icon="solar:phone-bold-duotone"></iconify-icon> Contact Details
         </div>
@@ -199,6 +247,23 @@
  
 {% block custom_js %}
 <script>
+    // Logo preview
+    document.getElementById('logoInput').addEventListener('change', function () {
+        const file = this.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = e => {
+            const preview = document.getElementById('logoPreview');
+            preview.src = e.target.result;
+            preview.style.display = 'block';
+            const ph = document.getElementById('logoPlaceholder');
+            if (ph) ph.style.display = 'none';
+            const hint = document.getElementById('logoHint');
+            if (hint) hint.textContent = 'Click to replace';
+        };
+        reader.readAsDataURL(file);
+    });
+
     document.getElementById('contactForm').addEventListener('submit', function (e) {
         e.preventDefault();
  

@@ -52,7 +52,11 @@
 
             <!-- Logo -->
             <a href="{% url 'home' %}" class="navbar-logo">
-                <img src="{% static 'school/assets/images/logo.png' %}" class="logo-img" alt="Peace International School">
+                {% if nav_contact.logo %}
+                <img src="{{ nav_contact.logo.url }}" class="logo-img" alt="School Logo">
+                {% else %}
+                <img src="{% static 'school/assets/images/logo.png' %}" class="logo-img" alt="School Logo">
+                {% endif %}
             </a>
 
             <!-- Desktop Nav -->
