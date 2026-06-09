@@ -65,6 +65,8 @@ cover/
 /static/
 /staticfiles/
 /static_root/
+/public/
+/temp/
 
 # --- Custom Static File Tracking Rules ---
 # The /static/ line above ignores the project-root static folder.
