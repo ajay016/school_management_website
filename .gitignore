@@ -55,6 +55,24 @@ cover/
 *.mo
 *.pot
 
+
+# Media folder (root only)
+/media/
+
+# Project-level static folder (root only)
+# The leading slash ensures it only ignores the root static folder (from collectstatic).
+# It will NOT ignore app-level static folders (e.g., myapp/static/).
+/static/
+/staticfiles/
+/static_root/
+
+# --- Custom Static File Tracking Rules ---
+# The /static/ line above ignores the project-root static folder.
+# We must re-include app-level static folders (e.g., app_name/static/):
+!*/static/
+!*/static/*
+
+
 # Django stuff:
 *.log
 local_settings.py
