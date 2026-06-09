@@ -63,24 +63,22 @@
             </tr>
         </thead>
         <tbody>
-            {% for page in content_pages %}
-            <tr id="row-{{ page.id }}">
-                <td>
-                    <span class="fw-semibold">{{ page.menu.name }}</span>
-                    <span class="text-muted mx-1">&rsaquo;</span>
-                    <span>{{ page.name }}</span>
-                </td>
+            {% for item in items %}
+            <tr id="row-{{ item.type }}-{{ item.id }}">
+                <td>{{ item.display_name }}</td>
                 <td>
                     <span class="modern-badge badge-blue">
                         <iconify-icon icon="solar:document-text-bold-duotone" class="align-text-bottom me-1"></iconify-icon>
-                        {{ page.block_count }} Blocks
+                        {{ item.block_count }} Blocks
                     </span>
                 </td>
                 <td class="text-end">
-                    <a href="{% url 'edit_layout3_rich_text' page.id %}" class="btn-action btn-edit me-1" title="Manage Rich Text Blocks">
+                    <a href="{{ item.edit_url }}" class="btn-action btn-edit me-1" title="Manage Rich Text Blocks">
                         <iconify-icon icon="solar:pen-new-round-bold-duotone" style="font-size: 1.2rem;"></iconify-icon>
                     </a>
-                    <button class="btn-action btn-delete" onclick="triggerDeleteModal({{ page.id }})" title="Delete All Blocks in Page">
+                    <button class="btn-action btn-delete"
+                            onclick="triggerDeleteModal('{{ item.id }}', '{{ item.type }}')"
+                            title="Delete All Blocks in Page">
                         <iconify-icon icon="solar:trash-bin-trash-bold-duotone" style="font-size: 1.2rem;"></iconify-icon>
                     </button>
                 </td>
@@ -98,9 +96,10 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body py-4">
-                <p class="mb-0 text-muted" style="font-size: 1.05rem;">Are you sure you want to clear this page? This will permanently remove <strong>all rich text blocks</strong> associated with this submenu. This action cannot be undone.</p>
+                <p class="mb-0 text-muted" style="font-size: 1.05rem;">Are you sure you want to clear this page? This will permanently remove <strong>all rich text blocks</strong> associated with this page. This action cannot be undone.</p>
                 {% csrf_token %}
                 <input type="hidden" id="deletePageId">
+                <input type="hidden" id="deletePageType">
             </div>
             <div class="modal-footer border-0 pt-0">
                 <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
@@ -137,13 +136,18 @@
         deleteModalInstance = new bootstrap.Modal(document.getElementById('deleteModal'));
 
         $('#confirmDeleteBtn').on('click', function() {
-            const pageId = $('#deletePageId').val();
+            const pageId   = $('#deletePageId').val();
+            const pageType = $('#deletePageType').val();
             const btn = $(this);
             const originalText = btn.html();
-            
+
+            const deleteUrl = pageType === 'menu'
+                ? `/dashboard/cms/layout3/delete-all-menu/${pageId}/`
+                : `/dashboard/cms/layout3/delete-all/${pageId}/`;
+
             btn.html('<iconify-icon icon="line-md:loading-twotone-loop" class="me-1"></iconify-icon> Deleting...').prop('disabled', true);
 
-            fetch(`/dashboard/cms/layout3/delete-all/${pageId}/`, {
+            fetch(deleteUrl, {
                 method: 'POST',
                 headers: {
                     'X-Requested-With': 'XMLHttpRequest',
@@ -156,7 +160,7 @@
                 if (data.success) {
                     showStatus(data.message, 'success');
                     const table = $('#layout3Table').DataTable();
-                    table.row($(`#row-${pageId}`)).remove().draw(false);
+                    table.row($(`#row-${pageType}-${pageId}`)).remove().draw(false);
                 } else {
                     showStatus(data.message, 'error');
                 }
@@ -171,8 +175,9 @@
         });
     });
 
-    function triggerDeleteModal(id) {
+    function triggerDeleteModal(id, type) {
         document.getElementById('deletePageId').value = id;
+        document.getElementById('deletePageType').value = type || 'submenu';
         deleteModalInstance.show();
     }
 

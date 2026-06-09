@@ -5,7 +5,10 @@ urlpatterns = [
     path('', views.home, name='home'),
 
     # Dynamic CMS pages — layout_1 / layout_2 / layout_3
+    # Two-part slug: submenu-based pages
     path('page/<slug:menu_slug>/<slug:submenu_slug>/', views.dynamic_page, name='dynamic_page'),
+    # One-part slug: direct menu page (menu.page = layout_X, no submenus)
+    path('page/<slug:menu_slug>/', views.direct_menu_page, name='direct_menu_page'),
 
     # Gallery
     path('galleries/', views.galleries, name='galleries'),

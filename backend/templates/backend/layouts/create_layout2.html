@@ -160,14 +160,26 @@
             
             <div class="col-lg-4">
                 <div class="mb-3">
-                    <label class="form-label fw-semibold">Assign to Submenu *</label>
+                    <label class="form-label fw-semibold">Assign to Page <span class="text-danger">*</span></label>
                     <select name="submenu_id" class="form-select">
-                        <option value="">-- Select Submenu --</option>
-                        {% for sub in submenus %}
+                        <option value="">-- Select page --</option>
+                        {% if submenus %}
+                        <optgroup label="Sub-Menu Pages">
+                            {% for sub in submenus %}
                             <option value="{{ sub.id }}">{{ sub.menu.name }} &rsaquo; {{ sub.name }}</option>
-                        {% empty %}
-                            <option value="" disabled>No Layout 2 submenus found.</option>
-                        {% endfor %}
+                            {% endfor %}
+                        </optgroup>
+                        {% endif %}
+                        {% if menus %}
+                        <optgroup label="Direct Menu Pages">
+                            {% for m in menus %}
+                            <option value="menu_{{ m.id }}">{{ m.name }} (Direct)</option>
+                            {% endfor %}
+                        </optgroup>
+                        {% endif %}
+                        {% if not submenus and not menus %}
+                        <option value="" disabled>No available pages — all are already assigned.</option>
+                        {% endif %}
                     </select>
                     <div class="error-text" id="err_submenu_id"></div>
                 </div>

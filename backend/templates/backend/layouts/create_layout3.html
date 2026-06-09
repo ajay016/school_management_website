@@ -71,14 +71,28 @@
         {% csrf_token %}
         <div class="row g-4 mb-4">
             <div class="col-md-5">
-                <label class="form-label fw-semibold">Assign to Submenu <span class="text-danger">*</span></label>
+                <label class="form-label fw-semibold">Assign to Page <span class="text-danger">*</span></label>
                 <select name="submenu_id" class="form-select" required>
-                    <option value="" selected disabled>Select a submenu...</option>
-                    {% for submenu in submenus %}
+                    <option value="" selected disabled>Select a page...</option>
+                    {% if submenus %}
+                    <optgroup label="Sub-Menu Pages">
+                        {% for submenu in submenus %}
                         <option value="{{ submenu.id }}">{{ submenu.menu.name }} &rsaquo; {{ submenu.name }}</option>
-                    {% endfor %}
+                        {% endfor %}
+                    </optgroup>
+                    {% endif %}
+                    {% if menus %}
+                    <optgroup label="Direct Menu Pages">
+                        {% for m in menus %}
+                        <option value="menu_{{ m.id }}">{{ m.name }} (Direct)</option>
+                        {% endfor %}
+                    </optgroup>
+                    {% endif %}
+                    {% if not submenus and not menus %}
+                    <option value="" disabled>No available pages — all are already assigned.</option>
+                    {% endif %}
                 </select>
-                <small class="text-muted">Only menus assigned to Layout 3 appear here.</small>
+                <small class="text-muted">Layout 3 sub-menu pages and direct menu pages appear here.</small>
             </div>
             <div class="col-md-5">
                 <label class="form-label fw-semibold">Section Title</label>

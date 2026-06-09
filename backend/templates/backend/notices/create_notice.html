@@ -57,14 +57,23 @@
         </div>
 
         <div class="row g-4 mb-4">
-            <div class="col-md-6">
+            <div class="col-md-4">
                 <label class="form-label fw-semibold">Publish Date <span class="text-danger">*</span></label>
                 <input type="date" name="publish_date" class="form-control" required>
             </div>
-            <div class="col-md-6">
+            <div class="col-md-4">
                 <label class="form-label fw-semibold">Expiry Date</label>
                 <input type="date" name="expiry_date" class="form-control">
                 <small class="text-muted">Optional. When should this notice expire?</small>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label fw-semibold">Target Audience</label>
+                <select name="target_audience" class="form-select">
+                    {% for value, label in target_choices %}
+                    <option value="{{ value }}" {% if value == 'all' %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+                <small class="text-muted">Who should see this notice?</small>
             </div>
         </div>
 

@@ -1,25 +1,666 @@
 {% extends 'backend/base.html' %}
 {% load static %}
 
-{% block title %}Customer Balances - MyPanel{% endblock %}
+{% block title %}Dashboard | Admin{% endblock %}
 
 {% block custom_css %}
-<link href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css" rel="stylesheet">
-
 <style>
+    /* ── Greeting Banner ───────────────────────────────────────────────── */
+    .dash-banner {
+        background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 50%, #06b6d4 100%);
+        border-radius: 1.25rem;
+        padding: 2rem 2.5rem;
+        color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        overflow: hidden;
+        position: relative;
+        margin-bottom: 1.75rem;
+    }
+    .dash-banner::before {
+        content: '';
+        position: absolute;
+        top: -40px; right: -40px;
+        width: 200px; height: 200px;
+        border-radius: 50%;
+        background: rgba(255,255,255,0.06);
+    }
+    .dash-banner::after {
+        content: '';
+        position: absolute;
+        bottom: -60px; right: 120px;
+        width: 260px; height: 260px;
+        border-radius: 50%;
+        background: rgba(255,255,255,0.04);
+    }
+    .dash-banner .greeting-sub  { font-size: 0.9rem; opacity: 0.8; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 0.3rem; }
+    .dash-banner .greeting-title{ font-size: 1.75rem; font-weight: 700; margin-bottom: 0.4rem; }
+    .dash-banner .greeting-date { font-size: 0.9rem; opacity: 0.75; }
+    .dash-banner .banner-icon   { font-size: 5rem; opacity: 0.15; position: absolute; right: 2.5rem; top: 50%; transform: translateY(-50%); }
+
+    /* ── Stat Cards ────────────────────────────────────────────────────── */
+    .stat-card {
+        background: #fff;
+        border-radius: 1rem;
+        padding: 1.4rem 1.5rem;
+        border: 1px solid #f1f5f9;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+        display: flex;
+        align-items: center;
+        gap: 1.25rem;
+        transition: transform 0.25s ease, box-shadow 0.25s ease;
+        height: 100%;
+    }
+    .stat-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 24px rgba(0,0,0,0.09);
+    }
+    .stat-icon {
+        width: 56px; height: 56px;
+        border-radius: 1rem;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1.7rem;
+        flex-shrink: 0;
+    }
+    .stat-icon.blue   { background: rgba(59,130,246,0.1);  color: #3b82f6; }
+    .stat-icon.purple { background: rgba(139,92,246,0.1);  color: #8b5cf6; }
+    .stat-icon.green  { background: rgba(16,185,129,0.1);  color: #10b981; }
+    .stat-icon.orange { background: rgba(245,158,11,0.1);  color: #f59e0b; }
+    .stat-icon.teal   { background: rgba(6,182,212,0.1);   color: #06b6d4; }
+    .stat-icon.pink   { background: rgba(236,72,153,0.1);  color: #ec4899; }
+
+    .stat-number { font-size: 1.9rem; font-weight: 700; line-height: 1; color: #0f172a; }
+    .stat-label  { font-size: 0.8rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.6px; color: #64748b; margin-top: 0.15rem; }
+    .stat-sub    { font-size: 0.78rem; color: #94a3b8; margin-top: 0.25rem; }
+
+    /* ── Section Cards ─────────────────────────────────────────────────── */
+    .section-card {
+        background: #fff;
+        border-radius: 1rem;
+        border: 1px solid #f1f5f9;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+        overflow: hidden;
+    }
+    .section-card .card-head {
+        padding: 1.2rem 1.5rem;
+        border-bottom: 1px solid #f1f5f9;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+    .section-card .card-head h6 {
+        font-weight: 700;
+        font-size: 0.95rem;
+        color: #0f172a;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    .section-card .card-body-inner { padding: 1.25rem 1.5rem; }
+
+    /* ── Notices List ───────────────────────────────────────────────────── */
+    .notice-row {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.75rem;
+        padding: 0.85rem 0;
+        border-bottom: 1px solid #f8fafc;
+    }
+    .notice-row:last-child { border-bottom: none; }
+    .notice-dot {
+        width: 8px; height: 8px; border-radius: 50%; margin-top: 5px; flex-shrink: 0;
+    }
+    .notice-title { font-size: 0.88rem; font-weight: 600; color: #1e293b; line-height: 1.4;
+        white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+    .notice-meta  { font-size: 0.75rem; color: #94a3b8; margin-top: 0.2rem; display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+
+    .audience-badge {
+        display: inline-flex; align-items: center;
+        padding: 0.18rem 0.55rem; border-radius: 2rem; font-size: 0.7rem; font-weight: 600;
+    }
+    .ab-all      { background: rgba(59,130,246,0.1);  color: #2563eb; }
+    .ab-students { background: rgba(16,185,129,0.1);  color: #059669; }
+    .ab-faculty  { background: rgba(139,92,246,0.1);  color: #7c3aed; }
+    .ab-parents  { background: rgba(245,158,11,0.1);  color: #d97706; }
+
+    .pin-badge {
+        display: inline-flex; align-items: center; gap: 0.2rem;
+        padding: 0.18rem 0.5rem; border-radius: 2rem; font-size: 0.7rem; font-weight: 600;
+        background: rgba(239,68,68,0.08); color: #dc2626;
+    }
+
+    /* ── Events Timeline ───────────────────────────────────────────────── */
+    .event-item {
+        display: flex; align-items: flex-start; gap: 1rem;
+        padding: 0.85rem 0;
+        border-bottom: 1px solid #f8fafc;
+    }
+    .event-item:last-child { border-bottom: none; }
+    .event-date-box {
+        min-width: 46px; height: 50px;
+        background: linear-gradient(135deg, #8b5cf6, #a78bfa);
+        border-radius: 0.6rem;
+        display: flex; flex-direction: column; align-items: center; justify-content: center;
+        color: #fff; flex-shrink: 0;
+    }
+    .event-date-box .eday  { font-size: 1.1rem; font-weight: 700; line-height: 1; }
+    .event-date-box .emon  { font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.5px; opacity: 0.9; }
+    .event-title { font-size: 0.88rem; font-weight: 600; color: #1e293b; line-height: 1.4; }
+    .event-venue { font-size: 0.75rem; color: #94a3b8; margin-top: 0.2rem; }
+
+    .empty-state {
+        text-align: center; padding: 2rem 1rem; color: #cbd5e1;
+    }
+    .empty-state iconify-icon { font-size: 2.5rem; display: block; margin-bottom: 0.5rem; }
+    .empty-state p { font-size: 0.85rem; margin: 0; }
+
+    /* ── Content Overview ──────────────────────────────────────────────── */
+    .content-bar-card {
+        border-radius: 0.85rem;
+        padding: 1.2rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        border: 1px solid #f1f5f9;
+        background: #fff;
+        transition: transform 0.2s ease;
+    }
+    .content-bar-card:hover { transform: translateY(-2px); }
+    .content-bar-icon {
+        width: 44px; height: 44px; border-radius: 0.75rem;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1.4rem; flex-shrink: 0;
+    }
+    .content-bar-num  { font-size: 1.4rem; font-weight: 700; color: #0f172a; line-height: 1; }
+    .content-bar-lbl  { font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: #94a3b8; }
+
+    /* ── Upload Breakdown ──────────────────────────────────────────────── */
+    .upload-row {
+        display: flex; align-items: center; gap: 0.75rem;
+        padding: 0.7rem 0; border-bottom: 1px solid #f8fafc;
+    }
+    .upload-row:last-child { border-bottom: none; }
+    .upload-icon-sm {
+        width: 34px; height: 34px; border-radius: 0.5rem;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1rem; flex-shrink: 0;
+    }
+    .upload-label { font-size: 0.85rem; font-weight: 600; color: #334155; }
+    .upload-count { margin-left: auto; font-weight: 700; font-size: 0.95rem; color: #0f172a; }
+    .upload-sub   { font-size: 0.72rem; color: #94a3b8; }
+
+    /* ── Shortcut Buttons ──────────────────────────────────────────────── */
+    .shortcut-btn {
+        display: flex; flex-direction: column; align-items: center;
+        gap: 0.4rem; padding: 1rem 0.5rem;
+        border-radius: 0.85rem; background: #f8fafc;
+        border: 1px solid #f1f5f9; text-decoration: none;
+        color: #475569; font-size: 0.78rem; font-weight: 600;
+        transition: all 0.2s ease;
+        flex: 1;
+    }
+    .shortcut-btn:hover {
+        background: #3b82f6; color: #fff; border-color: #3b82f6;
+        transform: translateY(-2px); box-shadow: 0 6px 16px rgba(59,130,246,0.3);
+    }
+    .shortcut-btn iconify-icon { font-size: 1.5rem; }
+
+    /* ── Responsive tweaks ─────────────────────────────────────────────── */
+    @media (max-width: 576px) {
+        .dash-banner .greeting-title { font-size: 1.3rem; }
+        .dash-banner { padding: 1.5rem; }
+    }
 </style>
-{% endblock %}
+{% endblock custom_css %}
 
 {% block content %}
-<div class="container-fluid">
-    <h1>Admin School Dashboard</h1>
+
+<!-- ══════════════════════ 1. GREETING BANNER ══════════════════════ -->
+<div class="dash-banner">
+    <div style="position:relative; z-index:1;">
+        <div class="greeting-sub" id="greetingText">Welcome back</div>
+        <div class="greeting-title">School Admin Dashboard</div>
+        <div class="greeting-date">
+            <iconify-icon icon="solar:calendar-minimalistic-bold-duotone" style="vertical-align:-3px; margin-right:5px;"></iconify-icon>
+            {{ today|date:"l, F j, Y" }}
+        </div>
+    </div>
+    <iconify-icon icon="solar:school-bold-duotone" class="banner-icon"></iconify-icon>
 </div>
+
+<!-- ══════════════════════ 2. STAT CARDS ══════════════════════════ -->
+<div class="row g-3 mb-4">
+
+    <!-- Notices -->
+    <div class="col-sm-6 col-lg-4 col-xl">
+        <div class="stat-card">
+            <div class="stat-icon blue">
+                <iconify-icon icon="solar:bell-bold-duotone"></iconify-icon>
+            </div>
+            <div class="min-w-0">
+                <div class="stat-number" data-count="{{ total_notices }}">{{ total_notices }}</div>
+                <div class="stat-label">Notices</div>
+                <div class="stat-sub">{{ published_notices }} published &bull; {{ pinned_notices }} pinned</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Events -->
+    <div class="col-sm-6 col-lg-4 col-xl">
+        <div class="stat-card">
+            <div class="stat-icon purple">
+                <iconify-icon icon="solar:calendar-bold-duotone"></iconify-icon>
+            </div>
+            <div class="min-w-0">
+                <div class="stat-number" data-count="{{ total_events }}">{{ total_events }}</div>
+                <div class="stat-label">Events</div>
+                <div class="stat-sub">{{ upcoming_count }} upcoming</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Gallery -->
+    <div class="col-sm-6 col-lg-4 col-xl">
+        <div class="stat-card">
+            <div class="stat-icon green">
+                <iconify-icon icon="solar:gallery-bold-duotone"></iconify-icon>
+            </div>
+            <div class="min-w-0">
+                <div class="stat-number" data-count="{{ total_albums }}">{{ total_albums }}</div>
+                <div class="stat-label">Albums</div>
+                <div class="stat-sub">{{ total_gallery_photos }} photos total</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <div class="col-sm-6 col-lg-4 col-xl">
+        <div class="stat-card">
+            <div class="stat-icon orange">
+                <iconify-icon icon="solar:layers-minimalistic-bold-duotone"></iconify-icon>
+            </div>
+            <div class="min-w-0">
+                <div class="stat-number" data-count="{{ total_menus }}">{{ total_menus }}</div>
+                <div class="stat-label">Menus</div>
+                <div class="stat-sub">{{ total_submenus }} sub-pages</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Uploads -->
+    <div class="col-sm-6 col-lg-4 col-xl">
+        <div class="stat-card">
+            <div class="stat-icon teal">
+                <iconify-icon icon="solar:upload-square-bold-duotone"></iconify-icon>
+            </div>
+            <div class="min-w-0">
+                <div class="stat-number" data-count="{{ total_uploads }}">{{ total_uploads }}</div>
+                <div class="stat-label">Files</div>
+                <div class="stat-sub">Faculty, student &amp; results</div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- ══════════════════════ 3. NOTICES + EVENTS ════════════════════ -->
+<div class="row g-4 mb-4">
+
+    <!-- Recent Notices -->
+    <div class="col-lg-7">
+        <div class="section-card h-100">
+            <div class="card-head">
+                <h6>
+                    <iconify-icon icon="solar:bell-bold-duotone" style="color:#3b82f6; font-size:1.1rem;"></iconify-icon>
+                    Recent Notices
+                </h6>
+                <a href="{% url 'notice_list' %}" class="btn btn-sm btn-light rounded-pill px-3 border" style="font-size:0.78rem;">
+                    View all <iconify-icon icon="solar:arrow-right-bold" style="vertical-align:-2px;"></iconify-icon>
+                </a>
+            </div>
+            <div class="card-body-inner">
+                {% if recent_notices %}
+                    {% for notice in recent_notices %}
+                    <div class="notice-row">
+                        <div class="notice-dot" style="
+                            background:
+                            {% if notice.target_audience == 'students' %}#10b981
+                            {% elif notice.target_audience == 'faculty' %}#8b5cf6
+                            {% elif notice.target_audience == 'parents' %}#f59e0b
+                            {% else %}#3b82f6{% endif %};
+                        "></div>
+                        <div style="min-width:0; flex:1;">
+                            <div class="notice-title" title="{{ notice.title }}">{{ notice.title }}</div>
+                            <div class="notice-meta">
+                                <span>{{ notice.publish_date|date:"M j, Y" }}</span>
+                                <span class="audience-badge
+                                    {% if notice.target_audience == 'students' %}ab-students
+                                    {% elif notice.target_audience == 'faculty' %}ab-faculty
+                                    {% elif notice.target_audience == 'parents' %}ab-parents
+                                    {% else %}ab-all{% endif %}">
+                                    {% if notice.target_audience == 'students' %}Students
+                                    {% elif notice.target_audience == 'faculty' %}Faculty
+                                    {% elif notice.target_audience == 'parents' %}Parents
+                                    {% else %}Everyone{% endif %}
+                                </span>
+                                {% if notice.is_pinned %}
+                                <span class="pin-badge">
+                                    <iconify-icon icon="solar:pin-bold"></iconify-icon> Pinned
+                                </span>
+                                {% endif %}
+                                {% if not notice.is_published %}
+                                <span style="font-size:0.7rem; color:#94a3b8; font-style:italic;">Draft</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <a href="{% url 'edit_notice' notice.id %}" class="btn btn-sm btn-light border rounded-3 flex-shrink-0" style="font-size:0.72rem; padding:0.2rem 0.55rem;">
+                            Edit
+                        </a>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                <div class="empty-state">
+                    <iconify-icon icon="solar:bell-off-bold-duotone"></iconify-icon>
+                    <p>No notices yet.<br><a href="{% url 'create_notice' %}">Create your first notice</a></p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Upcoming Events -->
+    <div class="col-lg-5">
+        <div class="section-card h-100">
+            <div class="card-head">
+                <h6>
+                    <iconify-icon icon="solar:calendar-bold-duotone" style="color:#8b5cf6; font-size:1.1rem;"></iconify-icon>
+                    Upcoming Events
+                </h6>
+                <a href="{% url 'event_list' %}" class="btn btn-sm btn-light rounded-pill px-3 border" style="font-size:0.78rem;">
+                    View all <iconify-icon icon="solar:arrow-right-bold" style="vertical-align:-2px;"></iconify-icon>
+                </a>
+            </div>
+            <div class="card-body-inner">
+                {% if upcoming_events %}
+                    {% for event in upcoming_events %}
+                    <div class="event-item">
+                        <div class="event-date-box">
+                            <span class="eday">{{ event.event_date|date:"j" }}</span>
+                            <span class="emon">{{ event.event_date|date:"M" }}</span>
+                        </div>
+                        <div style="min-width:0; flex:1;">
+                            <div class="event-title" title="{{ event.title }}">{{ event.title }}</div>
+                            {% if event.venue %}
+                            <div class="event-venue">
+                                <iconify-icon icon="solar:map-point-bold-duotone" style="vertical-align:-2px;"></iconify-icon>
+                                {{ event.venue }}
+                            </div>
+                            {% endif %}
+                            {% if event.event_time %}
+                            <div class="event-venue" style="margin-top:2px;">
+                                <iconify-icon icon="solar:clock-circle-bold-duotone" style="vertical-align:-2px;"></iconify-icon>
+                                {{ event.event_time|time:"g:i A" }}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                <div class="empty-state">
+                    <iconify-icon icon="solar:calendar-bold-duotone"></iconify-icon>
+                    <p>No upcoming events.<br><a href="{% url 'create_event' %}">Add an event</a></p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- ══════════════════════ 4. CONTENT + UPLOADS ════════════════════ -->
+<div class="row g-4 mb-4">
+
+    <!-- Content Overview -->
+    <div class="col-lg-8">
+        <div class="section-card">
+            <div class="card-head">
+                <h6>
+                    <iconify-icon icon="solar:documents-bold-duotone" style="color:#10b981; font-size:1.1rem;"></iconify-icon>
+                    Content Overview
+                </h6>
+            </div>
+            <div class="card-body-inner">
+                <div class="row g-3">
+
+                    <div class="col-sm-6 col-md-4">
+                        <div class="content-bar-card">
+                            <div class="content-bar-icon blue" style="background:rgba(59,130,246,0.1); color:#3b82f6;">
+                                <iconify-icon icon="solar:text-square-bold-duotone"></iconify-icon>
+                            </div>
+                            <div>
+                                <div class="content-bar-num">{{ total_sections }}</div>
+                                <div class="content-bar-lbl">Layout 1 Sections</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-sm-6 col-md-4">
+                        <div class="content-bar-card">
+                            <div class="content-bar-icon" style="background:rgba(16,185,129,0.1); color:#10b981;">
+                                <iconify-icon icon="solar:gallery-wide-bold-duotone"></iconify-icon>
+                            </div>
+                            <div>
+                                <div class="content-bar-num">{{ total_page_photos }}</div>
+                                <div class="content-bar-lbl">Layout 2 Photos</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-sm-6 col-md-4">
+                        <div class="content-bar-card">
+                            <div class="content-bar-icon" style="background:rgba(139,92,246,0.1); color:#8b5cf6;">
+                                <iconify-icon icon="solar:document-text-bold-duotone"></iconify-icon>
+                            </div>
+                            <div>
+                                <div class="content-bar-num">{{ total_rich_texts }}</div>
+                                <div class="content-bar-lbl">Layout 3 Blocks</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-sm-6 col-md-4">
+                        <div class="content-bar-card">
+                            <div class="content-bar-icon" style="background:rgba(245,158,11,0.1); color:#f59e0b;">
+                                <iconify-icon icon="solar:gallery-bold-duotone"></iconify-icon>
+                            </div>
+                            <div>
+                                <div class="content-bar-num">{{ total_albums }}</div>
+                                <div class="content-bar-lbl">Gallery Albums</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-sm-6 col-md-4">
+                        <div class="content-bar-card">
+                            <div class="content-bar-icon" style="background:rgba(6,182,212,0.1); color:#06b6d4;">
+                                <iconify-icon icon="solar:slider-minimalistic-bold-duotone"></iconify-icon>
+                            </div>
+                            <div>
+                                <div class="content-bar-num">{{ total_sliders }}</div>
+                                <div class="content-bar-lbl">Hero Sliders</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-sm-6 col-md-4">
+                        <div class="content-bar-card">
+                            <div class="content-bar-icon" style="background:rgba(236,72,153,0.1); color:#ec4899;">
+                                <iconify-icon icon="solar:layers-bold-duotone"></iconify-icon>
+                            </div>
+                            <div>
+                                <div class="content-bar-num">{{ total_menus|add:total_submenus }}</div>
+                                <div class="content-bar-lbl">Total Nav Pages</div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Upload Breakdown -->
+    <div class="col-lg-4">
+        <div class="section-card h-100">
+            <div class="card-head">
+                <h6>
+                    <iconify-icon icon="solar:upload-square-bold-duotone" style="color:#06b6d4; font-size:1.1rem;"></iconify-icon>
+                    File Uploads
+                </h6>
+            </div>
+            <div class="card-body-inner">
+
+                <div class="upload-row">
+                    <div class="upload-icon-sm" style="background:rgba(59,130,246,0.1); color:#3b82f6;">
+                        <iconify-icon icon="solar:users-group-rounded-bold-duotone"></iconify-icon>
+                    </div>
+                    <div>
+                        <div class="upload-label">Faculty Uploads</div>
+                        <div class="upload-sub">For staff members</div>
+                    </div>
+                    <div class="upload-count">{{ total_faculty_uploads }}</div>
+                </div>
+
+                <div class="upload-row">
+                    <div class="upload-icon-sm" style="background:rgba(16,185,129,0.1); color:#10b981;">
+                        <iconify-icon icon="solar:backpack-bold-duotone"></iconify-icon>
+                    </div>
+                    <div>
+                        <div class="upload-label">Student Uploads</div>
+                        <div class="upload-sub">For students</div>
+                    </div>
+                    <div class="upload-count">{{ total_student_uploads }}</div>
+                </div>
+
+                <div class="upload-row">
+                    <div class="upload-icon-sm" style="background:rgba(139,92,246,0.1); color:#8b5cf6;">
+                        <iconify-icon icon="solar:clipboard-bold-duotone"></iconify-icon>
+                    </div>
+                    <div>
+                        <div class="upload-label">Results</div>
+                        <div class="upload-sub">Exam results</div>
+                    </div>
+                    <div class="upload-count">{{ total_result_uploads }}</div>
+                </div>
+
+                <div class="upload-row">
+                    <div class="upload-icon-sm" style="background:rgba(245,158,11,0.1); color:#f59e0b;">
+                        <iconify-icon icon="solar:medal-star-bold-duotone"></iconify-icon>
+                    </div>
+                    <div>
+                        <div class="upload-label">Admission Results</div>
+                        <div class="upload-sub">Grade-wise</div>
+                    </div>
+                    <div class="upload-count">{{ total_admission_uploads }}</div>
+                </div>
+
+                <div class="mt-3 pt-3 border-top d-flex align-items-center justify-content-between">
+                    <span style="font-size:0.8rem; font-weight:600; color:#64748b;">Total Files</span>
+                    <span style="font-size:1.3rem; font-weight:700; color:#0f172a;">{{ total_uploads }}</span>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- ══════════════════════ 5. QUICK ACTIONS ════════════════════════ -->
+<div class="row g-4 mb-2">
+    <div class="col-12">
+        <div class="section-card">
+            <div class="card-head">
+                <h6>
+                    <iconify-icon icon="solar:bolt-bold-duotone" style="color:#f59e0b; font-size:1.1rem;"></iconify-icon>
+                    Quick Actions
+                </h6>
+            </div>
+            <div class="card-body-inner">
+                <div class="d-flex gap-3 flex-wrap">
+                    <a href="{% url 'create_notice' %}" class="shortcut-btn">
+                        <iconify-icon icon="solar:bell-bing-bold-duotone"></iconify-icon>
+                        New Notice
+                    </a>
+                    <a href="{% url 'create_event' %}" class="shortcut-btn">
+                        <iconify-icon icon="solar:calendar-add-bold-duotone"></iconify-icon>
+                        New Event
+                    </a>
+                    <a href="{% url 'create_page_section' %}" class="shortcut-btn">
+                        <iconify-icon icon="solar:text-square-bold-duotone"></iconify-icon>
+                        Add Section
+                    </a>
+                    <a href="{% url 'create_page_photo' %}" class="shortcut-btn">
+                        <iconify-icon icon="solar:gallery-add-bold-duotone"></iconify-icon>
+                        Add Gallery
+                    </a>
+                    <a href="{% url 'create_page_rich_text' %}" class="shortcut-btn">
+                        <iconify-icon icon="solar:document-add-bold-duotone"></iconify-icon>
+                        Rich Text Block
+                    </a>
+                    <a href="{% url 'create_album' %}" class="shortcut-btn">
+                        <iconify-icon icon="solar:album-bold-duotone"></iconify-icon>
+                        New Album
+                    </a>
+                    <a href="{% url 'list_layout1' %}" class="shortcut-btn">
+                        <iconify-icon icon="solar:layers-minimalistic-bold-duotone"></iconify-icon>
+                        Layout 1 Pages
+                    </a>
+                    <a href="{% url 'list_page_photo' %}" class="shortcut-btn">
+                        <iconify-icon icon="solar:gallery-wide-bold-duotone"></iconify-icon>
+                        Layout 2 Pages
+                    </a>
+                    <a href="{% url 'list_layout3_rich_text' %}" class="shortcut-btn">
+                        <iconify-icon icon="solar:documents-bold-duotone"></iconify-icon>
+                        Layout 3 Pages
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 {% endblock content %}
 
 {% block custom_js %}
-<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
-<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
-<script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+<script>
+    // ── Time-aware greeting ───────────────────────────────────────────────
+    (function() {
+        const h = new Date().getHours();
+        const greetEl = document.getElementById('greetingText');
+        if (greetEl) {
+            if      (h >= 5  && h < 12) greetEl.textContent = 'Good morning';
+            else if (h >= 12 && h < 17) greetEl.textContent = 'Good afternoon';
+            else if (h >= 17 && h < 21) greetEl.textContent = 'Good evening';
+            else                         greetEl.textContent = 'Working late';
+        }
+    })();
 
-
-{% endblock %}
+    // ── CountUp animation for stat numbers ───────────────────────────────
+    document.addEventListener('DOMContentLoaded', function() {
+        const els = document.querySelectorAll('.stat-number[data-count]');
+        els.forEach(el => {
+            const target = parseInt(el.getAttribute('data-count'), 10);
+            if (isNaN(target) || target === 0) return;
+            let current = 0;
+            const step  = Math.max(1, Math.ceil(target / 30));
+            const timer = setInterval(() => {
+                current = Math.min(current + step, target);
+                el.textContent = current;
+                if (current >= target) clearInterval(timer);
+            }, 30);
+        });
+    });
+</script>
+{% endblock custom_js %}

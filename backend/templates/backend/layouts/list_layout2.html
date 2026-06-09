@@ -63,24 +63,22 @@
             </tr>
         </thead>
         <tbody>
-            {% for gallery in galleries %}
-            <tr id="row-{{ gallery.id }}">
-                <td>
-                    <span class="fw-semibold">{{ gallery.menu.name }}</span>
-                    <span class="text-muted mx-1">&rsaquo;</span>
-                    <span>{{ gallery.name }}</span>
-                </td>
+            {% for item in items %}
+            <tr id="row-{{ item.type }}-{{ item.id }}">
+                <td>{{ item.display_name }}</td>
                 <td>
                     <span class="modern-badge badge-blue">
                         <iconify-icon icon="solar:gallery-bold-duotone" class="align-text-bottom me-1"></iconify-icon>
-                        {{ gallery.photo_count }} Photos
+                        {{ item.photo_count }} Photos
                     </span>
                 </td>
                 <td class="text-end">
-                    <a href="{% url 'edit_layout2_gallery' gallery.id %}" class="btn-action btn-edit me-1" title="Manage Gallery Photos">
+                    <a href="{{ item.edit_url }}" class="btn-action btn-edit me-1" title="Manage Gallery Photos">
                         <iconify-icon icon="solar:pen-new-round-bold-duotone" style="font-size: 1.2rem;"></iconify-icon>
                     </a>
-                    <button class="btn-action btn-delete" onclick="triggerDeleteModal({{ gallery.id }})" title="Delete Entire Gallery">
+                    <button class="btn-action btn-delete"
+                            onclick="triggerDeleteModal('{{ item.id }}', '{{ item.type }}')"
+                            title="Delete Entire Gallery">
                         <iconify-icon icon="solar:trash-bin-trash-bold-duotone" style="font-size: 1.2rem;"></iconify-icon>
                     </button>
                 </td>
@@ -100,6 +98,7 @@
             <div class="modal-body py-4">
                 <p class="mb-0 text-muted" style="font-size: 1.05rem;">Are you sure you want to delete this gallery? This will permanently remove <strong>all photos</strong> associated with this section. This action cannot be undone.</p>
                 <input type="hidden" id="deleteGalleryId">
+        <input type="hidden" id="deleteGalleryType">
             </div>
             <div class="modal-footer border-0 pt-0">
                 <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
@@ -136,13 +135,18 @@
         deleteModalInstance = new bootstrap.Modal(document.getElementById('deleteModal'));
 
         $('#confirmDeleteBtn').on('click', function() {
-            const galleryId = $('#deleteGalleryId').val();
+            const galleryId   = $('#deleteGalleryId').val();
+            const galleryType = $('#deleteGalleryType').val();
             const btn = $(this);
             const originalText = btn.html();
-            
+
+            const deleteUrl = galleryType === 'menu'
+                ? `/dashboard/cms/layout2/delete-gallery-menu/${galleryId}/`
+                : `/dashboard/cms/layout2/delete-gallery/${galleryId}/`;
+
             btn.html('<iconify-icon icon="line-md:loading-twotone-loop" class="me-1"></iconify-icon> Deleting...').prop('disabled', true);
 
-            fetch(`/cms/layout2/delete-gallery/${galleryId}/`, {
+            fetch(deleteUrl, {
                 method: 'POST',
                 headers: {
                     'X-Requested-With': 'XMLHttpRequest',
@@ -155,7 +159,7 @@
                 if (data.success) {
                     showStatus(data.message, 'success');
                     const table = $('#galleriesTable').DataTable();
-                    table.row($(`#row-${galleryId}`)).remove().draw(false);
+                    table.row($(`#row-${galleryType}-${galleryId}`)).remove().draw(false);
                 } else {
                     showStatus(data.message, 'error');
                 }
@@ -170,8 +174,9 @@
         });
     });
 
-    function triggerDeleteModal(id) {
+    function triggerDeleteModal(id, type) {
         document.getElementById('deleteGalleryId').value = id;
+        document.getElementById('deleteGalleryType').value = type || 'submenu';
         deleteModalInstance.show();
     }
 

@@ -67,11 +67,7 @@
             {% for section in sections %}
             <tr id="row-{{ section.id }}">
                 <td class="fw-medium text-muted">{{ section.order }}</td>
-                <td>
-                    <span class="fw-semibold">{{ section.submenu.menu.name }}</span>
-                    <span class="text-muted mx-1">&rsaquo;</span>
-                    <span>{{ section.submenu.name }}</span>
-                </td>
+                <td>{{ section.display_page }}</td>
                 <td>
                     {% if section.heading %}{{ section.heading }}
                     {% else %}<em class="text-muted">No heading</em>{% endif %}

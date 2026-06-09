@@ -152,7 +152,13 @@
 
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <h2 class="mb-0">Edit Gallery: <span class="text-primary fw-bold">{{ current_submenu.name }}</span></h2>
+    <h2 class="mb-0">Edit Gallery:
+        <span class="text-primary fw-bold">
+            {% if current_submenu %}{{ current_submenu.name }}
+            {% else %}{{ current_menu.name }} <small class="text-muted fw-normal fs-6">(Direct)</small>
+            {% endif %}
+        </span>
+    </h2>
     <a href="{% url 'list_page_photo' %}" class="btn btn-light rounded-pill px-4 border">
         <iconify-icon icon="solar:arrow-left-bold-duotone" class="me-1"></iconify-icon> Back to Galleries
     </a>
@@ -196,11 +202,19 @@
         {% csrf_token %}
         <div class="row g-4">
             <div class="col-md-6">
-                <label class="form-label fw-semibold">Assign to Submenu</label>
+                <label class="form-label fw-semibold">Assigned Page</label>
                 <select class="form-select border-0 bg-light" disabled>
+                    {% if current_submenu %}
                     <option selected>{{ current_submenu.menu.name }} &rsaquo; {{ current_submenu.name }}</option>
+                    {% else %}
+                    <option selected>{{ current_menu.name }} (Direct Page)</option>
+                    {% endif %}
                 </select>
+                {% if current_submenu %}
                 <input type="hidden" name="submenu_id" value="{{ current_submenu.id }}">
+                {% else %}
+                <input type="hidden" name="submenu_id" value="menu_{{ current_menu.id }}">
+                {% endif %}
             </div>
             <div class="col-md-6">
                 <label class="form-label fw-semibold">Base Order Number</label>
@@ -271,8 +285,9 @@
             btn.innerHTML = '<iconify-icon icon="line-md:loading-twotone-loop" class="me-1"></iconify-icon> Uploading...';
             btn.disabled = true;
 
-            // Notice: Using the current edit URL to post the form data
-            fetch(`{% url 'edit_layout2_gallery' current_submenu.id %}`, {
+            // Use the correct edit URL based on whether this is a submenu or direct menu gallery
+            const editUrl = "{% if current_submenu %}{% url 'edit_layout2_gallery' current_submenu.id %}{% else %}{% url 'edit_layout2_gallery_menu' current_menu.id %}{% endif %}";
+            fetch(editUrl, {
                 method: 'POST',
                 body: formData,
                 headers: {

@@ -5,7 +5,7 @@ import datetime
 from backend.models import (
     HomeSlider, HeroStat, HomeAbout, CorePillar, HomeAchievement,
     Facility, CurriculumStage, Event, Notice, Contact, SocialMedia,
-    GalleryAlbum, SubMenu,
+    GalleryAlbum, SubMenu, Menu,
 )
 
 
@@ -64,6 +64,34 @@ def dynamic_page(request, menu_slug, submenu_slug):
         return render(request, 'school/dynamic_page/layout_3.html', {
             'submenu':    submenu,
             'rich_texts': submenu.rich_texts.all().order_by('order'),
+        })
+    raise Http404
+
+
+def direct_menu_page(request, menu_slug):
+    """
+    Serves Layout 1 / 2 / 3 pages for Menus that have a direct page link set
+    (i.e. Menu.page = 'layout_1' / 'layout_2' / 'layout_3', no submenus).
+    URL: /page/<menu-slug>/
+    """
+    menu = get_object_or_404(Menu, slug=menu_slug, is_active=True)
+    if menu.page == 'layout_1':
+        return render(request, 'school/dynamic_page/layout_1.html', {
+            'menu':     menu,
+            'submenu':  None,
+            'sections': menu.page_sections.all().order_by('order'),
+        })
+    if menu.page == 'layout_2':
+        return render(request, 'school/dynamic_page/layout_2.html', {
+            'menu':    menu,
+            'submenu': None,
+            'photos':  menu.page_photos.all().order_by('order'),
+        })
+    if menu.page == 'layout_3':
+        return render(request, 'school/dynamic_page/layout_3.html', {
+            'menu':       menu,
+            'submenu':    None,
+            'rich_texts': menu.page_rich_texts.all().order_by('order'),
         })
     raise Http404
 

@@ -25,10 +25,117 @@ User = get_user_model()
 logger = logging.getLogger(__name__)
 
 
+# ─────────────────────────────────────────────────────────────────────────────
+# HELPER: parse the unified assignment field from layout create/edit forms.
+# Value is either "submenu_<int>" (or plain "<int>") for a SubMenu assignment,
+# or "menu_<int>" for a direct Menu assignment.
+# Returns ('submenu', id) or ('menu', id).
+# ─────────────────────────────────────────────────────────────────────────────
+def _parse_assignment(raw_id):
+    raw = str(raw_id).strip()
+    if raw.startswith('menu_'):
+        return 'menu', int(raw[5:])
+    return 'submenu', int(raw)
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# HELPER: return the eligible direct-menu objects for a given layout type.
+# Eligible = has the matching page value, is_active, NO submenus, and
+# (for create) no existing content, or (for edit) content belongs to this menu.
+# ─────────────────────────────────────────────────────────────────────────────
+def _eligible_menus(page_type, content_related_name, exclude_menu_id=None):
+    """
+    page_type            e.g. 'layout_1'
+    content_related_name e.g. 'page_sections'
+    exclude_menu_id      ID of the menu currently assigned to the item being
+                         edited (so it still appears in the dropdown).
+    """
+    from django.db.models import Count, Q
+    qs = Menu.objects.filter(page=page_type, is_active=True).annotate(
+        sub_count=Count('submenus', distinct=True),
+        content_count=Count(content_related_name, distinct=True),
+    ).filter(sub_count=0)  # only leaf menus (no submenu dropdown)
+
+    if exclude_menu_id:
+        qs = qs.filter(Q(content_count=0) | Q(id=exclude_menu_id))
+    else:
+        qs = qs.filter(content_count=0)
+
+    return qs
+
+
 
 
 def admin_dashboard(request):
-    return render(request, 'backend/dashboard/admin_dashboard.html')
+    import datetime
+    today = timezone.now().date()
+
+    # ── Notices ──────────────────────────────────────────────────────────────
+    total_notices     = Notice.objects.count()
+    published_notices = Notice.objects.filter(is_published=True).count()
+    pinned_notices    = Notice.objects.filter(is_pinned=True).count()
+    recent_notices    = Notice.objects.order_by('-created_at')[:6]
+
+    # ── Events ───────────────────────────────────────────────────────────────
+    total_events    = Event.objects.count()
+    upcoming_count  = Event.objects.filter(event_date__gte=today).count()
+    upcoming_events = Event.objects.filter(
+        event_date__gte=today, is_published=True
+    ).order_by('event_date')[:5]
+
+    # ── Gallery ───────────────────────────────────────────────────────────────
+    total_albums        = GalleryAlbum.objects.count()
+    total_gallery_photos = GalleryPhoto.objects.count()
+
+    # ── Navigation ───────────────────────────────────────────────────────────
+    total_menus    = Menu.objects.filter(is_active=True).count()
+    total_submenus = SubMenu.objects.filter(is_active=True).count()
+
+    # ── Page Content ─────────────────────────────────────────────────────────
+    total_sections    = PageSection.objects.count()
+    total_page_photos = PagePhoto.objects.count()
+    total_rich_texts  = PageRichText.objects.count()
+
+    # ── Uploads ───────────────────────────────────────────────────────────────
+    total_faculty_uploads   = FacultyUpload.objects.count()
+    total_student_uploads   = StudentUpload.objects.count()
+    total_result_uploads    = ResultUpload.objects.count()
+    total_admission_uploads = AdmissionResultUpload.objects.count()
+    total_uploads = total_faculty_uploads + total_student_uploads + total_result_uploads + total_admission_uploads
+
+    # ── Sliders ───────────────────────────────────────────────────────────────
+    total_sliders = HomeSlider.objects.count()
+
+    return render(request, 'backend/dashboard/admin_dashboard.html', {
+        'today':                 today,
+        # notices
+        'total_notices':         total_notices,
+        'published_notices':     published_notices,
+        'pinned_notices':        pinned_notices,
+        'recent_notices':        recent_notices,
+        # events
+        'total_events':          total_events,
+        'upcoming_count':        upcoming_count,
+        'upcoming_events':       upcoming_events,
+        # gallery
+        'total_albums':          total_albums,
+        'total_gallery_photos':  total_gallery_photos,
+        # navigation
+        'total_menus':           total_menus,
+        'total_submenus':        total_submenus,
+        # content
+        'total_sections':        total_sections,
+        'total_page_photos':     total_page_photos,
+        'total_rich_texts':      total_rich_texts,
+        # uploads
+        'total_faculty_uploads':   total_faculty_uploads,
+        'total_student_uploads':   total_student_uploads,
+        'total_result_uploads':    total_result_uploads,
+        'total_admission_uploads': total_admission_uploads,
+        'total_uploads':           total_uploads,
+        # misc
+        'total_sliders':         total_sliders,
+    })
 
 
 def create_home_slider(request):
@@ -412,186 +519,165 @@ def delete_submenu(request, id):
         
         
 def list_layout1(request):
-    # Fetch all layout 1 sections, grabbing related submenu and menu data efficiently
-    sections = PageSection.objects.select_related('submenu', 'submenu__menu').all().order_by('submenu__menu__name', 'submenu__name', 'order')
-    return render(request, 'backend/layouts/list_layout1.html', {'sections': sections})
+    raw = PageSection.objects.select_related(
+        'submenu', 'submenu__menu', 'menu'
+    ).all().order_by('order')
+    # Attach a human-readable display_page attribute to each section
+    for s in raw:
+        if s.submenu:
+            s.display_page = f"{s.submenu.menu.name} › {s.submenu.name}"
+        elif s.menu:
+            s.display_page = f"{s.menu.name} (Direct Page)"
+        else:
+            s.display_page = "—"
+    return render(request, 'backend/layouts/list_layout1.html', {'sections': raw})
 
 
 
 def create_page_section(request):
     if request.method == 'POST':
-        submenu_id = request.POST.get('submenu_id')
-        heading = request.POST.get('heading', '').strip()
+        raw_id   = request.POST.get('submenu_id', '').strip()
+        heading  = request.POST.get('heading', '').strip()
         person_name = request.POST.get('person_name', '').strip()
         designation = request.POST.get('designation', '').strip()
         image_align = request.POST.get('image_align', 'left')
-        order = request.POST.get('order', 0)
-        body = request.POST.get('body', '').strip()
-        image = request.FILES.get('image')
-        
+        order    = request.POST.get('order', 0)
+        body     = request.POST.get('body', '').strip()
+        image    = request.FILES.get('image')
+
         errors = {}
-        
-        # Validation
-        if not submenu_id:
-            errors['submenu_id'] = ['Please select a submenu.']
+
+        if not raw_id:
+            errors['submenu_id'] = ['Please select a page assignment.']
         if not body or body == '<p><br></p>':
             errors['body'] = ['Body content is required.']
-            
-        # Validate order is a number
         try:
             order = int(order)
-        except ValueError:
+        except (ValueError, TypeError):
             errors['order'] = ['Order must be a valid number.']
-
         if image and not image.content_type.startswith('image/'):
             errors['image'] = ['Uploaded file must be an image.']
-                
+
         if errors:
-            return JsonResponse({
-                'success': False, 
-                'message': 'Please fix the errors below.', 
-                'errors': errors
-            }, status=400)
-            
+            return JsonResponse({'success': False, 'message': 'Please fix the errors below.', 'errors': errors}, status=400)
+
         try:
-            submenu = SubMenu.objects.get(id=submenu_id, page='layout_1')
-            
-            # --- ENFORCE SINGLE INSTANCE RULE ---
-            if PageSection.objects.filter(submenu=submenu).exists():
-                return JsonResponse({
-                    'success': False,
-                    'message': 'Validation error.',
-                    'errors': {
-                        'submenu_id': ['This submenu already has content. Please edit the existing page instead.']
-                    }
-                }, status=400)
-            
-            PageSection.objects.create(
-                submenu=submenu,
-                heading=heading,
-                person_name=person_name,
-                designation=designation,
-                image_align=image_align,
-                order=order,
-                body=body,
-                image=image
-            )
-            return JsonResponse({
-                'success': True, 
-                'message': 'Layout 1 section created successfully!'
-            })
-            
-        except SubMenu.DoesNotExist:
-            return JsonResponse({
-                'success': False, 
-                'message': 'Invalid submenu.',
-                'errors': {'submenu_id': ['This submenu does not exist or is not set to Layout 1.']}
+            atype, aid = _parse_assignment(raw_id)
+            common = dict(heading=heading, person_name=person_name,
+                          designation=designation, image_align=image_align,
+                          order=order, body=body, image=image)
+            if atype == 'menu':
+                menu_obj = Menu.objects.get(id=aid, page='layout_1')
+                if PageSection.objects.filter(menu=menu_obj).exists():
+                    return JsonResponse({'success': False, 'message': 'Validation error.',
+                        'errors': {'submenu_id': ['This menu already has content. Please edit the existing page instead.']}
+                    }, status=400)
+                PageSection.objects.create(menu=menu_obj, submenu=None, **common)
+            else:
+                submenu = SubMenu.objects.get(id=aid, page='layout_1')
+                if PageSection.objects.filter(submenu=submenu).exists():
+                    return JsonResponse({'success': False, 'message': 'Validation error.',
+                        'errors': {'submenu_id': ['This submenu already has content. Please edit the existing page instead.']}
+                    }, status=400)
+                PageSection.objects.create(submenu=submenu, menu=None, **common)
+
+            return JsonResponse({'success': True, 'message': 'Layout 1 section created successfully!'})
+
+        except (Menu.DoesNotExist, SubMenu.DoesNotExist):
+            return JsonResponse({'success': False, 'message': 'Invalid assignment.',
+                'errors': {'submenu_id': ['The selected page does not exist or is not set to Layout 1.']}
             }, status=400)
-            
         except Exception as e:
-            return JsonResponse({
-                'success': False, 
-                'message': 'A server error occurred while saving.', 
-                'error_detail': str(e)
-            }, status=500)
+            return JsonResponse({'success': False, 'message': 'A server error occurred while saving.', 'error_detail': str(e)}, status=500)
 
-    # GET Request
-    # --- UI FILTERING ---
-    # Fetch only submenus assigned to Layout 1 where `sections` is empty
+    # GET — submenus without existing sections + eligible direct-link menus
     submenus = SubMenu.objects.filter(
-        page='layout_1',
-        is_active=True,
-        sections__isnull=True 
+        page='layout_1', is_active=True, sections__isnull=True
     ).select_related('menu')
-
-    return render(request, 'backend/layouts/create_layout1.html', {'submenus': submenus})
+    menus = _eligible_menus('layout_1', 'page_sections')
+    return render(request, 'backend/layouts/create_layout1.html', {'submenus': submenus, 'menus': menus})
 
 
 
 def edit_layout1_section(request, id):
-    # Fucking fixed: using PageSection instead of my hallucinated model
     section = get_object_or_404(PageSection, id=id)
-    
+
     if request.method == 'POST':
         errors = {}
-        submenu_id = request.POST.get('submenu_id')
-        heading = request.POST.get('heading', '').strip()
-        person_name = request.POST.get('person_name', '').strip() # Fixed: Added back
-        designation = request.POST.get('designation', '').strip() # Fixed: Added back
+        raw_id      = request.POST.get('submenu_id', '').strip()
+        heading     = request.POST.get('heading', '').strip()
+        person_name = request.POST.get('person_name', '').strip()
+        designation = request.POST.get('designation', '').strip()
         image_align = request.POST.get('image_align', 'left')
-        order = request.POST.get('order', 0)
-        body = request.POST.get('body', '').strip()
+        order       = request.POST.get('order', 0)
+        body        = request.POST.get('body', '').strip()
 
-        # Validation
-        if not submenu_id:
-            errors['submenu_id'] = ['Please select a submenu.']
-            
+        if not raw_id:
+            errors['submenu_id'] = ['Please select a page assignment.']
         if not body or body == '<p><br></p>':
             errors['body'] = ['Body content is required.']
-            
         try:
             order = int(order)
-        except ValueError:
+        except (ValueError, TypeError):
             errors['order'] = ['Order must be a valid number.']
-
         if 'image' in request.FILES:
-            image = request.FILES['image']
-            if not image.content_type.startswith('image/'):
+            if not request.FILES['image'].content_type.startswith('image/'):
                 errors['image'] = ['Uploaded file must be an image.']
 
         if errors:
-            return JsonResponse({
-                'success': False, 
-                'message': 'Please fix the errors below.', 
-                'errors': errors
-            }, status=400)
+            return JsonResponse({'success': False, 'message': 'Please fix the errors below.', 'errors': errors}, status=400)
 
-        # Update Section details
         try:
-            submenu = SubMenu.objects.get(id=submenu_id, page='layout_1')
-            
-            # --- ENFORCE SINGLE INSTANCE RULE ON EDIT ---
-            # If they are changing the submenu to a different one, check if the NEW one already has content
-            if submenu != section.submenu and PageSection.objects.filter(submenu=submenu).exists():
-                return JsonResponse({
-                    'success': False,
-                    'message': 'Validation error.',
-                    'errors': {
-                        'submenu_id': ['This submenu already has content assigned to it. Please select an empty one.']
-                    }
-                }, status=400)
-            
-            section.submenu = submenu
-            section.heading = heading
-            section.person_name = person_name # Fixed: Saving this now
-            section.designation = designation # Fixed: Saving this now
+            atype, aid = _parse_assignment(raw_id)
+            section.heading     = heading
+            section.person_name = person_name
+            section.designation = designation
             section.image_align = image_align
-            section.order = order
-            section.body = body
-
-            # Only overwrite image if a new one is uploaded
+            section.order       = order
+            section.body        = body
             if 'image' in request.FILES:
                 section.image = request.FILES['image']
-                
+
+            if atype == 'menu':
+                menu_obj = Menu.objects.get(id=aid, page='layout_1')
+                # If switching to a different menu, ensure it has no other content
+                if menu_obj.id != section.menu_id and PageSection.objects.filter(menu=menu_obj).exists():
+                    return JsonResponse({'success': False, 'message': 'Validation error.',
+                        'errors': {'submenu_id': ['This menu already has content assigned. Please select an empty one.']}
+                    }, status=400)
+                section.submenu = None
+                section.menu    = menu_obj
+            else:
+                submenu = SubMenu.objects.get(id=aid, page='layout_1')
+                if submenu.id != section.submenu_id and PageSection.objects.filter(submenu=submenu).exists():
+                    return JsonResponse({'success': False, 'message': 'Validation error.',
+                        'errors': {'submenu_id': ['This submenu already has content assigned. Please select an empty one.']}
+                    }, status=400)
+                section.submenu = submenu
+                section.menu    = None
+
             section.save()
             return JsonResponse({'success': True, 'message': 'Section updated successfully.'})
-            
-        except SubMenu.DoesNotExist:
-            return JsonResponse({'success': False, 'message': 'Invalid submenu selected.'}, status=400)
+
+        except (Menu.DoesNotExist, SubMenu.DoesNotExist):
+            return JsonResponse({'success': False, 'message': 'Invalid assignment selected.'}, status=400)
         except Exception as e:
             return JsonResponse({'success': False, 'message': str(e)}, status=500)
 
-    # GET Request: Load the form with existing data
-    # --- UI FILTERING ---
-    # Fetch Layout 1 submenus that are either EMPTY or are the CURRENT submenu for this specific section
+    # GET — eligible submenus (empty or already this section's) + eligible menus
     submenus = SubMenu.objects.filter(
-        Q(page='layout_1') & 
-        (Q(sections__isnull=True) | Q(id=section.submenu.id))
-    ).distinct()
-    
+        Q(page='layout_1') &
+        (Q(sections__isnull=True) | Q(id=section.submenu_id))
+    ).distinct().select_related('menu')
+
+    menus = _eligible_menus('layout_1', 'page_sections', exclude_menu_id=section.menu_id)
+
     return render(request, 'backend/layouts/edit_layout1.html', {
-        'section': section,
-        'submenus': submenus
+        'section':            section,
+        'submenus':           submenus,
+        'menus':              menus,
+        'cur_submenu_id':     section.submenu_id,   # int or None
+        'cur_menu_id':        section.menu_id,       # int or None
     })
 
 
@@ -612,93 +698,80 @@ def delete_layout1_section(request, section_id):
 
 
 def list_page_photo(request):
-    # Changed 'pagephoto' to 'photos' to match your model's related_name
-    galleries = SubMenu.objects.filter(
-        photos__isnull=False
-    ).annotate(
-        photo_count=Count('photos')
-    ).distinct().select_related('menu')
-    
-    return render(request, 'backend/layouts/list_layout2.html', {
-        'galleries': galleries
-    })
+    from django.urls import reverse
+    items = []
+    # SubMenu-based galleries
+    for sub in SubMenu.objects.filter(photos__isnull=False, page='layout_2').annotate(
+            photo_count=Count('photos')).distinct().select_related('menu'):
+        items.append({
+            'id':           sub.id,
+            'type':         'submenu',
+            'display_name': f"{sub.menu.name} › {sub.name}",
+            'photo_count':  sub.photo_count,
+            'edit_url':     reverse('edit_layout2_gallery', args=[sub.id]),
+        })
+    # Direct-menu-based galleries
+    for menu in Menu.objects.filter(page='layout_2').annotate(
+            photo_count=Count('page_photos')).filter(photo_count__gt=0):
+        items.append({
+            'id':           menu.id,
+            'type':         'menu',
+            'display_name': f"{menu.name} (Direct Page)",
+            'photo_count':  menu.photo_count,
+            'edit_url':     reverse('edit_layout2_gallery_menu', args=[menu.id]),
+        })
+    return render(request, 'backend/layouts/list_layout2.html', {'items': items})
 
 
 @require_http_methods(["GET", "POST"])
 def create_page_photo(request):
     if request.method == "POST":
-        # Extract data from the FormData
-        submenu_id = request.POST.get('submenu_id')
+        raw_id     = request.POST.get('submenu_id', '').strip()
         base_order = request.POST.get('order', 0)
-        images = request.FILES.getlist('images')
-        # Grab the caption as a single string and remove extra whitespace
-        caption = request.POST.get('captions', '').strip()
+        images     = request.FILES.getlist('images')
+        caption    = request.POST.get('captions', '').strip()
 
         errors = {}
-
-        # 1. Validation
-        if not submenu_id:
-            errors['submenu_id'] = ['Please select a submenu to assign these photos.']
+        if not raw_id:
+            errors['submenu_id'] = ['Please select a page assignment.']
         if not images:
             errors['images'] = ['Please select at least one image to upload.']
-        
         try:
             base_order = int(base_order)
-        except ValueError:
+        except (ValueError, TypeError):
             errors['order'] = ['Order must be a valid integer.']
 
         if errors:
-            return JsonResponse({
-                'success': False,
-                'message': 'Please fix the errors below.',
-                'errors': errors
-            }, status=400)
+            return JsonResponse({'success': False, 'message': 'Please fix the errors below.', 'errors': errors}, status=400)
 
-        # 2. Process and Save
         try:
-            # Ensure the submenu exists and is actually meant for Layout 2
-            submenu = SubMenu.objects.get(id=submenu_id, page='layout_2')
-            
-            # If no caption is provided, default to the SubMenu name
-            final_caption = caption if caption else submenu.name
-            
-            # Loop through the images (Fixed the multiple upload zip bug here too)
-            # We use .create() in a loop instead of bulk_create() to ensure
-            # your custom model save() method triggers for image compression.
-            for index, img in enumerate(images):
-                PagePhoto.objects.create(
-                    submenu=submenu,
-                    image=img,
-                    caption=final_caption,
-                    order=base_order + index
-                )
+            atype, aid = _parse_assignment(raw_id)
+            if atype == 'menu':
+                menu_obj = Menu.objects.get(id=aid, page='layout_2')
+                final_caption = caption if caption else menu_obj.name
+                for idx, img in enumerate(images):
+                    PagePhoto.objects.create(menu=menu_obj, submenu=None, image=img,
+                                             caption=final_caption, order=base_order + idx)
+            else:
+                submenu = SubMenu.objects.get(id=aid, page='layout_2')
+                final_caption = caption if caption else submenu.name
+                for idx, img in enumerate(images):
+                    PagePhoto.objects.create(submenu=submenu, menu=None, image=img,
+                                             caption=final_caption, order=base_order + idx)
 
-            return JsonResponse({
-                'success': True,
-                'message': f'Successfully uploaded {len(images)} photos!'
-            })
+            return JsonResponse({'success': True, 'message': f'Successfully uploaded {len(images)} photos!'})
 
-        except SubMenu.DoesNotExist:
-            return JsonResponse({
-                'success': False,
-                'message': 'Invalid submenu.',
-                'errors': {'submenu_id': ['This submenu does not exist or is not set to Layout 2.']}
+        except (Menu.DoesNotExist, SubMenu.DoesNotExist):
+            return JsonResponse({'success': False, 'message': 'Invalid assignment.',
+                'errors': {'submenu_id': ['The selected page does not exist or is not set to Layout 2.']}
             }, status=400)
-            
         except Exception as e:
-            return JsonResponse({
-                'success': False,
-                'message': 'A server error occurred while processing the images.',
-                'error_detail': str(e)
-            }, status=500)
+            return JsonResponse({'success': False, 'message': 'A server error occurred while processing the images.', 'error_detail': str(e)}, status=500)
 
-    # If GET request: Render the template
-    # Only fetch SubMenus that are explicitly assigned to Layout 2
+    # GET
     submenus = SubMenu.objects.filter(page='layout_2', is_active=True).select_related('menu')
-    
-    return render(request, 'backend/layouts/create_layout2.html', {
-        'submenus': submenus
-    })
+    menus    = _eligible_menus('layout_2', 'page_photos')
+    return render(request, 'backend/layouts/create_layout2.html', {'submenus': submenus, 'menus': menus})
     
     
     
@@ -769,6 +842,52 @@ def edit_layout2_gallery(request, submenu_id):
         'existing_photos': existing_photos
     })
 
+@require_http_methods(["GET", "POST"])
+def edit_layout2_gallery_menu(request, menu_id):
+    """Edit / add photos for a direct-menu Layout 2 gallery."""
+    current_menu = get_object_or_404(Menu, id=menu_id, page='layout_2')
+
+    if request.method == "POST":
+        base_order = request.POST.get('order', 0)
+        images = request.FILES.getlist('images')
+        caption = request.POST.get('captions', '').strip()
+        errors = {}
+        if not images:
+            errors['images'] = ['Please select at least one image to upload.']
+        try:
+            base_order = int(base_order)
+        except (ValueError, TypeError):
+            errors['order'] = ['Order must be a valid integer.']
+        if errors:
+            return JsonResponse({'success': False, 'message': 'Please fix the errors below.', 'errors': errors}, status=400)
+        try:
+            final_caption = caption if caption else current_menu.name
+            for idx, img in enumerate(images):
+                PagePhoto.objects.create(menu=current_menu, submenu=None, image=img,
+                                         caption=final_caption, order=base_order + idx)
+            return JsonResponse({'success': True, 'message': f'Successfully added {len(images)} new photos!'})
+        except Exception as e:
+            return JsonResponse({'success': False, 'message': 'A server error occurred.', 'error_detail': str(e)}, status=500)
+
+    existing_photos = current_menu.page_photos.all().order_by('order', '-id')
+    return render(request, 'backend/layouts/edit_layout2.html', {
+        'current_submenu': None,
+        'current_menu':    current_menu,
+        'existing_photos': existing_photos,
+    })
+
+
+@require_POST
+def delete_gallery_menu(request, menu_id):
+    """Delete all photos for a direct-menu gallery."""
+    try:
+        menu = get_object_or_404(Menu, id=menu_id)
+        PagePhoto.objects.filter(menu=menu).delete()
+        return JsonResponse({'success': True, 'message': 'Gallery deleted successfully!'})
+    except Exception as e:
+        return JsonResponse({'success': False, 'message': 'Error deleting the gallery.', 'error_detail': str(e)}, status=400)
+
+
 @require_POST
 def delete_single_photo(request, photo_id):
     try:
@@ -809,98 +928,86 @@ def delete_gallery(request, submenu_id):
         
 
 def list_layout3_rich_text(request):
-    # Fetch all submenus assigned to Layout 3 and count their rich text blocks
-    # Using 'rich_texts' because of the related_name in the PageRichText model
-    content_pages = SubMenu.objects.filter(page='layout_3').annotate(
-        block_count=Count('rich_texts')
-    ).select_related('menu').order_by('menu__order', 'order')
-
-    return render(request, 'backend/layouts/list_layout3.html', {
-        'content_pages': content_pages
-    })
+    from django.urls import reverse
+    items = []
+    # SubMenu-based
+    for sub in SubMenu.objects.filter(page='layout_3').annotate(
+            block_count=Count('rich_texts')).select_related('menu').order_by('menu__order', 'order'):
+        items.append({
+            'id':           sub.id,
+            'type':         'submenu',
+            'display_name': f"{sub.menu.name} › {sub.name}",
+            'block_count':  sub.block_count,
+            'edit_url':     reverse('edit_layout3_rich_text', args=[sub.id]),
+        })
+    # Direct-menu-based
+    for menu in Menu.objects.filter(page='layout_3').annotate(
+            block_count=Count('page_rich_texts')).filter(block_count__gt=0).order_by('order'):
+        items.append({
+            'id':           menu.id,
+            'type':         'menu',
+            'display_name': f"{menu.name} (Direct Page)",
+            'block_count':  menu.block_count,
+            'edit_url':     reverse('edit_layout3_rich_text_menu', args=[menu.id]),
+        })
+    return render(request, 'backend/layouts/list_layout3.html', {'items': items})
         
         
         
 @require_http_methods(["GET", "POST"])
 def create_page_rich_text(request):
     if request.method == "POST":
-        submenu_id = request.POST.get('submenu_id')
+        raw_id        = request.POST.get('submenu_id', '').strip()
         section_title = request.POST.get('section_title', '').strip()
-        content = request.POST.get('content', '').strip()
-        order = request.POST.get('order', 0)
+        content       = request.POST.get('content', '').strip()
+        order         = request.POST.get('order', 0)
 
         errors = {}
-
-        # Validation
-        if not submenu_id:
-            errors['submenu_id'] = ['Please select a submenu.']
+        if not raw_id:
+            errors['submenu_id'] = ['Please select a page assignment.']
         if not content or content == '<p><br></p>':
             errors['content'] = ['Content cannot be empty.']
-
         try:
             order = int(order)
-        except ValueError:
+        except (ValueError, TypeError):
             errors['order'] = ['Order must be a valid integer.']
 
         if errors:
-            return JsonResponse({
-                'success': False,
-                'message': 'Please fix the errors below.',
-                'errors': errors
-            }, status=400)
+            return JsonResponse({'success': False, 'message': 'Please fix the errors below.', 'errors': errors}, status=400)
 
-        # Process and Save
         try:
-            submenu = SubMenu.objects.get(id=submenu_id, page='layout_3')
-            
-            # --- ENFORCE SINGLE INSTANCE RULE ---
-            if PageRichText.objects.filter(submenu=submenu).exists():
-                return JsonResponse({
-                    'success': False,
-                    'message': 'Validation error.',
-                    'errors': {
-                        'submenu_id': ['This submenu already has content. Please edit the existing page instead.']
-                    }
-                }, status=400)
-            
-            PageRichText.objects.create(
-                submenu=submenu,
-                section_title=section_title,
-                content=content,
-                order=order
-            )
+            atype, aid = _parse_assignment(raw_id)
+            common = dict(section_title=section_title, content=content, order=order)
+            if atype == 'menu':
+                menu_obj = Menu.objects.get(id=aid, page='layout_3')
+                if PageRichText.objects.filter(menu=menu_obj).exists():
+                    return JsonResponse({'success': False, 'message': 'Validation error.',
+                        'errors': {'submenu_id': ['This menu already has content. Please edit the existing page instead.']}
+                    }, status=400)
+                PageRichText.objects.create(menu=menu_obj, submenu=None, **common)
+            else:
+                submenu = SubMenu.objects.get(id=aid, page='layout_3')
+                if PageRichText.objects.filter(submenu=submenu).exists():
+                    return JsonResponse({'success': False, 'message': 'Validation error.',
+                        'errors': {'submenu_id': ['This submenu already has content. Please edit the existing page instead.']}
+                    }, status=400)
+                PageRichText.objects.create(submenu=submenu, menu=None, **common)
 
-            return JsonResponse({
-                'success': True,
-                'message': 'Rich text block created successfully!'
-            })
+            return JsonResponse({'success': True, 'message': 'Rich text block created successfully!'})
 
-        except SubMenu.DoesNotExist:
-            return JsonResponse({
-                'success': False,
-                'message': 'Invalid submenu.',
-                'errors': {'submenu_id': ['This submenu does not exist or is not set to Layout 3.']}
+        except (Menu.DoesNotExist, SubMenu.DoesNotExist):
+            return JsonResponse({'success': False, 'message': 'Invalid assignment.',
+                'errors': {'submenu_id': ['The selected page does not exist or is not set to Layout 3.']}
             }, status=400)
-            
         except Exception as e:
-            return JsonResponse({
-                'success': False,
-                'message': 'A server error occurred while saving.',
-                'error_detail': str(e)
-            }, status=500)
+            return JsonResponse({'success': False, 'message': 'A server error occurred while saving.', 'error_detail': str(e)}, status=500)
 
-    # GET Request: Render the template
-    # --- UI FILTERING ---
-    # Only fetch Layout 3 submenus where `rich_texts` is empty (isnull=True)
+    # GET
     submenus = SubMenu.objects.filter(
-        page='layout_3', 
-        is_active=True,
-        rich_texts__isnull=True 
+        page='layout_3', is_active=True, rich_texts__isnull=True
     ).select_related('menu')
-    
-    return render(request, 'backend/layouts/create_layout3.html', {
-        'submenus': submenus
-    })
+    menus = _eligible_menus('layout_3', 'page_rich_texts')
+    return render(request, 'backend/layouts/create_layout3.html', {'submenus': submenus, 'menus': menus})
     
     
     
@@ -922,6 +1029,56 @@ def delete_all_layout3_blocks(request, submenu_id):
             'message': 'Failed to delete content blocks.',
             'error_detail': str(e)
         }, status=500)
+
+@require_http_methods(["GET", "POST"])
+def edit_layout3_rich_text_menu(request, menu_id):
+    """Edit the rich-text content for a direct-menu Layout 3 page."""
+    current_menu = get_object_or_404(Menu, id=menu_id, page='layout_3')
+    rich_text = current_menu.page_rich_texts.first()
+
+    if request.method == "POST":
+        section_title = request.POST.get('section_title', '').strip()
+        content       = request.POST.get('content', '').strip()
+        order         = request.POST.get('order', 0)
+        errors = {}
+        if not content or content == '<p><br></p>':
+            errors['content'] = ['Content cannot be empty.']
+        try:
+            order = int(order)
+        except (ValueError, TypeError):
+            errors['order'] = ['Order must be a valid integer.']
+        if errors:
+            return JsonResponse({'success': False, 'message': 'Please fix the errors below.', 'errors': errors}, status=400)
+        try:
+            if rich_text:
+                rich_text.section_title = section_title
+                rich_text.content       = content
+                rich_text.order         = order
+                rich_text.save()
+            else:
+                PageRichText.objects.create(menu=current_menu, submenu=None,
+                                            section_title=section_title, content=content, order=order)
+            return JsonResponse({'success': True, 'message': 'Rich text content updated successfully!'})
+        except Exception as e:
+            return JsonResponse({'success': False, 'message': 'A server error occurred.', 'error_detail': str(e)}, status=500)
+
+    return render(request, 'backend/layouts/edit_layout3.html', {
+        'current_submenu': None,
+        'current_menu':    current_menu,
+        'rich_text':       rich_text,
+    })
+
+
+@require_http_methods(["POST"])
+def delete_all_layout3_blocks_menu(request, menu_id):
+    """Delete all rich-text blocks for a direct-menu Layout 3 page."""
+    menu = get_object_or_404(Menu, id=menu_id, page='layout_3')
+    try:
+        deleted_count, _ = menu.page_rich_texts.all().delete()
+        return JsonResponse({'success': True, 'message': f'Successfully deleted {deleted_count} content blocks.'})
+    except Exception as e:
+        return JsonResponse({'success': False, 'message': 'Failed to delete content blocks.', 'error_detail': str(e)}, status=500)
+
 
 # Temporary placeholder for the edit view so the URL pattern resolves
 @require_http_methods(["GET", "POST"])
@@ -1028,9 +1185,13 @@ def create_notice(request):
                 'errors': errors
             }, status=400)
 
+        target_audience = request.POST.get('target_audience', 'all').strip()
+        valid_audiences = [c[0] for c in Notice.TARGET_CHOICES]
+        if target_audience not in valid_audiences:
+            target_audience = 'all'
+
         # Process and Save
         try:
-            # We don't pass target_audience so it naturally defaults to 'all'
             Notice.objects.create(
                 title=title,
                 content=content,
@@ -1038,7 +1199,8 @@ def create_notice(request):
                 expiry_date=expiry_date if expiry_date else None,
                 is_published=is_published,
                 is_pinned=is_pinned,
-                attachment=attachment
+                attachment=attachment,
+                target_audience=target_audience,
             )
 
             return JsonResponse({
@@ -1054,7 +1216,9 @@ def create_notice(request):
             }, status=500)
 
     # GET Request: Render the template
-    return render(request, 'backend/notices/create_notice.html')
+    return render(request, 'backend/notices/create_notice.html', {
+        'target_choices': Notice.TARGET_CHOICES,
+    })
 
 
 @require_http_methods(["POST"])
@@ -1101,14 +1265,20 @@ def edit_notice(request, id):
                 'errors': errors
             }, status=400)
 
+        target_audience = request.POST.get('target_audience', 'all').strip()
+        valid_audiences = [c[0] for c in Notice.TARGET_CHOICES]
+        if target_audience not in valid_audiences:
+            target_audience = 'all'
+
         # Process and Save
         try:
-            notice.title = title
-            notice.content = content
-            notice.publish_date = publish_date
-            notice.expiry_date = expiry_date if expiry_date else None
-            notice.is_published = is_published
-            notice.is_pinned = is_pinned
+            notice.title           = title
+            notice.content         = content
+            notice.publish_date    = publish_date
+            notice.expiry_date     = expiry_date if expiry_date else None
+            notice.is_published    = is_published
+            notice.is_pinned       = is_pinned
+            notice.target_audience = target_audience
 
             # Only update the attachment if a new file is uploaded
             if 'attachment' in request.FILES:
@@ -1129,7 +1299,10 @@ def edit_notice(request, id):
             }, status=500)
 
     # GET Request: Render the template with the instance
-    return render(request, 'backend/notices/edit_notice.html', {'notice': notice})
+    return render(request, 'backend/notices/edit_notice.html', {
+        'notice':         notice,
+        'target_choices': Notice.TARGET_CHOICES,
+    })
 
 
 

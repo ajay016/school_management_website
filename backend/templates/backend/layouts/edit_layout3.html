@@ -58,8 +58,12 @@
         {% csrf_token %}
         <div class="row g-4 mb-4">
             <div class="col-md-5">
-                <label class="form-label fw-semibold">Target Submenu</label>
+                <label class="form-label fw-semibold">Target Page</label>
+                {% if current_submenu %}
                 <input type="text" class="form-control bg-light" value="{{ current_submenu.menu.name }} &rsaquo; {{ current_submenu.name }}" disabled>
+                {% else %}
+                <input type="text" class="form-control bg-light" value="{{ current_menu.name }} (Direct Page)" disabled>
+                {% endif %}
             </div>
             <div class="col-md-5">
                 <label class="form-label fw-semibold">Section Title</label>
@@ -148,8 +152,9 @@
             btn.innerHTML = '<iconify-icon icon="line-md:loading-twotone-loop" class="me-1"></iconify-icon> Updating...';
             btn.disabled = true;
 
-            // Fetch request sends to the current URL
-            fetch(`{% url 'edit_layout3_rich_text' current_submenu.id %}`, {
+            // Use the correct edit URL based on whether this is a submenu or direct menu page
+            const editUrl = "{% if current_submenu %}{% url 'edit_layout3_rich_text' current_submenu.id %}{% else %}{% url 'edit_layout3_rich_text_menu' current_menu.id %}{% endif %}";
+            fetch(editUrl, {
                 method: 'POST',
                 body: formData,
                 headers: {

@@ -104,22 +104,22 @@ class HomeSlider(models.Model):
 
 
 PAGE_CHOICES = [
+    # ('contact',           'Contact'),
+    # ('faculty_junior',    'Faculty — Junior School'),
+    # ('faculty_middle',    'Faculty — Middle School'),
+    # ('faculty_senior',    'Faculty — Senior School'),
+    # ('gallery',           'Gallery'),
+    # ('events',            'Events'),
+    # ('notices',           'Notices'),
+    # ('students',          'Students'),
+    # ('results',           'Results'),
+    # ('admission_results', 'Admission Results'),
     ('layout_1',          'Layout 1 — Image with Description'),
     ('layout_2',          'Layout 2 — Photo Grid'),
     ('layout_3',          'Layout 3 — Rich Text'),
-    ('contact',           'Contact'),
-    ('faculty_junior',    'Faculty — Junior School'),
-    ('faculty_middle',    'Faculty — Middle School'),
-    ('faculty_senior',    'Faculty — Senior School'),
-    ('gallery',           'Gallery'),
-    ('events',            'Events'),
-    ('notices',           'Notices'),
-    ('students',          'Students'),
-    ('results',           'Results'),
-    ('admission_results', 'Admission Results'),
     # Dynamic model-driven dropdowns (no SubMenu needed)
-    ('facilities_list',  'Facilities — dropdown from Facility model'),
-    ('curriculum_list',  'Curriculum — dropdown from Curriculum Stages'),
+    # ('facilities_list',  'Facilities — dropdown from Facility model'),
+    # ('curriculum_list',  'Curriculum — dropdown from Curriculum Stages'),
 ]
 
 
@@ -157,6 +157,11 @@ class Menu(models.Model):
         from django.urls import reverse
         if self.page in _SPECIAL_PAGE_URL_NAMES:
             return reverse(_SPECIAL_PAGE_URL_NAMES[self.page])
+        if self.page in ('layout_1', 'layout_2', 'layout_3'):
+            try:
+                return reverse('direct_menu_page', kwargs={'menu_slug': self.slug})
+            except Exception:
+                return '#'
         return '#'
 
     def save(self, *args, **kwargs):
@@ -209,9 +214,13 @@ class SubMenu(models.Model):
 # ─────────────────────────────────────────────────────────────────────────────
 
 class PageSection(models.Model):
-    """Layout 1 — image + description blocks."""
+    """Layout 1 — image + description blocks.
+    Exactly one of `submenu` or `menu` must be set (enforced at application level).
+    """
     submenu     = models.ForeignKey(SubMenu, on_delete=models.CASCADE,
-                      related_name='sections')
+                      related_name='sections', null=True, blank=True)
+    menu        = models.ForeignKey('Menu', on_delete=models.CASCADE,
+                      related_name='page_sections', null=True, blank=True)
     image       = models.ImageField(upload_to='cms/sections/', blank=True, null=True)
     image_align = models.CharField(max_length=5,
                       choices=[('left', 'Left'), ('right', 'Right')],
@@ -223,25 +232,32 @@ class PageSection(models.Model):
     order       = models.PositiveSmallIntegerField(default=0)
 
     class Meta:
-        ordering = ['submenu', 'order']
+        ordering = ['order']
 
     def __str__(self):
-        return f"{self.submenu} — block {self.order}"
+        if self.submenu:
+            return f"{self.submenu} — block {self.order}"
+        return f"{self.menu.name} (direct) — block {self.order}"
 
 
 class PagePhoto(models.Model):
-    """Layout 2 — photo grid."""
+    """Layout 2 — photo grid.
+    Exactly one of `submenu` or `menu` must be set (enforced at application level).
+    """
     submenu = models.ForeignKey(SubMenu, on_delete=models.CASCADE,
-                  related_name='photos')
+                  related_name='photos', null=True, blank=True)
+    menu    = models.ForeignKey('Menu', on_delete=models.CASCADE,
+                  related_name='page_photos', null=True, blank=True)
     image   = models.ImageField(upload_to='cms/photos/')
     caption = models.CharField(max_length=200, blank=True, null=True)
     order   = models.PositiveSmallIntegerField(default=0)
 
     class Meta:
-        ordering = ['submenu', 'order']
+        ordering = ['order']
 
     def __str__(self):
-        return f"{self.submenu} — photo {self.order}"
+        owner = self.submenu or self.menu
+        return f"{owner} — photo {self.order}"
 
     def save(self, *args, **kwargs):
         if self.image and not getattr(self.image, '_committed', True):
@@ -264,18 +280,24 @@ class PagePhoto(models.Model):
 
 
 class PageRichText(models.Model):
-    """Layout 3 — rich text blocks (Quill / CKEditor)."""
+    """Layout 3 — rich text blocks (Quill / CKEditor).
+    Exactly one of `submenu` or `menu` must be set (enforced at application level).
+    """
     submenu       = models.ForeignKey(SubMenu, on_delete=models.CASCADE,
-                        related_name='rich_texts')
+                        related_name='rich_texts', null=True, blank=True)
+    menu          = models.ForeignKey('Menu', on_delete=models.CASCADE,
+                        related_name='page_rich_texts', null=True, blank=True)
     section_title = models.CharField(max_length=200, blank=True, null=True)
     content       = models.TextField(help_text="Raw HTML from the editor")
     order         = models.PositiveSmallIntegerField(default=0)
 
     class Meta:
-        ordering = ['submenu', 'order']
+        ordering = ['order']
 
     def __str__(self):
-        return f"{self.submenu} — block {self.order}"
+        if self.submenu:
+            return f"{self.submenu} — block {self.order}"
+        return f"{self.menu.name} (direct) — block {self.order}"
 
 
 # ─────────────────────────────────────────────────────────────────────────────
